@@ -40,11 +40,7 @@ const FormAdd = ({ isOpen, setIsOpen, title, formData, setFormData, handleSubmit
         <Dialog
             open={isOpen}
             TransitionComponent={Transition}
-            onClose={(event, reason) => {
-                if (reason !== "backdropClick") {
-                    handleCloseModal();
-                }
-            }}
+            onClose={handleCloseModal}
             sx={{
                 "& .MuiDialog-paper": {
                     position: "fixed",

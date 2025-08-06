@@ -29,8 +29,8 @@ class CampaignController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'required|boolean',
+            'type' => 'nullable|string',
+            'is_active' => 'required|boolean',
         ]);
 
         $campaign = Campaign::create($request->all());
@@ -50,14 +50,19 @@ class CampaignController extends Controller
     }
 
     // Actualizar una campaña
-    public function update(Request $request, Campaign $campaign)
+    public function update(Request $request, $id)
     {
-        $campaign->update($request->all());
+        $campaign = Campaign::findOrFail($id);
+
+        $campaign->update($request->only(['name', 'type', 'is_active']));
 
         return response()->json([
-            'message' => 'Campaña actualizada con éxito'
-        ], Response::HTTP_OK);
+            'success' => true,
+            'message' => 'Campaña actualizada con éxito',
+            'data' => $campaign
+        ], 200);
     }
+
 
     // Eliminar una campaña
     public function destroy($id)

@@ -19,6 +19,7 @@ export const useCampaigns = () => {
 
     });
 
+    //Tabla de pagadurias
     const fetchCampaigns = useCallback(
         async (page) => {
             setLoading(true);
@@ -98,6 +99,8 @@ export const useCampaigns = () => {
             setLoading(false);
         }
     };
+
+    //Desactivar campaña
     const handleDelete = async (id, status) => {
         const actionText = !status ? "activar" : "desactivar";
 

@@ -36,7 +36,6 @@ const Campaigns = () => {
             <FormAdd
                 isOpen={isOpenADD}
                 setIsOpen={setIsOpenADD}
-                title={formData.id ? "Editar Campaña" : "Añadir Campaña"}
                 formData={formData}
                 setFormData={setFormData}
                 validationErrors={validationErrors}

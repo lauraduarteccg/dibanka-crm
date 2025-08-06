@@ -28,6 +28,7 @@ class DataBaseSeeder extends Seeder
         }
 
         DB::table('users')->insert($users);
+        
         $campaignId = DB::table('campaigns')->first()->id ?? DB::table('campaigns')->insertGetId([
             'name' => 'Pagaduría Bogotá',
             'type' => 'Marketing',
