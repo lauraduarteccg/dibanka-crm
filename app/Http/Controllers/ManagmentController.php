@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Gestion;
+use App\Models\Management;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Http\Resources\ManagementResource;
 use Illuminate\Support\Facades\Validator;
 
-class GestionController extends Controller
+class ManagmentController extends Controller
 {
     /**
-     * Obtener todas las gestiones con información relacionada.
+     * Obtener todas las gestiones con información relacionada (paginado).
      */
     public function index()
     {
-        $gestions = Gestion::with(['usuario', 'campaign', 'consultation', 'contact'])->paginate(10);
-        return response()->json($gestions, Response::HTTP_OK);
+        // Trae las gestiones con relaciones y pagina (10 por página)
+        $gestions = Management::with(['usuario', 'campaign', 'consultation', 'contact'])->paginate(10);
+
+        // Laravel Resource automatically includes pagination meta when you return a paginated collection
+        return ManagementResource::collection($gestions);
     }
 
     /**
@@ -23,20 +27,30 @@ class GestionController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'usuario_id'        => 'required|exists:users,id',
             'campaign_id'       => 'required|exists:campaigns,id',
             'consultation_id'   => 'required|exists:consultations,id',
             'contact_id'        => 'required|exists:contacts,id',
-        ]);
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $gestion = Gestion::create($request->all());
+        // Use only validated fields to avoid mass assignment of extra inputs
+        $data = $request->only(array_keys($rules));
 
-        return response()->json(['message' => 'Gestión creada exitosamente', 'gestion' => $gestion], Response::HTTP_CREATED);
+        $gestion = Management::create($data);
+
+        // Carga relaciones para devolverlas en el resource
+        $gestion->load(['usuario', 'campaign', 'consultation', 'contact']);
+
+        return (new ManagementResource($gestion))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     /**
@@ -44,13 +58,13 @@ class GestionController extends Controller
      */
     public function show($id)
     {
-        $gestion = Gestion::with(['usuario', 'campaign', 'consultation', 'contact'])->find($id);
+        $gestion = Management::with(['usuario', 'campaign', 'consultation', 'contact'])->find($id);
 
         if (!$gestion) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
-        return response()->json($gestion, Response::HTTP_OK);
+        return new ManagementResource($gestion);
     }
 
     /**
@@ -58,26 +72,35 @@ class GestionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $gestion = Gestion::find($id);
+        $gestion = Management::find($id);
 
         if (!$gestion) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'usuario_id'        => 'sometimes|exists:users,id',
             'campaign_id'       => 'sometimes|exists:campaigns,id',
             'consultation_id'   => 'sometimes|exists:consultations,id',
             'contact_id'        => 'sometimes|exists:contacts,id',
-        ]);
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $gestion->update($request->all());
+        $data = $request->only(array_keys($rules));
 
-        return response()->json(['message' => 'Gestión actualizada correctamente', 'gestion' => $gestion], Response::HTTP_OK);
+        $gestion->update($data);
+
+        // Recargar relaciones para devolver la info actualizada
+        $gestion->load(['usuario', 'campaign', 'consultation', 'contact']);
+
+        return (new ManagementResource($gestion))
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 
     /**
@@ -85,7 +108,7 @@ class GestionController extends Controller
      */
     public function destroy($id)
     {
-        $gestion = Gestion::find($id);
+        $gestion = Management::find($id);
 
         if (!$gestion) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
@@ -95,10 +118,13 @@ class GestionController extends Controller
 
         return response()->json(['message' => 'Gestión eliminada correctamente'], Response::HTTP_OK);
     }
+
+    /**
+     * Contador total de gestiones.
+     */
     public function count()
     {
-        $count = Gestion::count();
-        return response()->json(['count' => $count], 200);
+        $count = Management::count();
+        return response()->json(['count' => $count], Response::HTTP_OK);
     }
-    
 }

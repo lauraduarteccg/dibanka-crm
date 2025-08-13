@@ -57,7 +57,7 @@ class DataBaseSeeder extends Seeder
         ]);
 
         // Insertar registros en la tabla gestions
-        DB::table('gestions')->insert([
+        DB::table('management')->insert([
             [
                 'usuario_id'        => 1,
                 'campaign_id'       => $campaignId,
@@ -74,6 +74,6 @@ class DataBaseSeeder extends Seeder
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ],
-        ]);
+        ]);        
     }
 }
