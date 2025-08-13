@@ -16,15 +16,15 @@ class ContactController extends Controller
         $contacts = Contact::paginate(10);
 
         return response()->json([
-            'message' => 'Consultas obtenidas con éxito',
-            'contacts' => ContactResource::collection($contacts),
-            'pagination' => [
-                'current_page' => $contacts->currentPage(),
-                'total_pages' => $contacts->lastPage(),
-                'per_page' => $contacts->perPage(),
-                'total_contacts' => $contacts->total(),
-                'next_page_url' => $contacts->nextPageUrl(),
-                'prev_page_url' => $contacts->previousPageUrl(),
+            'message'           => 'Consultas obtenidas con éxito',
+            'contacts'          => ContactResource::collection($contacts),
+            'pagination'        => [
+                'current_page'      => $contacts->currentPage(),
+                'total_pages'       => $contacts->lastPage(),
+                'per_page'          => $contacts->perPage(),
+                'total_contacts'    => $contacts->total(),
+                'next_page_url'     => $contacts->nextPageUrl(),
+                'prev_page_url'     => $contacts->previousPageUrl(),
             ]
         ], Response::HTTP_OK);
     }
@@ -33,12 +33,12 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:255',
-            'tipo_identificacion' => 'required|string|max:255',
-            'telefono' => 'required|string|max:255',
-            'numero_identificacion' => 'required|string|max:255',
-            'celular_actualizado' => 'required|string|max:255',
-            'correo' => 'required|string|max:255',
+            'name'                  => 'required|string|max:255',
+            'identification_type'   => 'required|string|max:255',
+            'phone'                 => 'required|string|max:255',
+            'identification_number' => 'required|string|max:255',
+            'update_phone'          => 'required|string|max:255',
+            'email'                 => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -77,8 +77,13 @@ class ContactController extends Controller
     {
         $contacts = Contact::findOrFail($id);
         $contacts->update($request->only(
-            'nombre', 'tipo_identificacion', 'telefono', 
-            'numero_identificacion', 'celular_actualizado', 'correo', 'is_active'
+            'name', 
+            'identification_type', 
+            'phone', 
+            'identification_number',
+            'update_phone', 
+            'email', 
+            'is_active'
         ));
         return response()->json([
             'success' => true,

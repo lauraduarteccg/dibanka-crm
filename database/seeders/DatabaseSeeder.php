@@ -46,12 +46,12 @@ class DataBaseSeeder extends Seeder
 
         // Obtener un contacto existente o crear uno nuevo
         $contactId = DB::table('contacts')->first()->id ?? DB::table('contacts')->insertGetId([
-            'nombre' => 'Juan Pérez',
-            'tipo_identificacion' => 'Cédula',
-            'telefono' => '3123456789',
-            'numero_identificacion' => '12345678',
-            'celular_actualizado' => '3123456789',
-            'correo' => 'juan@example.com',
+            'name' => 'Juan Pérez',
+            'identification_type' => 'Cédula',
+            'phone' => '3123456789',
+            'identification_number' => '12345678',
+            'update_phone' => '3123456789',
+            'email' => 'juan@example.com',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

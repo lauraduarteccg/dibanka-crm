@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
       
-            $table->string('nombre');
-            $table->string('tipo_identificacion');
-            $table->string('telefono');
-            $table->string('numero_identificacion');
-            $table->string('celular_actualizado');
-            $table->string('correo');
+            $table->string('name');
+            $table->string('email');
+            $table->string('phone');
+            $table->string('update_phone');
+            $table->string('identification_type');
+            $table->string('identification_number');
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });

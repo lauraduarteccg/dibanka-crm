@@ -24,10 +24,10 @@ class GestionController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'usuario_id' => 'required|exists:users,id',
-            'campaign_id' => 'required|exists:campaigns,id',
-            'consultation_id' => 'required|exists:consultations,id',
-            'contact_id' => 'required|exists:contacts,id',
+            'usuario_id'        => 'required|exists:users,id',
+            'campaign_id'       => 'required|exists:campaigns,id',
+            'consultation_id'   => 'required|exists:consultations,id',
+            'contact_id'        => 'required|exists:contacts,id',
         ]);
 
         if ($validator->fails()) {
@@ -65,10 +65,10 @@ class GestionController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'usuario_id' => 'sometimes|exists:users,id',
-            'campaign_id' => 'sometimes|exists:campaigns,id',
-            'consultation_id' => 'sometimes|exists:consultations,id',
-            'contact_id' => 'sometimes|exists:contacts,id',
+            'usuario_id'        => 'sometimes|exists:users,id',
+            'campaign_id'       => 'sometimes|exists:campaigns,id',
+            'consultation_id'   => 'sometimes|exists:consultations,id',
+            'contact_id'        => 'sometimes|exists:contacts,id',
         ]);
 
         if ($validator->fails()) {

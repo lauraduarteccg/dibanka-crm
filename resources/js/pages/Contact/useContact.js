@@ -5,21 +5,21 @@ import Swal from "sweetalert2";
 
 export const useContact = () => {
     const { token } = useContext(AuthContext);
-    const [contact, setContact] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [validationErrors, setValidationErrors] = useState({});
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [isOpenADD, setIsOpenADD] = useState(false);
-    const [formData, setFormData] = useState({
+    const [contact,          setContact]             = useState([]);
+    const [loading,          setLoading]             = useState(true);
+    const [error,            setError]               = useState(null);
+    const [validationErrors, setValidationErrors]    = useState({});
+    const [currentPage,      setCurrentPage]         = useState(1);
+    const [totalPages,       setTotalPages]          = useState(1);
+    const [isOpenADD,        setIsOpenADD]           = useState(false);
+    const [formData,         setFormData]            = useState({
         id: null,
-        nombre: "",
-        tipo_identificacion: "",
-        telefono: "",
-        numero_identificacion: "",
-        celular_actualizado: "",
-        correo: "",
+        name                    : "",
+        identification_type     : "",
+        phone                   : "",
+        identification_number   : "",
+        update_phone            : "",
+        email                   : "",
 
     });
 
@@ -31,10 +31,10 @@ export const useContact = () => {
                 const res = await axios.get(`/api/contacts?page=${page}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setContact(res.data.contacts);
-                setTotalPages(res.data.pagination.total_pages);
-                setCurrentPage(res.data.pagination.current_page);
-                console.log(res.data.contacts)
+                setContact      (res.data.contacts);
+                setTotalPages   (res.data.pagination.total_pages);
+                setCurrentPage  (res.data.pagination.current_page);
+                console.log     (res.data.contacts)
             } catch (err) {
                 setError("Error al obtener laos contactos.");
             } finally {
@@ -52,13 +52,13 @@ export const useContact = () => {
     const handleEdit = (contact) => {
         setFormData({
             id: contact.id,
-            nombre: contact.nombre,
-            tipo_identificacion: contact.tipo_identificacion,
-            telefono: contact.telefono,
-            numero_identificacion: contact.numero_identificacion,
-            celular_actualizado: contact.celular_actualizado,
-            correo: contact.correo,         
-            is_active: contact.is_active
+            name                    : contact.name,
+            identification_type     : contact.identification_type,
+            phone                   : contact.phone,
+            identification_number   : contact.identification_number,
+            update_phone            : contact.update_phone,
+            email                   : contact.email,         
+            is_active               : contact.is_active
         });
         setValidationErrors({});
         setIsOpenADD(true);

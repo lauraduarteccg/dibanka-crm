@@ -18,13 +18,13 @@ class UserController extends Controller
     {
         $users = User::paginate(10);
         return response()->json([
-            'message' => 'Usuarios obtenidos con éxito',
-            'users' => UserResource::collection($users),
-            'pagination' => [
-                'current_page' => $users->currentPage(),
-                'total_pages' => $users->lastPage(),
-                'per_page' => $users->perPage(),
-                'total_users' => $users->total(),
+            'message'       => 'Usuarios obtenidos con éxito',
+            'users'         => UserResource::collection($users),
+            'pagination'    => [
+                'current_page'  => $users->currentPage(),
+                'total_pages'   => $users->lastPage(),
+                'per_page'      => $users->perPage(),
+                'total_users'   => $users->total(),
                 'next_page_url' => $users->nextPageUrl(),
                 'prev_page_url' => $users->previousPageUrl(),
             ]
@@ -35,22 +35,22 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
+            'name'      => 'required|string',
+            'email'     => 'required|email|unique:users',
+            'password'  => 'required|min:6',
             // 'role' => 'string'
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
             // 'role' => $request->role ?? 'user',
         ]);
 
         return response()->json([
-            'message' => 'Usuario creado con éxito',
-            'users' => new UserResource($user)
+            'message'   => 'Usuario creado con éxito',
+            'users'     => new UserResource($user)
         ], Response::HTTP_CREATED);
     }
 
@@ -59,8 +59,8 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         return response()->json([
-            'message' => 'Usuario encontrado',
-            'users' => new UserResource($user)
+            'message'   => 'Usuario encontrado',
+            'users'     => new UserResource($user)
         ], Response::HTTP_OK);
     }
 
@@ -70,8 +70,8 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->update($request->all());
         return response()->json([
-            'message' => 'Usuario actualizado con éxito',
-            'users' => new UserResource($user)
+            'message'   => 'Usuario actualizado con éxito',
+            'users'     => new UserResource($user)
         ], Response::HTTP_OK);
     }
 

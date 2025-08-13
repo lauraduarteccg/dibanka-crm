@@ -16,12 +16,12 @@ class ContactResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'nombre' => $this->nombre,
-            'tipo_identificacion' => $this->tipo_identificacion,
-            'numero_identificacion' => $this->numero_identificacion,
-            'telefono' => $this->telefono,
-            'celular_actualizado' => $this->celular_actualizado,
-            'correo' => $this->correo,
+            'name' => $this->name,
+            'identification_type' => $this->identification_type,
+            'identification_number' => $this->identification_number,
+            'phone' => $this->phone,
+            'update_phone' => $this->update_phone,
+            'email' => $this->email,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'is_active' => $this->is_active
         ];

@@ -7,18 +7,18 @@ import * as yup from "yup";
 import { FaRegComment, FaBullseye } from "react-icons/fa6";
 
 const fields = [
-    { name: "motivo_consulta", label: "Motivo de consulta", type: "text", icon: FaRegComment },
-    { name: "motivo_especifico", label: "Motivo especifico", type: "text", icon: FaBullseye },
+    { name: "motivo_consulta",      label: "Motivo de consulta",    type: "text", icon: FaRegComment    },
+    { name: "motivo_especifico",    label: "Motivo especifico",     type: "text", icon: FaBullseye      },
 ];
 const userSchema = yup.object().shape({
-    name: yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
-    motivo_consulta: yup.string().required("El tipo es obligatorio"),
-    motivo_especifico: yup.string().required("El estado es obligatorio"),
+    name:               yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
+    motivo_consulta:    yup.string().required("El tipo es obligatorio"),
+    motivo_especifico:  yup.string().required("El estado es obligatorio"),
 });
 const columns=[ 
-    { header: "ID", key: "id" },
-    { header: "Motivo de consulta", key: "motivo_consulta" },
-    { header: "Motivo especifico", key: "motivo_especifico" },
+    { header: "ID",                 key: "id"                   },
+    { header: "Motivo de consulta", key: "motivo_consulta"      },
+    { header: "Motivo especifico",  key: "motivo_especifico"    },
 ];   
 
 const Consults = () => {

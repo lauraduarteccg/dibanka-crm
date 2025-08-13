@@ -13,13 +13,13 @@ class CampaignController extends Controller
     {
         $campaigns = Campaign::paginate(10);
         return response()->json([
-            'message' => 'Campañas obtenidas con éxito',
-            'campaigns' => CampaingResource::collection($campaigns),
-            'pagination' => [
-                'current_page' => $campaigns->currentPage(),
-                'total_pages' => $campaigns->lastPage(),
-                'per_page' => $campaigns->perPage(),
-                'total_campaigns' => $campaigns->total(),
+            'message'           => 'Campañas obtenidas con éxito',
+            'campaigns'         => CampaingResource::collection($campaigns),
+            'pagination'        => [
+                'current_page'      => $campaigns->currentPage(),
+                'total_pages'       => $campaigns->lastPage(),
+                'per_page'          => $campaigns->perPage(),
+                'total_campaigns'   => $campaigns->total(),
             ]
         ], Response::HTTP_OK);
     }
@@ -28,8 +28,8 @@ class CampaignController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'nullable|string',
+            'name'      => 'required|string|max:255',
+            'type'      => 'nullable|string',
             'is_active' => 'required|boolean',
         ]);
 
@@ -44,8 +44,8 @@ class CampaignController extends Controller
     public function show(Campaign $campaign)
     {
         return response()->json([
-            'message' => 'Campaña encontrada',
-            'campaign' => new CampaingResource($campaign)
+            'message'   => 'Campaña encontrada',
+            'campaign'  => new CampaingResource($campaign)
         ], Response::HTTP_OK);
     }
 
@@ -57,9 +57,9 @@ class CampaignController extends Controller
         $campaign->update($request->only(['name', 'type', 'is_active']));
 
         return response()->json([
-            'success' => true,
-            'message' => 'Campaña actualizada con éxito',
-            'data' => $campaign
+            'success'   => true,
+            'message'   => 'Campaña actualizada con éxito',
+            'data'      => $campaign
         ], 200);
     }
 

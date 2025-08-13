@@ -18,15 +18,15 @@ class ConsultationController extends Controller
         $consultations = Consultation::paginate(10);
 
         return response()->json([
-            'message' => 'Consultas obtenidas con éxito',
-            'consultations' => ConsultationResource::collection($consultations),
-            'pagination' => [
-                'current_page' => $consultations->currentPage(),
-                'total_pages' => $consultations->lastPage(),
-                'per_page' => $consultations->perPage(),
-                'total_consultations' => $consultations->total(),
-                'next_page_url' => $consultations->nextPageUrl(),
-                'prev_page_url' => $consultations->previousPageUrl(),
+            'message'               => 'Consultas obtenidas con éxito',
+            'consultations'         => ConsultationResource::collection($consultations),
+            'pagination'            => [
+                'current_page'          => $consultations->currentPage(),
+                'total_pages'           => $consultations->lastPage(),
+                'per_page'              => $consultations->perPage(),
+                'total_consultations'   => $consultations->total(),
+                'next_page_url'         => $consultations->nextPageUrl(),
+                'prev_page_url'         => $consultations->previousPageUrl(),
             ]
         ], Response::HTTP_OK);
     }
@@ -37,7 +37,7 @@ class ConsultationController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'motivo_consulta' => 'required|string|max:255',
+            'motivo_consulta'   => 'required|string|max:255',
             'motivo_especifico' => 'nullable|string|max:255'
         ]);
 
@@ -50,8 +50,8 @@ class ConsultationController extends Controller
         $consultation = Consultation::create($request->all());
 
         return response()->json([
-            'message' => 'Consulta creada con éxito',
-            'consultation' => new ConsultationResource($consultation)
+            'message'       => 'Consulta creada con éxito',
+            'consultation'  => new ConsultationResource($consultation)
         ], Response::HTTP_CREATED);
     }
 
@@ -69,8 +69,8 @@ class ConsultationController extends Controller
         }
 
         return response()->json([
-            'message' => 'Consulta encontrada',
-            'consultation' => new ConsultationResource($consultation)
+            'message'       => 'Consulta encontrada',
+            'consultation'  => new ConsultationResource($consultation)
         ], Response::HTTP_OK);
     }
 

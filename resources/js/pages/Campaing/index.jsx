@@ -9,14 +9,14 @@ import { GoPerson } from "react-icons/go";
 import { MdOutlineCategory } from "react-icons/md";
 
 const fields = [
-    { name: "name", label: "Nombre", type: "text", icon: GoPerson },
-    { name: "type", label: "Tipo", type: "text", icon: MdOutlineCategory },
-    { name: "is_active", label: "Activo", type: "boolean-select" },
+    { name: "name",         label: "Nombre",    type: "text", icon: GoPerson            },
+    { name: "type",         label: "Tipo",      type: "text", icon: MdOutlineCategory   },
+    { name: "is_active",    label: "Activo",    type: "boolean-select"                  },
 ];
 const userSchema = yup.object().shape({
-    name: yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
-    type: yup.string().required("El tipo es obligatorio"),
-    is_active: yup.boolean().required("El estado es obligatorio"),
+    name:       yup.string().   required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
+    type:       yup.string().   required("El tipo es obligatorio"),
+    is_active:  yup.boolean().  required("El estado es obligatorio"),
 });
 
 const Campaigns = () => {
@@ -65,9 +65,9 @@ const Campaigns = () => {
             ) : (
                 <Table
                     columns={[
-                        { header: "ID", key: "id" },
-                        { header: "Pagaduría", key: "name" },
-                        { header: "Tipo", key: "type" },
+                        { header: "ID",         key: "id"   },
+                        { header: "Pagaduría",  key: "name" },
+                        { header: "Tipo",       key: "type" },
                     ]}
                     data={campaigns}
                     currentPage={currentPage}

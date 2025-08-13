@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Contact extends Model
 {
     protected $fillable = [
-        'nombre',
-        'tipo_identificacion',
-        'telefono',
-        'numero_identificacion',
-        'celular_actualizado',
-        'correo',
+        'name',
+        'identification_type',
+        'phone',
+        'identification_number',
+        'update_phone',
+        'email',
         'is_active',
     ];
 
