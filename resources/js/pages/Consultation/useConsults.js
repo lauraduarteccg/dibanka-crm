@@ -5,17 +5,17 @@ import Swal from "sweetalert2";
 
 export const useConsults = () => {
     const { token } = useContext(AuthContext);
-    const [consultation, setConsultation] = useState([])
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [validationErrors, setValidationErrors] = useState({});
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [isOpenADD, setIsOpenADD] = useState(false);
-    const [formData, setFormData] = useState({
-        id: null,
-        motivo_consulta: "",
-        motivo_especifico: "",
+    const [consultation,        setConsultation]        = useState([])
+    const [loading,             setLoading]             = useState(true);
+    const [error,               setError]               = useState(null);
+    const [validationErrors,    setValidationErrors]    = useState({});
+    const [currentPage,         setCurrentPage]         = useState(1);
+    const [totalPages,          setTotalPages]          = useState(1);
+    const [isOpenADD,           setIsOpenADD]           = useState(false);
+    const [formData,            setFormData]            = useState({
+        id                  : null,
+        reason_consultation : "",
+        specific_reason     : "",
 
     });
 
@@ -47,9 +47,9 @@ export const useConsults = () => {
     // Manejar la edición de consultas
     const handleEdit = (consultation) => {
         setFormData({
-            id: consultation.id,
-            motivo_consulta: consultation.motivo_consulta,
-            motivo_especifico: consultation.motivo_especifico,
+            id                  : consultation.id,
+            reason_consultation : consultation.reason_consultation,
+            specific_reason     : consultation.specific_reason,
         });
         setValidationErrors({});
         setIsOpenADD(true);

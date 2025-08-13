@@ -37,8 +37,8 @@ class ConsultationController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'motivo_consulta'   => 'required|string|max:255',
-            'motivo_especifico' => 'nullable|string|max:255'
+            'reason_consultation'   => 'required|string|max:255',
+            'specific_reason'       => 'nullable|string|max:255'
         ]);
 
         if ($validator->fails()) {

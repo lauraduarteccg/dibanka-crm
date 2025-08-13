@@ -10,8 +10,8 @@ class Consultation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'motivo_consulta',
-        'motivo_especifico',
+        'reason_consultation',
+        'specific_reason',
         'is_active'
     ];
 }

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('consultations', function (Blueprint $table) {
             $table->id();
 
-            $table->string('motivo_consulta')->default('');
-            $table->string('motivo_especifico')->default('');
+            $table->string('reason_consultation')->default('');
+            $table->string('specific_reason')->default('');
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
