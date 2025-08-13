@@ -12,7 +12,8 @@ class Contact extends Model
         'telefono',
         'numero_identificacion',
         'celular_actualizado',
-        'correo'
+        'correo',
+        'is_active',
     ];
 
     public function gestions()

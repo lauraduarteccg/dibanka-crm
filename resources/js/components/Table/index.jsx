@@ -12,6 +12,7 @@ const Table = ({
     actions = false,
     onEdit,
     onDelete,
+    onActiveOrInactive = true,
 }) => {
     return (
         <div className="w-full flex flex-col items-center">
@@ -62,22 +63,24 @@ const Table = ({
                                         >
                                             <FiEdit size={20} />
                                         </button>
+                                        {onActiveOrInactive &&
                                         <button
                                             onClick={() => onDelete(row.id, row.is_active)}
                                             className="text-red-500 hover:text-red-700"
                                         >
                                             {row.is_active === 1 ? (
-                                                <FaToggleOff
-                                                    size={20}
-                                                    color="red"
-                                                />
-                                            ) : (
                                                 <FaToggleOn
                                                     size={20}
                                                     color="green"
                                                 />
+                                            ) : (
+                                                <FaToggleOff
+                                                    size={20}
+                                                    color="red"
+                                                />
                                             )}
                                         </button>
+                                        }
                                     </td>
                                 )}
                             </tr>

@@ -47,6 +47,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/consultations/{consultation}', [ConsultationController::class, 'update']); // Actualizar consulta
     Route::delete('/consultations/{consultation}', [ConsultationController::class, 'destroy']); // Eliminar consulta
 
+    // 🔹 CRUD para Contactos
+    Route::get('/contacts', [ContactController::class, 'index']); // Listar consultas
+    Route::post('/contacts', [ContactController::class, 'store']); // Crear consulta
+    Route::get('/contacts/{contact}', [ContactController::class, 'show']); // Mostrar una consulta específica
+    Route::put('/contacts/{contact}', [ContactController::class, 'update']); // Actualizar consulta
+    Route::delete('/contacts/{contacts}', [ContactController::class, 'destroy']); // Eliminar consulta
+
     // Rutas de autenticación protegidas
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);

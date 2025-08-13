@@ -1,27 +1,29 @@
-import React from "react";
-import { useCampaigns } from "./useCampaigns";
 import Table from "@components/Table";
 import ButtonAdd from "@components/ButtonAdd";
 import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
+import { useConsults } from "./useConsults.js";
 import * as yup from "yup";
-import { GoPerson } from "react-icons/go";
-import { MdOutlineCategory } from "react-icons/md";
+import { FaRegComment, FaBullseye } from "react-icons/fa6";
 
 const fields = [
-    { name: "name", label: "Nombre", type: "text", icon: GoPerson },
-    { name: "type", label: "Tipo", type: "text", icon: MdOutlineCategory },
-    { name: "is_active", label: "Activo", type: "boolean-select" },
+    { name: "motivo_consulta", label: "Motivo de consulta", type: "text", icon: FaRegComment },
+    { name: "motivo_especifico", label: "Motivo especifico", type: "text", icon: FaBullseye },
 ];
 const userSchema = yup.object().shape({
     name: yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
-    type: yup.string().required("El tipo es obligatorio"),
-    is_active: yup.boolean().required("El estado es obligatorio"),
+    motivo_consulta: yup.string().required("El tipo es obligatorio"),
+    motivo_especifico: yup.string().required("El estado es obligatorio"),
 });
+const columns=[ 
+    { header: "ID", key: "id" },
+    { header: "Motivo de consulta", key: "motivo_consulta" },
+    { header: "Motivo especifico", key: "motivo_especifico" },
+];   
 
-const Campaigns = () => {
+const Consults = () => {
     const {
-        campaigns,
+        consultation,
         loading,
         error,
         isOpenADD,
@@ -32,25 +34,25 @@ const Campaigns = () => {
         handleSubmit,
         currentPage,
         totalPages,
-        fetchCampaigns,
+        fetchConsultation,
         handleDelete,
         handleEdit,
-    } = useCampaigns();
+    } = useConsults();
 
     return (
         <>
             <ButtonAdd
                 onClickButtonAdd={() => setIsOpenADD(true)}
-                text="Agregar pagaduria"
+                text="Agregar Consulta"
             />
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
-                Lista de pagadurías
+                Lista de Consultas
             </h1>
 
             <FormAdd
                 isOpen={isOpenADD}
                 setIsOpen={setIsOpenADD}
-                title="Pagaduría"
+                title="Consultas"
                 formData={formData}
                 setFormData={setFormData}
                 handleSubmit={handleSubmit}
@@ -64,14 +66,10 @@ const Campaigns = () => {
                 <Loader />
             ) : (
                 <Table
-                    columns={[
-                        { header: "ID", key: "id" },
-                        { header: "Pagaduría", key: "name" },
-                        { header: "Tipo", key: "type" },
-                    ]}
-                    data={campaigns}
+                    columns={columns}
+                    data={consultation}
                     currentPage={currentPage}
-                    fetch={fetchCampaigns}
+                    fetch={fetchConsultation}
                     onDelete={handleDelete}
                     totalPages={totalPages}
                     actions={true}
@@ -82,4 +80,4 @@ const Campaigns = () => {
     );
 };
 
-export default Campaigns;
+export default Consults;

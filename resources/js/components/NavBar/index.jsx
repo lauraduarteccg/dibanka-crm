@@ -52,7 +52,7 @@ const NavBar = () => {
 
                     {/* Campañas */}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate("/Pagadurias")}>
+                        <ListItemButton onClick={() => navigate("/pagadurias")}>
                             <Tooltip title="pagadurías">
                                 <ListItemIcon>
                                     <MdCampaign className="text-white w-6 h-auto" />

@@ -12,5 +12,6 @@ class Consultation extends Model
     protected $fillable = [
         'motivo_consulta',
         'motivo_especifico',
+        'is_active'
     ];
 }

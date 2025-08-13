@@ -96,19 +96,9 @@ class ConsultationController extends Controller
      */
     public function destroy($id)
     {
-        $consultation = Consultation::find($id);
-
-        if (!$consultation) {
-            return response()->json([
-                'message' => 'Consulta no encontrada'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
-        $consultation->delete();
-
-        return response()->json([
-            'message' => 'Consulta eliminada con éxito'
-        ], Response::HTTP_OK);
+        $consultation = Consultation::findOrFail($id);
+        $consultation->update(['is_active' => $consultation->is_active ? false : true]);
+        return response()->json(['message' => 'Consulta desactivada correctamente'], Response::HTTP_OK);
     }
 
     /**

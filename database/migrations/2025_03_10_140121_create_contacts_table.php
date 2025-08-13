@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('numero_identificacion');
             $table->string('celular_actualizado');
             $table->string('correo');
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
     }

@@ -3,9 +3,9 @@ import axios from "axios";
 import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
 
-export const useCampaigns = () => {
+export const useContact = () => {
     const { token } = useContext(AuthContext);
-    const [campaigns, setCampaigns] = useState([]);
+    const [contact, setContact] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
@@ -14,24 +14,29 @@ export const useCampaigns = () => {
     const [isOpenADD, setIsOpenADD] = useState(false);
     const [formData, setFormData] = useState({
         id: null,
-        pagaduria: "",
-        tipo: "",
+        nombre: "",
+        tipo_identificacion: "",
+        telefono: "",
+        numero_identificacion: "",
+        celular_actualizado: "",
+        correo: "",
 
     });
 
     //Tabla de pagadurias
-    const fetchCampaigns = useCallback(
+    const fetchConsultation = useCallback(
         async (page) => {
             setLoading(true);
             try {
-                const res = await axios.get(`/api/campaigns?page=${page}`, {
+                const res = await axios.get(`/api/contacts?page=${page}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setCampaigns(res.data.campaigns);
+                setContact(res.data.contacts);
                 setTotalPages(res.data.pagination.total_pages);
                 setCurrentPage(res.data.pagination.current_page);
+                console.log(res.data.contacts)
             } catch (err) {
-                setError("Error al obtener las campañas.");
+                setError("Error al obtener laos contactos.");
             } finally {
                 setLoading(false);
             }
@@ -40,21 +45,26 @@ export const useCampaigns = () => {
     );
 
     useEffect(() => {
-        fetchCampaigns(1);
+        fetchConsultation(1);
     }, []);
 
-    // Manejar la edición de campañas
-    const handleEdit = (campaign) => {
+    // Manejar la edición de consultas
+    const handleEdit = (contact) => {
         setFormData({
-            id: campaign.id,
-            name: campaign.name,
-            type: campaign.type,
+            id: contact.id,
+            nombre: contact.nombre,
+            tipo_identificacion: contact.tipo_identificacion,
+            telefono: contact.telefono,
+            numero_identificacion: contact.numero_identificacion,
+            celular_actualizado: contact.celular_actualizado,
+            correo: contact.correo,         
+            is_active: contact.is_active
         });
         setValidationErrors({});
         setIsOpenADD(true);
     };
 
-    // Crear o actualizar campaña
+    // Crear o actualizar consulta
 const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -72,17 +82,17 @@ const handleSubmit = async (e) => {
         });
 
         if (formData.id) {
-            // ✅ Actualizar campaña
+            // ✅ Actualizar consulta
             response = await axios.put(
-                `/api/campaigns/${formData.id}`,
+                `/api/contacts/${formData.id}`,
                 payload,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
         } else {
-            // ✅ Crear campaña
-            response = await axios.post("/api/campaigns", payload, {
+            // ✅ Crear consulta
+            response = await axios.post("/api/contacts", payload, {
                 headers: { Authorization: `Bearer ${token}` },
             });
         }
@@ -90,8 +100,8 @@ const handleSubmit = async (e) => {
         if (response.status === 200 || response.status === 201) {
             Swal.fire({
                 title: formData.id
-                    ? "Pagaduría actualizada"
-                    : "Pagaduría creada",
+                    ? "Contacto actualizada"
+                    : "Contacto creada",
                 text: "Los cambios han sido guardados correctamente.",
                 icon: "success",
                 timer: 1500,
@@ -99,7 +109,7 @@ const handleSubmit = async (e) => {
             });
 
             setIsOpenADD(false);
-            fetchCampaigns(currentPage);
+            fetchConsultation(currentPage);
         }
     } catch (error) {
         if (error.response?.status === 422) {
@@ -111,14 +121,14 @@ const handleSubmit = async (e) => {
 };
 
 
-    //Desactivar campaña
+    //Desactivar consulta
     const handleDelete = async (id, status) => {
         const actionText = !status ? "activar" : "desactivar";
 
         Swal.fire({
             position: "top-end",
-            title: `¿Quieres ${actionText} esta pagaduria?`,
-            text: `La pagaduria será marcado como ${
+            title: `¿Quieres ${actionText} este contacto?`,
+            text: `La contacto será marcado como ${
                 !status ? "Activo" : "Inactivo"
             }.`,
             icon: "warning",
@@ -140,7 +150,7 @@ const handleSubmit = async (e) => {
             if (result.isConfirmed) {
                 try {
                     const response = await axios.delete(
-                        `/api/campaigns/${id}`,
+                        `/api/contacts/${id}`,
                         {
                             headers: { Authorization: `Bearer ${token}` },
                         }
@@ -152,7 +162,7 @@ const handleSubmit = async (e) => {
                             position: "top-end",
 
                             title: "Estado actualizado",
-                            text: `La pagaduria ahora está ${
+                            text: `El contacto ahora está ${
                                 !status ? "Activo" : "Inactivo"
                             }.`,
                             icon: "success",
@@ -161,13 +171,13 @@ const handleSubmit = async (e) => {
                             width: "350px",
                             padding: "0.8em",
                         });
-                        fetchCampaigns(currentPage);
+                        fetchConsultation(currentPage);
                     } else {
                         Swal.fire({
                             position: "top-end",
 
                             title: "Error",
-                            text: "No se pudo actualizar la pagaduria.",
+                            text: "No se pudo actualizar la consulta.",
                             icon: "error",
                             width: "300px",
                             padding: "0.6em",
@@ -182,7 +192,7 @@ const handleSubmit = async (e) => {
                         title: "Error",
                         text:
                             error.response?.data?.message ||
-                            "No se pudo actualizar la pagaduria.",
+                            "No se pudo actualizar el contacto.",
                         icon: "error",
                         width: "300px",
                         padding: "0.6em",
@@ -194,7 +204,7 @@ const handleSubmit = async (e) => {
         });
     };
     return {
-        campaigns,
+        contact,
         loading,
         error,
         isOpenADD,
@@ -205,7 +215,7 @@ const handleSubmit = async (e) => {
         handleSubmit,
         currentPage,
         totalPages,
-        fetchCampaigns,
+        fetchConsultation,
         handleEdit,
         handleDelete
     };

@@ -7,6 +7,8 @@ import Dashboard from "@pages/Dashboard";
 import Users from "@pages/Users";
 import AuthPage from "@pages/AuthPage";
 import Campaing from "@pages/Campaing";
+import Consultation from "@pages/Consultation";
+import Contact from "@pages/Contact";
 
 const App = () => {
     const { user } = useContext(AuthContext);
@@ -26,6 +28,14 @@ const App = () => {
             <Route
                 path="/pagadurias"
                 element={user ? <Layout><Campaing /></Layout> : <Navigate to="/" />}
+            />
+            <Route
+                path="/consultas"
+                element={user ? <Layout><Consultation /></Layout> : <Navigate to="/" />}
+            />
+            <Route
+                path="/contactos"
+                element={user ? <Layout><Contact /></Layout> : <Navigate to="/" />}
             />
         </Routes>
     );

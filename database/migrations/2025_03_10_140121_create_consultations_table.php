@@ -16,6 +16,7 @@ return new class extends Migration
 
             $table->string('motivo_consulta')->default('');
             $table->string('motivo_especifico')->default('');
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
     }

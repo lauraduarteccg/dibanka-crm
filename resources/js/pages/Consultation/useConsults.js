@@ -3,9 +3,9 @@ import axios from "axios";
 import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
 
-export const useCampaigns = () => {
+export const useConsults = () => {
     const { token } = useContext(AuthContext);
-    const [campaigns, setCampaigns] = useState([]);
+    const [consultation, setConsultation] = useState([])
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
@@ -14,24 +14,25 @@ export const useCampaigns = () => {
     const [isOpenADD, setIsOpenADD] = useState(false);
     const [formData, setFormData] = useState({
         id: null,
-        pagaduria: "",
-        tipo: "",
+        motivo_consulta: "",
+        motivo_especifico: "",
 
     });
 
     //Tabla de pagadurias
-    const fetchCampaigns = useCallback(
+    const fetchConsultation = useCallback(
         async (page) => {
             setLoading(true);
             try {
-                const res = await axios.get(`/api/campaigns?page=${page}`, {
+                const res = await axios.get(`/api/consultations?page=${page}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setCampaigns(res.data.campaigns);
+                setConsultation(res.data.consultations);
                 setTotalPages(res.data.pagination.total_pages);
                 setCurrentPage(res.data.pagination.current_page);
+                console.log(res.data.consultations)
             } catch (err) {
-                setError("Error al obtener las campañas.");
+                setError("Error al obtener las consultas.");
             } finally {
                 setLoading(false);
             }
@@ -40,21 +41,21 @@ export const useCampaigns = () => {
     );
 
     useEffect(() => {
-        fetchCampaigns(1);
+        fetchConsultation(1);
     }, []);
 
-    // Manejar la edición de campañas
-    const handleEdit = (campaign) => {
+    // Manejar la edición de consultas
+    const handleEdit = (consultation) => {
         setFormData({
-            id: campaign.id,
-            name: campaign.name,
-            type: campaign.type,
+            id: consultation.id,
+            motivo_consulta: consultation.motivo_consulta,
+            motivo_especifico: consultation.motivo_especifico,
         });
         setValidationErrors({});
         setIsOpenADD(true);
     };
 
-    // Crear o actualizar campaña
+    // Crear o actualizar consulta
 const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -72,17 +73,17 @@ const handleSubmit = async (e) => {
         });
 
         if (formData.id) {
-            // ✅ Actualizar campaña
+            // ✅ Actualizar consulta
             response = await axios.put(
-                `/api/campaigns/${formData.id}`,
+                `/api/consultations/${formData.id}`,
                 payload,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
         } else {
-            // ✅ Crear campaña
-            response = await axios.post("/api/campaigns", payload, {
+            // ✅ Crear consulta
+            response = await axios.post("/api/consultations", payload, {
                 headers: { Authorization: `Bearer ${token}` },
             });
         }
@@ -90,8 +91,8 @@ const handleSubmit = async (e) => {
         if (response.status === 200 || response.status === 201) {
             Swal.fire({
                 title: formData.id
-                    ? "Pagaduría actualizada"
-                    : "Pagaduría creada",
+                    ? "Consulta actualizada"
+                    : "Consulta creada",
                 text: "Los cambios han sido guardados correctamente.",
                 icon: "success",
                 timer: 1500,
@@ -99,7 +100,7 @@ const handleSubmit = async (e) => {
             });
 
             setIsOpenADD(false);
-            fetchCampaigns(currentPage);
+            fetchConsultation(currentPage);
         }
     } catch (error) {
         if (error.response?.status === 422) {
@@ -111,14 +112,14 @@ const handleSubmit = async (e) => {
 };
 
 
-    //Desactivar campaña
+    //Desactivar consulta
     const handleDelete = async (id, status) => {
         const actionText = !status ? "activar" : "desactivar";
 
         Swal.fire({
             position: "top-end",
-            title: `¿Quieres ${actionText} esta pagaduria?`,
-            text: `La pagaduria será marcado como ${
+            title: `¿Quieres ${actionText} esta consulta?`,
+            text: `La consulta será marcado como ${
                 !status ? "Activo" : "Inactivo"
             }.`,
             icon: "warning",
@@ -140,7 +141,7 @@ const handleSubmit = async (e) => {
             if (result.isConfirmed) {
                 try {
                     const response = await axios.delete(
-                        `/api/campaigns/${id}`,
+                        `/api/consultations/${id}`,
                         {
                             headers: { Authorization: `Bearer ${token}` },
                         }
@@ -152,7 +153,7 @@ const handleSubmit = async (e) => {
                             position: "top-end",
 
                             title: "Estado actualizado",
-                            text: `La pagaduria ahora está ${
+                            text: `La consulta ahora está ${
                                 !status ? "Activo" : "Inactivo"
                             }.`,
                             icon: "success",
@@ -161,13 +162,13 @@ const handleSubmit = async (e) => {
                             width: "350px",
                             padding: "0.8em",
                         });
-                        fetchCampaigns(currentPage);
+                        fetchConsultation(currentPage);
                     } else {
                         Swal.fire({
                             position: "top-end",
 
                             title: "Error",
-                            text: "No se pudo actualizar la pagaduria.",
+                            text: "No se pudo actualizar la consulta.",
                             icon: "error",
                             width: "300px",
                             padding: "0.6em",
@@ -182,7 +183,7 @@ const handleSubmit = async (e) => {
                         title: "Error",
                         text:
                             error.response?.data?.message ||
-                            "No se pudo actualizar la pagaduria.",
+                            "No se pudo actualizar la consulta.",
                         icon: "error",
                         width: "300px",
                         padding: "0.6em",
@@ -194,7 +195,7 @@ const handleSubmit = async (e) => {
         });
     };
     return {
-        campaigns,
+        consultation,
         loading,
         error,
         isOpenADD,
@@ -205,7 +206,7 @@ const handleSubmit = async (e) => {
         handleSubmit,
         currentPage,
         totalPages,
-        fetchCampaigns,
+        fetchConsultation,
         handleEdit,
         handleDelete
     };
