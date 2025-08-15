@@ -6,7 +6,7 @@ const useDashboard = (onLoginSuccess) => {
     const { user, token, loading, setToken } = useContext(AuthContext);
     const [dataCounts, setDataCounts] = useState({
         contacts: 0,
-        gestions: 0,
+        management: 0,
         campaigns: 0,
         consultations: 0,
     });
@@ -24,12 +24,12 @@ const useDashboard = (onLoginSuccess) => {
 
         const fetchData = async () => {
             try {
-                const [contacts, gestions, campaigns, consultations] =
+                const [contacts, management, campaigns, consultations] =
                     await Promise.all([
                         axios.get("/api/contacts/count", {
                             headers: { Authorization: `Bearer ${token}` },
                         }),
-                        axios.get("/api/gestions/count", {
+                        axios.get("/api/management/count", {
                             headers: { Authorization: `Bearer ${token}` },
                         }),
                         axios.get("/api/campaigns/count", {
@@ -42,7 +42,7 @@ const useDashboard = (onLoginSuccess) => {
 
                 setDataCounts({
                     contacts: contacts.data.count,
-                    gestions: gestions.data.count,
+                    management: management.data.count,
                     campaigns: campaigns.data.count,
                     consultations: consultations.data.count,
                 });

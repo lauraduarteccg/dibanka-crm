@@ -2,6 +2,7 @@ import React from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FiEdit } from "react-icons/fi";
 import { FaToggleOff, FaToggleOn } from "react-icons/fa6";
+import { GoEye } from "react-icons/go";
 
 const Table = ({
     columns,
@@ -12,6 +13,9 @@ const Table = ({
     actions = false,
     onEdit,
     onDelete,
+    onView,
+    edit = true,
+    view = false,
     onActiveOrInactive = true,
 }) => {
     return (
@@ -55,14 +59,25 @@ const Table = ({
                                         {row[col.key]}
                                     </td>
                                 ))}
+                                
                                 {actions && (
                                     <td className="py-2 px-4 text-center flex justify-center gap-4">
+                                        {edit &&
                                         <button
                                             onClick={() => onEdit(row)}
                                             className="text-blue-500 hover:text-blue-700"
                                         >
                                             <FiEdit size={20} />
                                         </button>
+                                        }
+                                        {view &&
+                                        <button
+                                            onClick={() => onView(row)}
+                                            className="text-blue-500 hover:text-blue-700"
+                                        >
+                                            <GoEye size={20} />
+                                        </button>
+                                        }
                                         {onActiveOrInactive &&
                                         <button
                                             onClick={() => onDelete(row.id, row.is_active)}

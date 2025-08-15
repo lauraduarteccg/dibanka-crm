@@ -33,7 +33,7 @@ class ManagementResource extends JsonResource
             'consultation' => $this->whenLoaded('consultation', function () {
                 return [
                     'id' => $this->consultation->id,
-                    'title' => $this->consultation->title,
+                    'reason_consultation' => $this->consultation->reason_consultation,
                 ];
             }),
 

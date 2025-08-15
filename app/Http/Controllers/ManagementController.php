@@ -8,7 +8,7 @@ use Illuminate\Http\Response;
 use App\Http\Resources\ManagementResource;
 use Illuminate\Support\Facades\Validator;
 
-class ManagmentController extends Controller
+class ManagementController extends Controller
 {
     /**
      * Obtener todas las gestiones con información relacionada (paginado).
@@ -16,10 +16,10 @@ class ManagmentController extends Controller
     public function index()
     {
         // Trae las gestiones con relaciones y pagina (10 por página)
-        $gestions = Management::with(['usuario', 'campaign', 'consultation', 'contact'])->paginate(10);
+        $management = Management::with(['usuario', 'campaign', 'consultation', 'contact'])->paginate(10);
 
         // Laravel Resource automatically includes pagination meta when you return a paginated collection
-        return ManagementResource::collection($gestions);
+        return ManagementResource::collection($management);
     }
 
     /**
@@ -43,12 +43,12 @@ class ManagmentController extends Controller
         // Use only validated fields to avoid mass assignment of extra inputs
         $data = $request->only(array_keys($rules));
 
-        $gestion = Management::create($data);
+        $management = Management::create($data);
 
         // Carga relaciones para devolverlas en el resource
-        $gestion->load(['usuario', 'campaign', 'consultation', 'contact']);
+        $management->load(['usuario', 'campaign', 'consultation', 'contact']);
 
-        return (new ManagementResource($gestion))
+        return (new ManagementResource($management))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }
@@ -58,13 +58,13 @@ class ManagmentController extends Controller
      */
     public function show($id)
     {
-        $gestion = Management::with(['usuario', 'campaign', 'consultation', 'contact'])->find($id);
+        $management = Management::with(['usuario', 'campaign', 'consultation', 'contact'])->find($id);
 
-        if (!$gestion) {
+        if (!$management) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
-        return new ManagementResource($gestion);
+        return new ManagementResource($management);
     }
 
     /**
@@ -72,9 +72,9 @@ class ManagmentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $gestion = Management::find($id);
+        $management = Management::find($id);
 
-        if (!$gestion) {
+        if (!$management) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
@@ -93,12 +93,12 @@ class ManagmentController extends Controller
 
         $data = $request->only(array_keys($rules));
 
-        $gestion->update($data);
+        $management->update($data);
 
         // Recargar relaciones para devolver la info actualizada
-        $gestion->load(['usuario', 'campaign', 'consultation', 'contact']);
+        $management->load(['usuario', 'campaign', 'consultation', 'contact']);
 
-        return (new ManagementResource($gestion))
+        return (new ManagementResource($management))
             ->response()
             ->setStatusCode(Response::HTTP_OK);
     }
@@ -108,13 +108,13 @@ class ManagmentController extends Controller
      */
     public function destroy($id)
     {
-        $gestion = Management::find($id);
+        $management = Management::find($id);
 
-        if (!$gestion) {
+        if (!$management) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
-        $gestion->delete();
+        $management->delete();
 
         return response()->json(['message' => 'Gestión eliminada correctamente'], Response::HTTP_OK);
     }

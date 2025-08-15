@@ -16,9 +16,9 @@ class Contact extends Model
         'is_active',
     ];
 
-    public function gestions()
+    public function contacts()
     {
-        return $this->hasMany(Gestion::class);
+        return $this->hasMany(Contact::class);
     }
     
 }

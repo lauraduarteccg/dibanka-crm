@@ -29,7 +29,7 @@ function Dashboard() {
                             subtitle="Contactos Registrados"
                         />
                         <Card
-                            title={<Counter value={dataCounts.gestions} />}
+                            title={<Counter value={dataCounts.management} />}
                             subtitle="Gestiones Realizadas"
                         />
                         <Card

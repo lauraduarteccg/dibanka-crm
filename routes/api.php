@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\ManagmentController;
+use App\Http\Controllers\ManagementController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\UserController;
@@ -14,7 +14,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // Rutas protegidas con autenticación
 Route::middleware('auth:sanctum')->group(function () {
     // 🔹 Rutas de conteo de registros
-    Route::get('/gestions/count', [ManagmentController::class, 'count']);
+    Route::get('/management/count', [ManagementController::class, 'count']);
     Route::get('/campaigns/count', [CampaignController::class, 'count']);
     Route::get('/consultations/count', [ConsultationController::class, 'count']);
     Route::get('/contacts/count', [ContactController::class, 'count']);
@@ -34,11 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/campaigns/{campaign}', [CampaignController::class, 'destroy']); // Eliminar campaña
 
     // 🔹 CRUD para Gestiones
-    Route::get('/gestions', [ManagmentController::class, 'index']); // Listar gestiones
-    Route::post('/gestions', [ManagmentController::class, 'store']); // Crear gestion
-    Route::get('/gestions/{id}', [ManagmentController::class, 'show']); // Mostrar una gestion específica
-    Route::put('/gestions/{id}', [ManagmentController::class, 'update']); // Actualizar gestion
-    Route::delete('/gestions/{id}', [ManagmentController::class, 'destroy']); // Eliminar gestion
+    Route::get('/management', [ManagementController::class, 'index']); // Listar gestiones
+    Route::post('/management', [ManagementController::class, 'store']); // Crear gestion
+    Route::get('/management/{id}', [ManagementController::class, 'show']); // Mostrar una gestion específica
+    Route::put('/management/{id}', [ManagementController::class, 'update']); // Actualizar gestion
+    Route::delete('/management/{id}', [ManagementController::class, 'destroy']); // Eliminar gestion
  
     // 🔹 CRUD para Consultas
     Route::get('/consultations', [ConsultationController::class, 'index']); // Listar consultas

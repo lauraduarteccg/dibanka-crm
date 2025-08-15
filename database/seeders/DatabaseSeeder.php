@@ -56,7 +56,7 @@ class DataBaseSeeder extends Seeder
             'updated_at'            => now(),
         ]);
 
-        // Insertar registros en la tabla gestions
+        // Insertar registros en la tabla management
         DB::table('management')->insert([
             [
                 'usuario_id'        => 1,
