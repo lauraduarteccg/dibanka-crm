@@ -15,8 +15,8 @@ class ManagementResource extends JsonResource
             // Usuario relacionado (solo si la relación fue cargada)
             'usuario' => $this->whenLoaded('usuario', function () {
                 return [
-                    'id' => $this->usuario->id,
-                    'name' => $this->usuario->name,
+                    'id'    => $this->usuario->id,
+                    'name'  => $this->usuario->name,
                     'email' => $this->usuario->email,
                 ];
             }),
@@ -24,30 +24,31 @@ class ManagementResource extends JsonResource
             // Campaña relacionada
             'campaign' => $this->whenLoaded('campaign', function () {
                 return [
-                    'id' => $this->campaign->id,
-                    'name' => $this->campaign->name,
+                    'id'    => $this->campaign->id,
+                    'name'  => $this->campaign->name,
                 ];
             }),
 
             // Consulta relacionada
             'consultation' => $this->whenLoaded('consultation', function () {
                 return [
-                    'id' => $this->consultation->id,
-                    'reason_consultation' => $this->consultation->reason_consultation,
+                    'id'                    => $this->consultation->id,
+                    'reason_consultation'   => $this->consultation->reason_consultation,
+                    'specific_reason'       => $this->consultation->specific_reason,
                 ];
             }),
 
             // Contacto relacionado
             'contact' => $this->whenLoaded('contact', function () {
                 return [
-                    'id' => $this->contact->id,
-                    'name' => $this->contact->name,
-                    'identification_type' => $this->contact->identification_type,
+                    'id'                    => $this->contact->id,
+                    'name'                  => $this->contact->name,
+                    'identification_type'   => $this->contact->identification_type,
                     'identification_number' => $this->contact->identification_number,
-                    'phone' => $this->contact->phone,
+                    'phone'                 => $this->contact->phone,
                     // incluir update_phone solo si existe y no es null
-                    'update_phone' => $this->contact->update_phone ?? null,
-                    'email' => $this->contact->email,
+                    'update_phone'          => $this->contact->update_phone ?? null,
+                    'email'                 => $this->contact->email,
                 ];
             }),
 

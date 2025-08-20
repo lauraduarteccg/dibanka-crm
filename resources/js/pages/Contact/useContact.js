@@ -100,8 +100,8 @@ const handleSubmit = async (e) => {
         if (response.status === 200 || response.status === 201) {
             Swal.fire({
                 title: formData.id
-                    ? "Contacto actualizada"
-                    : "Contacto creada",
+                    ? "Contacto actualizado"
+                    : "Contacto creado",
                 text: "Los cambios han sido guardados correctamente.",
                 icon: "success",
                 timer: 1500,

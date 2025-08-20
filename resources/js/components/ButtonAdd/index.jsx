@@ -1,19 +1,19 @@
-import React from "react";
 import { FaRegAddressBook } from "react-icons/fa";
 
 const ButtonAdd = ({ onClickButtonAdd, text }) => {
     return (
-        <>
+        <div className="flex justify-center md:justify-start ml-36">
             <button
-                className="bg-gradient-primary flex items-center ml-36 w-72 h-auto px-4 py-2 gap-3 rounded-2xl hover:scale-110
-                            transition-all duration-500 ease-in-out text-white font-semibold shadow-lg"
+                className="flex items-center bg-gradient-primary w-full md:w-72 px-6 py-2 gap-3 rounded-2xl 
+                           transition-all duration-300 ease-in-out text-white font-semibold shadow-md 
+                           hover:shadow-lg transform hover:-translate-y-1"
                 onClick={onClickButtonAdd}
             >
-                <FaRegAddressBook className="w-10 h-10 p-1" />
-                <div className="w-1 h-9 border-r-2 border-white" />
-                <h1 className="w-full ">{text}</h1>
+                <FaRegAddressBook className="w-5 h-5" />
+                <div className="w-px h-6 bg-white/50" />
+                <span className="text-sm tracking-wide">{text}</span>
             </button>
-        </>
+        </div>
     );
 };
 

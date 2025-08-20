@@ -50,6 +50,18 @@ const NavBar = () => {
                         </ListItemButton>
                     </ListItem>
 
+                    {/* Contactos */}
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => navigate("/contactos")}>
+                            <Tooltip title="Contactos">
+                                <ListItemIcon>
+                                    <MdOutlineContactMail className="text-white w-6 h-auto" />
+                                </ListItemIcon>
+                            </Tooltip>
+                            {isOpenMenu && <ListItemText primary="Contactos" />}
+                        </ListItemButton>
+                    </ListItem>
+
                     {/* Campañas */}
                     <ListItem disablePadding>
                         <ListItemButton onClick={() => navigate("/pagadurias")}>
@@ -70,7 +82,7 @@ const NavBar = () => {
                                     <IoDocumentTextOutline className="text-white w-6 h-auto" />
                                 </ListItemIcon>
                             </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Tipo de Consultas" />}
+                            {isOpenMenu && <ListItemText primary="Tipo Consultas" />}
                         </ListItemButton>
                     </ListItem>
 
@@ -83,18 +95,6 @@ const NavBar = () => {
                                 </ListItemIcon>
                             </Tooltip>
                             {isOpenMenu && <ListItemText primary="Gestiones" />}
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* Contactos */}
-                    <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate("/contactos")}>
-                            <Tooltip title="Contactos">
-                                <ListItemIcon>
-                                    <MdOutlineContactMail className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Contactos" />}
                         </ListItemButton>
                     </ListItem>
                 </List>

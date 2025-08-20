@@ -49,12 +49,12 @@ const Table = ({
                         data.map((row, rowIndex) => (
                             <tr
                                 key={rowIndex}
-                                className="odd:bg-transparent odd:text-[#19577e] even:bg-white even:text-[#19577e]"
+                                className="odd:bg-transparent odd:text-[#19577e] even:bg-white even:text-[#19577e] text-sm"
                             >
                                 {columns.map((col, colIndex) => (
                                     <td
                                         key={colIndex}
-                                        className="py-2 px-4 text-center"
+                                        className="py-2 px-2 text-center"
                                     >
                                         {row[col.key]}
                                     </td>

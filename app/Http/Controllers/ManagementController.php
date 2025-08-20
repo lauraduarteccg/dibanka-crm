@@ -7,20 +7,66 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Resources\ManagementResource;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class ManagementController extends Controller
 {
     /**
      * Obtener todas las gestiones con información relacionada (paginado).
      */
-    public function index()
-    {
-        // Trae las gestiones con relaciones y pagina (10 por página)
-        $management = Management::with(['usuario', 'campaign', 'consultation', 'contact'])->paginate(10);
 
-        // Laravel Resource automatically includes pagination meta when you return a paginated collection
-        return ManagementResource::collection($management);
+    public function index(Request $request)
+    {
+        try {
+            $query = Management::with(['usuario', 'campaign', 'consultation', 'contact']);
+            $q = $request->input('search');
+
+            if (!empty($q)) {
+                $query->where(function($subquery) use ($q) {
+                    // Búsqueda por IDs
+                    if (is_numeric($q)) {
+                        $subquery   ->where   ('id', $q)
+                                    ->orWhere('usuario_id', $q)
+                                    ->orWhere('campaign_id', $q)
+                                    ->orWhere('consultation_id', $q)
+                                    ->orWhere('contact_id', $q);
+                    }
+
+                    // Búsqueda en relaciones
+                    $subquery->orWhereHas('usuario', function($userQuery) use ($q) {
+                        $userQuery  ->where     ('name', 'LIKE', "%{$q}%")
+                                    ->orWhere   ('email', 'LIKE', "%{$q}%");
+                    })
+                    ->orWhereHas('contact', function($contactQuery) use ($q) {
+                        $contactQuery   ->where     ('name', 'LIKE', "%{$q}%")
+                                        ->orWhere   ('email', 'LIKE', "%{$q}%")
+                                        ->orWhere   ('phone', 'LIKE', "%{$q}%")
+                                        ->orWhere   ('update_phone', 'LIKE', "%{$q}%")
+                                        ->orWhere   ('identification_type', 'LIKE', "%{$q}%")
+                                        ->orWhere   ('identification_number', 'LIKE', "%{$q}%");
+                    })
+                    ->orWhereHas('campaign', function($campaignQuery) use ($q) {
+                        $campaignQuery->where('name', 'LIKE', "%{$q}%");
+                    })
+                    ->orWhereHas('consultation', function($consultationQuery) use ($q) {
+                        $consultationQuery->where('reason_consultation', 'LIKE', "%{$q}%");
+                    });
+                });
+            }
+
+            $management = $query->orderBy('created_at', 'asc')->paginate(10);
+
+            return ManagementResource::collection($management);
+            
+        } catch (\Throwable $e) {
+            Log::error('Index management error: '.$e->getMessage());
+            return response()->json(['message' => 'Error interno del servidor.'], 500);
+        }
     }
+
+
+
+
 
     /**
      * Guardar una nueva gestión en la base de datos.
