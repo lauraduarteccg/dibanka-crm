@@ -3,18 +3,34 @@ import Table from "@components/Table";
 import { useManagement } from "./useManagement.js";
 import Drawer from '@mui/material/Drawer';
 import ButtonAdd from "@components/ButtonAdd";
+import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
 import SearchBar from "@components/Search";
-
+import ClientInfoPopup from "@components/PopupManagement";
+import { HiOutlineMail } from "react-icons/hi";
+import * as yup from "yup";
+/* 
+const userSchema = yup.object().shape({
+    usuario_name:                   yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
+    campaign_name:                  yup.string().required("La campaña es obligatoria"),
+    contact_name:                   yup.string().required("El nombre del cliente es obligatorio"),
+    update_phone:                   yup.string().required("El teléfono es obligatorio"),
+    identification_type:            yup.string().required("El tipo de identificación es obligatorio"), 
+    identification_number:          yup.string().required("El número de identificación obligatorio"), 
+    contact_email:                  yup.string().required("El correo electronico obligatorio"), 
+    consultation_title:             yup.string().required("La consulta es obligatoria"), 
+    consultation_specific:          yup.string().required("La consulta especifica es obligatoria"), 
+});
+ */
 const columns = [
-  { header: "ID", key: "id" },
-  { header: "Agente", key: "usuario_name" },
-  { header: "Pagaduria", key: "campaign_name" },
-  { header: "Consulta", key: "consultation_title" },
-  { header: "Nombre de cliente", key: "contact_name" },
-  { header: "Identificación", key: "contact_identification" },
-  { header: "Celular", key: "contact_phone" },
-  { header: "Fecha de creación", key: "created_at" },
+  { header: "ID",                 key: "id" },
+  { header: "Agente",             key: "usuario_name" },
+  { header: "Pagaduria",          key: "campaign_name" },
+  { header: "Consulta",           key: "consultation_title" },
+  { header: "Nombre de cliente",  key: "contact_name" },
+  { header: "Identificación",     key: "contact_identification" },
+  { header: "Celular",            key: "contact_phone" },
+  { header: "Fecha de creación",  key: "created_at" },
 ];
 
 const P = ({ text1, text2 }) => (
@@ -36,21 +52,34 @@ const Management = () => {
     totalPages,
     fetchPage,
     handleSearch,
-    searchTerm,
+    campaign,
+    contact,
+    typeManagement,
+    consultation,
   } = useManagement();
 
-  const [isOpenADD, setIsOpenADD] = useState(false); // agregado para ButtonAdd
+  const [isOpenADD, setIsOpenADD] = useState(false); 
   const handleView = (item) => {
     setFormData(item);
     setView(true);
   };
 
+  const [open, setOpen] = useState(false);
+
   return (
     <>
       <ButtonAdd
-        onClickButtonAdd={() => setIsOpenADD(true)}
-        text="Agregar Gestión"
+          onClickButtonAdd={() => setOpen(true)}
+          text="Agregar Gestión"
       />
+        <ClientInfoPopup 
+          open={open} 
+          onClose={() => setOpen(false)} 
+          campaign={campaign} 
+          contact={contact} 
+          typeManagement={typeManagement} 
+          consultation={consultation}
+        />
 
       <div className="flex justify-end px-36 -mt-10 ">
         <SearchBar onSearch={handleSearch} placeholder="Buscar gestión..." />
@@ -67,7 +96,6 @@ const Management = () => {
           columns={columns}
           data={management ?? []}
           currentPage={currentPage}
-          // la Table llamará fetch(page) al paginar
           fetch={(page) => fetchPage(page)}
           totalPages={totalPages}
           actions={true}

@@ -65,60 +65,60 @@ export const useContact = () => {
     };
 
     // Crear o actualizar consulta
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setValidationErrors({});
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setValidationErrors({});
 
-    try {
-        let response;
-        const payload = { ...formData };
+        try {
+            let response;
+            const payload = { ...formData };
 
-        // Normalizar valores antes de enviar
-        // Convertir strings "true"/"false" en booleanos reales
-        Object.keys(payload).forEach((key) => {
-            if (payload[key] === "true") payload[key] = true;
-            if (payload[key] === "false") payload[key] = false;
-        });
+            // Normalizar valores antes de enviar
+            // Convertir strings "true"/"false" en booleanos reales
+            Object.keys(payload).forEach((key) => {
+                if (payload[key] === "true") payload[key] = true;
+                if (payload[key] === "false") payload[key] = false;
+            });
 
-        if (formData.id) {
-            // ✅ Actualizar consulta
-            response = await axios.put(
-                `/api/contacts/${formData.id}`,
-                payload,
-                {
+            if (formData.id) {
+                // ✅ Actualizar consulta
+                response = await axios.put(
+                    `/api/contacts/${formData.id}`,
+                    payload,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+            } else {
+                // ✅ Crear consulta
+                response = await axios.post("/api/contacts", payload, {
                     headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-        } else {
-            // ✅ Crear consulta
-            response = await axios.post("/api/contacts", payload, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-        }
+                });
+            }
 
-        if (response.status === 200 || response.status === 201) {
-            Swal.fire({
-                title: formData.id
-                    ? "Contacto actualizado"
-                    : "Contacto creado",
-                text: "Los cambios han sido guardados correctamente.",
-                icon: "success",
-                timer: 1500,
-                showConfirmButton: false,
-            });
+            if (response.status === 200 || response.status === 201) {
+                Swal.fire({
+                    title: formData.id
+                        ? "Contacto actualizado"
+                        : "Contacto creado",
+                    text: "Los cambios han sido guardados correctamente.",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
 
-            setIsOpenADD(false);
-            fetchConsultation(currentPage);
+                setIsOpenADD(false);
+                fetchConsultation(currentPage);
+            }
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setValidationErrors(error.response.data.errors);
+            }
+        } finally {
+            setLoading(false);
         }
-    } catch (error) {
-        if (error.response?.status === 422) {
-            setValidationErrors(error.response.data.errors);
-        }
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
 
     //Desactivar consulta
