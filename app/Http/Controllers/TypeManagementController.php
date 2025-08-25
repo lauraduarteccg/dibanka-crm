@@ -11,12 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class TypeManagementController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $typeManagement = TypeManagement::with('campaign')->paginate(10);
+        $typeManagement = TypeManagement::with('campaigns')->paginate(10);
 
         return response()->json([
             'message' => 'Tipos de gestion obtenidas con éxito',
@@ -30,43 +27,41 @@ class TypeManagementController extends Controller
         ], Response::HTTP_OK);
     }
 
-public function store(Request $request)
-{
-    $rules = [
-        'campaign_id'   => 'required|array|min:1',
-        'campaign_id.*' => 'integer|exists:campaigns,id',
-        'name'          => 'required|string',
-    ];
+    public function store(Request $request)
+    {
+        $rules = [
+            'campaign_id'   => 'required|array|min:1',
+            'campaign_id.*' => 'integer|exists:campaigns,id',
+            'name'          => 'required|string',
+        ];
 
-    $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules);
 
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $created = DB::transaction(function () use ($request) {
+            // Crear UN solo tipo de gestión
+            $type = TypeManagement::create([
+                'name' => $request->input('name'),
+                'is_active' => 1,
+            ]);
+
+            // Sincronizar las campañas en la tabla pivote
+            $type->campaigns()->sync($request->input('campaign_id'));
+
+            return $type->load('campaigns');
+        });
+
+        return (new TypeManagementResource($created))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    $created = DB::transaction(function () use ($request) {
-        return collect($request->input('campaign_id'))
-            ->map(function ($id) use ($request) {
-                return TypeManagement::create([
-                    'campaign_id' => $id,
-                    'name'        => $request->input('name'),
-                ])->load('campaign');
-            });
-    });
-
-    return TypeManagementResource::collection($created)
-        ->response()
-        ->setStatusCode(Response::HTTP_CREATED);
-}
-
-
-
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $management = TypeManagement::with(['campaign'])->find($id);
+        $management = TypeManagement::with(['campaigns'])->find($id);
 
         if (!$management) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
@@ -75,40 +70,41 @@ public function store(Request $request)
         return new TypeManagementResource($management);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        // Validar los datos que llegan
         $validated = $request->validate([
             'name'          => 'required|string|max:255',
-            'campaign_id'   => 'nullable|exists:campaigns,id',
+            'campaign_id'   => 'nullable|array',
+            'campaign_id.*' => 'integer|exists:campaigns,id',
             'is_active'     => 'boolean',
         ]);
 
-        // Buscar el registro
         $management = TypeManagement::find($id);
 
         if (!$management) {
-            return response()->json(
-                ['message' => 'Gestión no encontrada'],
-                Response::HTTP_NOT_FOUND
-            );
+            return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
-        // Actualizar con los datos validados
-        $management->update($validated);
+        // Actualizar datos del tipo
+        $management->update([
+            'name' => $validated['name'],
+            'is_active' => $validated['is_active'] ?? $management->is_active,
+        ]);
 
-        // Retornar el recurso actualizado
-        return new TypeManagementResource($management);
+        // Si vienen campaign_id, sincronizamos la relación
+        if (!empty($validated['campaign_id'])) {
+            $management->campaigns()->sync($validated['campaign_id']);
+        }
+
+        return new TypeManagementResource($management->load('campaigns'));
     }
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id)
     {
         $management = TypeManagement::find($id);
+        if (!$management) {
+            return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
+        }
         $management->update(['is_active' => $management->is_active ? false : true]);
         return response()->json(['message' => 'Tipo de gestión desactivado correctamente'], Response::HTTP_OK);
     }

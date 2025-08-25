@@ -7,72 +7,144 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
-import Button from '@mui/material/Button';
+import Button from "@mui/material/Button";
+import Swal from "sweetalert2";
+import axios from "axios";
 
-
-export default function PopupManagement({ open, onClose, campaign, typeManagement, contact, consultation, onClick }) {
-
+export default function PopupManagement({
+  open,
+  onClose,
+  campaign = [],
+  typeManagement = [],
+  contact = [],
+  consultation = [],
+  onClick = null, // opcional: si el padre quiere manejar el envío
+}) {
   const [afiliados_aliados, setAfiliados_aliados] = useState("");
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [selectedTypeManagement, setSelectedTypeManagement] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
-  const [selectedSolution, setSelectedSolution] = useState(null);
+  const [selectedSolution, setSelectedSolution] = useState(""); // '' | true | false
   const [selectedConsultation, setSelectedConsultation] = useState(null);
   const [selectedSpecificConsultation, setSelectedSpecificConsultation] = useState(null);
   const [observations, setObservations] = useState("");
 
-useEffect(() => {
-  const apiValue = 0; 
-  if (apiValue === 10) setAfiliados_aliados("Aliados");
-  else if (apiValue === 20) setAfiliados_aliados("Afiliados");
-  else setAfiliados_aliados("");
-}, []);
+  useEffect(() => {
+    const apiValue = 0;
+    if (apiValue === 10) setAfiliados_aliados("Aliados");
+    else if (apiValue === 20) setAfiliados_aliados("Afiliados");
+    else setAfiliados_aliados("");
+  }, []);
 
-useEffect(() => {
-  const apiValue = 0; // 10 => true, 20 => false, otro => ''
-  if (apiValue === 10) setSelectedSolution(true);
-  else if (apiValue === 20) setSelectedSolution(false);
-  else setSelectedSolution(''); // <- NO tocar afiliados_aliados aquí
-}, []);
+  useEffect(() => {
+    const apiValue = 0; // 10 => true, 20 => false, otro => ''
+    if (apiValue === 10) setSelectedSolution(true);
+    else if (apiValue === 20) setSelectedSolution(false);
+    else setSelectedSolution("");
+  }, []);
 
-  const handleClose = () => {
+  const resetForm = () => {
     setAfiliados_aliados("");
     setSelectedCampaign(null);
     setSelectedContact(null);
     setSelectedTypeManagement(null);
-    onClose();               
+    setSelectedSolution("");
+    setSelectedConsultation(null);
+    setSelectedSpecificConsultation(null);
+    setObservations("");
   };
 
-/* Para pruebas del formulario
-const handleClick = () => {
-  const payload = {
-    campaña: afiliados_aliados || null,
-    pagaduria: selectedCampaign ? { id: selectedCampaign.id, name: selectedCampaign.name } : null,
-    tipo_gestion: selectedTypeManagement ? { id: selectedTypeManagement.id, name: selectedTypeManagement.name } : null,
-    contacto: selectedContact ? {
-      id: selectedContact.id,
-      name: selectedContact.name,
-      identification_number: selectedContact.identification_number,
-      phone: selectedContact.phone,
-      email: selectedContact.email,
-    } : null,
-    solucion_primer_contacto:
-      selectedSolution === '' ? null : Boolean(selectedSolution), // ''|true|false -> null|true|false
-    motivo_consulta: selectedConsultation ? {
-      id: selectedConsultation.id,
-      reason_consultation: selectedConsultation.reason_consultation
-    } : null,
-    motivo_especifico: selectedSpecificConsultation ? {
-      id: selectedSpecificConsultation.id,
-      specific_reason: selectedSpecificConsultation.specific_reason
-    } : null,
-    observations: observations?.trim() || null,
+  const handleClose = () => {
+    resetForm();
+    onClose();
   };
 
-  console.log('payload:', payload);                    // objeto expandible en consola
-  console.log('payload JSON:\n', JSON.stringify(payload, null, 2)); // legible
-  // console.table(payload); // útil para ver de un vistazo (ojo: objetos anidados se ven como [object Object])
-}; */
+  const validateBeforeSend = () => {
+    // Reglas mínimas: campaña, tipo gestión, contacto y motivo de consulta (ajusta según negocio)
+    if (!selectedCampaign) {
+      Swal.fire("Falta información", "Selecciona la pagaduría.", "warning");
+      return false;
+    }
+    if (!selectedTypeManagement) {
+      Swal.fire("Falta información", "Selecciona el tipo de gestión.", "warning");
+      return false;
+    }
+    if (!selectedContact) {
+      Swal.fire("Falta información", "Selecciona el contacto/cliente.", "warning");
+      return false;
+    }
+    if (!selectedConsultation) {
+      Swal.fire("Falta información", "Selecciona el motivo de la consulta.", "warning");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!validateBeforeSend()) return;
+
+    // Normalizar selectedSolution a null|true|false
+    const solucion_normalizada =
+      selectedSolution === "" ? null : Boolean(selectedSolution);
+
+    // Construimos payload con IDs planos que tu backend normalmente espera
+    const payload = {
+      // campo extra (opcional) que tenías en UI (Aliados/Afiliados)
+      campaña: afiliados_aliados || null,
+
+      // IDs planos
+      campaign_id: selectedCampaign?.id ?? null,
+      type_management_id: selectedTypeManagement?.id ?? null,
+      contact_id: selectedContact?.id ?? null,
+      consultation_id: selectedConsultation?.id ?? null,
+      specific_consultation_id: selectedSpecificConsultation?.id ?? null,
+
+      // solución y observaciones
+      solucion_primer_contacto: solucion_normalizada, // null | true | false
+      observations: observations?.trim() || null,
+    };
+
+    try {
+      if (onClick && typeof onClick === "function") {
+        // si el padre quiere manejar el envío, le pasamos el payload
+        const maybePromise = onClick(payload);
+        if (maybePromise && typeof maybePromise.then === "function") {
+          await maybePromise;
+        }
+      } else {
+        // por defecto hacemos POST directo
+        // Ajusta la ruta si tu backend usa otra (por ejemplo '/api/management' o '/api/gestions')
+        await axios.post("/api/managements", payload);
+      }
+
+      Swal.fire({
+        title: "Guardado",
+        text: "La gestión se registró correctamente.",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      // Reiniciar y cerrar
+      resetForm();
+      onClose();
+    } catch (error) {
+      console.error("Error guardando gestión:", error);
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "No se pudo guardar la gestión.";
+      // Si el backend devuelve errores de validación (422) puedes mapearlos aquí
+      if (error.response?.status === 422 && error.response.data?.errors) {
+        // ejemplo: mostrar primer error
+        const firstKey = Object.keys(error.response.data.errors)[0];
+        const firstMessage = error.response.data.errors[firstKey][0];
+        Swal.fire("Error de validación", firstMessage, "error");
+      } else {
+        Swal.fire("Error", message, "error");
+      }
+    }
+  };
 
   return (
     <Dialog
@@ -87,9 +159,9 @@ const handleClick = () => {
           padding: 3,
           borderRadius: 3,
         },
-      }} 
+      }}
     >
-      <div className="flex flex-col gap-4 text-secondary-dark px-20 pb-40 overflow-y-scroll overflow-x-hidden">
+      <div className="flex flex-col gap-4 text-secondary-dark px-20 pb-40 ">
         {/* Título */}
         <div className="flex justify-between items-center">
           <h1 className="flex justify-center items-center gap-3 text-2xl font-semibold">
@@ -97,7 +169,7 @@ const handleClick = () => {
           </h1>
           <button
             onClick={onClose}
-            className="fixed top-13 right-80 text-gray-500 hover:text-gray-800 font-semibold"
+            className=" text-gray-500 hover:text-gray-800 font-semibold"
           >
             ✕
           </button>
@@ -129,7 +201,9 @@ const handleClick = () => {
             options={campaign}
             getOptionLabel={(option) => option.name}
             value={selectedCampaign}
-            onChange={(event, value) => { setSelectedCampaign(value);    }}
+            onChange={(event, value) => {
+              setSelectedCampaign(value);
+            }}
             renderInput={(params) => <TextField {...params} label="Pagaduria" />}
           />
         </div>
@@ -141,7 +215,9 @@ const handleClick = () => {
             options={typeManagement}
             getOptionLabel={(option) => option.name}
             value={selectedTypeManagement}
-            onChange={(event, value) => { setSelectedTypeManagement(value);    }}
+            onChange={(event, value) => {
+              setSelectedTypeManagement(value);
+            }}
             renderInput={(params) => <TextField {...params} label="Tipo de gestion" />}
           />
         </div>
@@ -153,19 +229,33 @@ const handleClick = () => {
             options={contact}
             getOptionLabel={(option) => option?.identification_number + " | " + option?.name}
             value={selectedContact}
-            onChange={(event, value) => { setSelectedContact(value);    }}
+            onChange={(event, value) => {
+              setSelectedContact(value);
+            }}
             renderInput={(params) => <TextField {...params} label="Contacto" />}
           />
           <div>
-            <h3>Nombre: <span>{selectedContact?.name ?? "—"}</span></h3>
-            <h3>Correo: <span>{selectedContact?.email ?? "—"}</span></h3>
-            <h3>Teléfono: <span>{selectedContact?.phone ?? "—"}</span></h3>
-            <h3>Celular actualizado: <span>{selectedContact?.update_phone ?? "—"}</span></h3>
-            <h3>Tipo de identificación: <span>{selectedContact?.identification_type ?? "—"}</span></h3>
-            <h3>Número de identificación: <span>{selectedContact?.identification_number ?? "—"}</span></h3>
+            <h3>
+              Nombre: <span>{selectedContact?.name ?? "—"}</span>
+            </h3>
+            <h3>
+              Correo: <span>{selectedContact?.email ?? "—"}</span>
+            </h3>
+            <h3>
+              Teléfono: <span>{selectedContact?.phone ?? "—"}</span>
+            </h3>
+            <h3>
+              Celular actualizado: <span>{selectedContact?.update_phone ?? "—"}</span>
+            </h3>
+            <h3>
+              Tipo de identificación: <span>{selectedContact?.identification_type ?? "—"}</span>
+            </h3>
+            <h3>
+              Número de identificación: <span>{selectedContact?.identification_number ?? "—"}</span>
+            </h3>
           </div>
         </div>
-        
+
         {/* Selector de solucion en primer contacto */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Solución en el primer contacto </h2>
@@ -191,7 +281,9 @@ const handleClick = () => {
             options={consultation}
             getOptionLabel={(option) => option?.id + " | " + option?.reason_consultation}
             value={selectedConsultation}
-            onChange={(event, value) => { setSelectedConsultation(value) }}
+            onChange={(event, value) => {
+              setSelectedConsultation(value);
+            }}
             renderInput={(params) => <TextField {...params} label="Consulta" />}
           />
         </div>
@@ -203,12 +295,14 @@ const handleClick = () => {
             options={consultation}
             getOptionLabel={(option) => option?.id + " | " + option?.specific_reason}
             value={selectedSpecificConsultation}
-            onChange={(event, value) => { setSelectedSpecificConsultation(value) }}
+            onChange={(event, value) => {
+              setSelectedSpecificConsultation(value);
+            }}
             renderInput={(params) => <TextField {...params} label="Consulta especifica" />}
           />
         </div>
 
-        {/*Autocompletado de motivo de consulta especifica */}
+        {/*Observaciones */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Observaciones</h2>
           <TextField
@@ -222,10 +316,7 @@ const handleClick = () => {
         </div>
 
         <div className="flex items-center justify-center mt-10">
-          <Button 
-            variant="contained"
-            onClick={onClick}
-          >
+          <Button variant="contained" onClick={handleSave}>
             Guardar
           </Button>
         </div>

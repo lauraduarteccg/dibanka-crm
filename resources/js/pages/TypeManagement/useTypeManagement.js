@@ -16,11 +16,11 @@ export const useTypeManagement = () => {
   const [formData, setFormData] = useState({
     id: null,
     name: "",
-    campaign: [],
+    campaign: [], // <-- array of campaign ids
     is_active: true,
   });
 
-  // Tabla de pagadurias
+  // Traer lista de tipos (paginated)
   const fetchConsultation = useCallback(
     async (page = 1) => {
       setLoading(true);
@@ -28,22 +28,36 @@ export const useTypeManagement = () => {
         const res = await axios.get(`/api/typemanagements?page=${page}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         const list = res.data.typeManagement || res.data.data || [];
+
         const mappedData = list.map((typeManagement) => ({
-          id        : typeManagement.id,
-          campaign  : typeManagement.campaign?.name ?? [],
-          name      : typeManagement.name,
-          is_active : typeManagement.is_active,
+          id: typeManagement.id,
+          // campaign_names: string para mostrar en la tabla
+          campaign_names:
+            (typeManagement.campaigns || typeManagement.campaign || []).length > 0
+              ? (typeManagement.campaigns || typeManagement.campaign).map((c) => c.name).join(", ")
+              : "—",
+          // campaign_array: array de objetos {id,name} si necesitas cuando editas desde la tabla
+          campaign_array: (typeManagement.campaigns || typeManagement.campaign || []).map((c) => ({
+            id: c.id,
+            name: c.name,
+          })),
+          name: typeManagement.name,
+          is_active: typeManagement.is_active,
         }));
 
         setTypeManagement(mappedData);
-
-        const pagination = res.data.pagination || res.data.meta || {};
-        setTotalPages(pagination.total_pages ?? pagination.last_page ?? 1);
-        setCurrentPage(pagination.current_page ?? pagination.current_page ?? page);
-        console.log(list);
+        setTotalPages(
+          (res.data.pagination && res.data.pagination.total_pages) ||
+            res.data.meta?.last_page ||
+            res.data.last_page ||
+            1
+        );
+        setCurrentPage(res.data.pagination?.current_page || res.data.meta?.current_page || page);
       } catch (err) {
-        setError("Error al obtener los contactos.");
+        console.error(err);
+        setError("Error al obtener los tipos de gestión.");
       } finally {
         setLoading(false);
       }
@@ -51,44 +65,41 @@ export const useTypeManagement = () => {
     [token]
   );
 
-  useEffect(() => {
-    fetchConsultation(1);
-  }, [fetchConsultation]);
-
-  // Manejar la edición de consultas
+  // Manejar la edición: cargar formData con ids
   const handleEdit = (typemanagementRow) => {
+    // typemanagementRow puede venir desde la tabla (mapeado más arriba)
+    const campaignIds =
+      typemanagementRow.campaign_array?.map((c) => c.id) ?? typemanagementRow.campaign ?? [];
     setFormData({
-      id        : typemanagementRow.id,
-      name      : typemanagementRow.name,
-      campaign  : typemanagementRow.campaign ?? [], 
-      is_active : typemanagementRow.is_active ?? true,
+      id: typemanagementRow.id,
+      name: typemanagementRow.name,
+      campaign: Array.isArray(campaignIds) ? campaignIds : [campaignIds],
+      is_active: typemanagementRow.is_active ?? true,
     });
     setValidationErrors({});
     setIsOpenADD(true);
   };
 
-  // Crear o actualizar consulta
+  // Crear o actualizar
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
     setValidationErrors({});
 
     try {
+      // Normalizar payload: backend espera campaign_id => array
+      const payload = {
+        name: formData.name,
+        is_active: formData.is_active,
+        campaign_id: Array.isArray(formData.campaign) ? formData.campaign : [],
+      };
+
       let response;
-      const payload = { ...formData };
-
-      Object.keys(payload).forEach((key) => {
-        if (payload[key] === "true") payload[key] = true;
-        if (payload[key] === "false") payload[key] = false;
-      });
-
       if (formData.id) {
-        // Actualizar
         response = await axios.put(`/api/typemanagements/${formData.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        // Crear
         response = await axios.post("/api/typemanagements", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -96,7 +107,7 @@ export const useTypeManagement = () => {
 
       if (response.status === 200 || response.status === 201) {
         Swal.fire({
-          title: formData.id ? "Contacto actualizado" : "Contacto creado",
+          title: formData.id ? "Tipo actualizado" : "Tipo creado",
           text: "Los cambios han sido guardados correctamente.",
           icon: "success",
           timer: 1500,
@@ -104,29 +115,30 @@ export const useTypeManagement = () => {
         });
 
         setIsOpenADD(false);
-        // volver a cargar la página actual
+        setFormData({ id: null, name: "", campaign: [], is_active: true });
+        // recargar la página actual
         fetchConsultation(currentPage || 1);
       }
     } catch (error) {
+      console.error(error);
       if (error.response?.status === 422) {
-        setValidationErrors(error.response.data.errors);
+        setValidationErrors(error.response.data.errors || {});
       } else {
-        // opcional: mostrar error genérico
-        console.error(error);
+        setError(error.response?.data?.message || "Error al guardar tipo de gestión.");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // Desactivar / activar
+  // Activar/Desactivar (toggle)
   const handleDelete = async (id, status) => {
     const actionText = !status ? "activar" : "desactivar";
 
-    Swal.fire({
+    const result = await Swal.fire({
       position: "top-end",
-      title: `¿Quieres ${actionText} este contacto?`,
-      text: `La contacto será marcado como ${!status ? "Activo" : "Inactivo"}.`,
+      title: `¿Quieres ${actionText} este tipo?`,
+      text: `El tipo será marcado como ${!status ? "Activo" : "Inactivo"}.`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: !status ? "#28a745" : "#d33",
@@ -135,75 +147,72 @@ export const useTypeManagement = () => {
       cancelButtonText: "Cancelar",
       width: "350px",
       padding: "0.8em",
-      customClass: {
-        title: "swal-title-small",
-        popup: "swal-full-height",
-        confirmButton: "swal-confirm-small",
-        cancelButton: "swal-cancel-small",
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const response = await axios.delete(`/api/typemanagements/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (response.status === 200) {
-            Swal.fire({
-              position: "top-end",
-              title: "Estado actualizado",
-              text: `El contacto ahora está ${!status ? "Activo" : "Inactivo"}.`,
-              icon: "success",
-              timer: 1500,
-              showConfirmButton: false,
-              width: "350px",
-              padding: "0.8em",
-            });
-            fetchConsultation(currentPage || 1);
-          } else {
-            Swal.fire({
-              position: "top-end",
-              title: "Error",
-              text: "No se pudo actualizar la consulta.",
-              icon: "error",
-              width: "350px",
-              padding: "0.8em",
-            });
-          }
-        } catch (error) {
-          Swal.fire({
-            position: "top-end",
-            title: "Error",
-            text: error.response?.data?.message || "No se pudo actualizar el contacto.",
-            icon: "error",
-            width: "350px",
-            padding: "0.8em",
-          });
-        }
-      }
     });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await axios.delete(`/api/typemanagements/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 200) {
+        Swal.fire({
+          position: "top-end",
+          title: "Estado actualizado",
+          text: `El tipo ahora está ${!status ? "Activo" : "Inactivo"}.`,
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+          width: "350px",
+          padding: "0.8em",
+        });
+        fetchConsultation(currentPage || 1);
+      } else {
+        Swal.fire({
+          position: "top-end",
+          title: "Error",
+          text: "No se pudo actualizar el tipo.",
+          icon: "error",
+          width: "350px",
+          padding: "0.8em",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        position: "top-end",
+        title: "Error",
+        text: error.response?.data?.message || "No se pudo actualizar el tipo.",
+        icon: "error",
+      });
+    }
   };
 
-// ---------------------------------------------------------
-// Lista autocompletable de Pagaduria
+  // ---------------------------------------------------------
+  // Lista autocompletable de Pagaduria
   const fetchCampaign = useCallback(
-      async () => {
-          try {
-              const res = await axios.get(`/api/campaigns`, {
-                  headers: { Authorization: `Bearer ${token}` },
-              });
-              setCampaign   (res.data.campaigns);
-          } catch (err) {
-              setError("Error al obtener las pagadurias.");
-          }
-      },
-      [token]
+    async () => {
+      try {
+        const res = await axios.get(`/api/campaigns`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // soporta data o campaigns según tu response
+        setCampaign(res.data.campaigns || res.data.data || res.data || []);
+      } catch (err) {
+        console.error(err);
+        setError("Error al obtener las pagadurias.");
+      }
+    },
+    [token]
   );
 
-    useEffect(() => {
+  useEffect(() => {
     fetchCampaign();
   }, [fetchCampaign]);
 
+  useEffect(() => {
+    fetchConsultation(1);
+  }, [fetchConsultation]);
 
   return {
     campaign,

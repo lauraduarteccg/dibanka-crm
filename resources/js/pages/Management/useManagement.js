@@ -10,7 +10,7 @@ export const useManagement = () => {
   const [campaign, setCampaign] = useState([]);
   const [contact, setContact] = useState([]);
   const [consultation, setConsultation] = useState([]);
-    /* const [typeManagement, setTypeManagement] = useState([]); */
+  const [typeManagement, setTypeManagement] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -231,12 +231,53 @@ export const useManagement = () => {
 
 // ---------------------------------------------------------
 // Lista autocompletable de tipo de gestiones
-  const typeManagement= [
-    {name: "Tipo de Gestion 1"}, 
-    {name: "Tipo de Gestion 2"}, 
-    {name: "Tipo de Gestion 3"}, 
-    {name: "Tipo de Gestion 4"}, 
-  ]
+  const fetchTypeManagement = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`/api/typemanagements?page=${page}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const list = res.data.typeManagement || res.data.data || [];
+
+        const mappedData = list.map((typeManagement) => ({
+          id: typeManagement.id,
+          // campaign_names: string para mostrar en la tabla
+          campaign_names:
+            (typeManagement.campaigns || typeManagement.campaign || []).length > 0
+              ? (typeManagement.campaigns || typeManagement.campaign).map((c) => c.name).join(", ")
+              : "—",
+          // campaign_array: array de objetos {id,name} si necesitas cuando editas desde la tabla
+          campaign_array: (typeManagement.campaigns || typeManagement.campaign || []).map((c) => ({
+            id: c.id,
+            name: c.name,
+          })),
+          name: typeManagement.name,
+          is_active: typeManagement.is_active,
+        }));
+
+        setTypeManagement(mappedData);
+        setTotalPages(
+          (res.data.pagination && res.data.pagination.total_pages) ||
+            res.data.meta?.last_page ||
+            res.data.last_page ||
+            1
+        );
+        setCurrentPage(res.data.pagination?.current_page || res.data.meta?.current_page || page);
+      } catch (err) {
+        console.error(err);
+        setError("Error al obtener los tipos de gestión.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
+
+  useEffect(() => {
+  fetchTypeManagement();
+}, [fetchTypeManagement]);
 
 // ---------------------------------------------------------
 // Lista autocompletable de Pagaduria
@@ -283,6 +324,7 @@ export const useManagement = () => {
     validationErrors,
 
     fetchCampaign,
+    fetchTypeManagement,
     campaign,
     contact,
     typeManagement,

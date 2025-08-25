@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('type_management', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('campaign_id')->constrained('campaigns')->onDelete('cascade');
+            
             $table->string("name");
             $table->boolean('is_active')->default(1);
             $table->timestamps();
