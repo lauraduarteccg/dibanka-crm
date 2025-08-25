@@ -97,6 +97,18 @@ const NavBar = () => {
                             {isOpenMenu && <ListItemText primary="Gestiones" />}
                         </ListItemButton>
                     </ListItem>
+
+                    {/* Tipo de Gestiones */}
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => navigate("/tipo_de_gestiones")}>
+                            <Tooltip title="Tipo de gestiones">
+                                <ListItemIcon>
+                                    <FaClipboardList className="text-white w-6 h-auto" />
+                                </ListItemIcon>
+                            </Tooltip>
+                            {isOpenMenu && <ListItemText primary="Tipo de gestiones" />}
+                        </ListItemButton>
+                    </ListItem>
                 </List>
             </motion.div>
 

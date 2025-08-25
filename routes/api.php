@@ -7,6 +7,7 @@ use App\Http\Controllers\ManagementController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TypeManagementController;
 
 // Ruta de autenticación
 Route::post('/login', [AuthController::class, 'login']);
@@ -53,6 +54,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/contacts/{contact}', [ContactController::class, 'show']); // Mostrar un contacto específica
     Route::put('/contacts/{contact}', [ContactController::class, 'update']); // Actualizar contacto
     Route::delete('/contacts/{contacts}', [ContactController::class, 'destroy']); // Eliminar contacto
+
+    // 🔹 CRUD para Tipo de Gestiones
+    Route::get('/typemanagements', [TypeManagementController::class, 'index']); // Listar tipo de gestiones
+    Route::post('/typemanagements', [TypeManagementController::class, 'store']); // Crear tipo de gestion
+    Route::get('/typemanagements/{typemanagement}', [TypeManagementController::class, 'show']); // Mostrar un tipo de gestion específica
+    Route::put('/typemanagements/{typemanagement}', [TypeManagementController::class, 'update']); // Actualizar tipo de gestion
+    Route::delete('/typemanagements/{typemanagement}', [TypeManagementController::class, 'destroy']); // Eliminar tipo de gestion
 
     // Rutas de autenticación protegidas
     Route::post('/logout', [AuthController::class, 'logout']);

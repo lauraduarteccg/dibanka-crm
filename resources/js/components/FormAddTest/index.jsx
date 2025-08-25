@@ -3,6 +3,7 @@ import Button from "../Button";
 import Alert from "@mui/material/Alert";
 import { Dialog, Slide } from "@mui/material";
 import InputWithIcon from "@components/InputWithIcon";
+import { Autocomplete, TextField } from "@mui/material";
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="left" ref={ref} {...props} />;
@@ -18,7 +19,10 @@ const FormAdd = ({
     loading,
     validationErrors,
     fields,
-    schema // ✅ Recibimos el esquema Yup como prop
+    schema,
+    checklist,
+    selectedChecklist,
+    setSelectedChecklist
 }) => {
     const [errors, setErrors] = useState({});
 
@@ -107,7 +111,30 @@ const FormAdd = ({
                                         <option value="true">Activo</option>
                                         <option value="false">Inactivo</option>
                                     </select>
+                                ) : field.type === "checklist" ? (
+                                    <Autocomplete
+                                        multiple
+                                        id="tags-standard"
+                                        options={Array.isArray(checklist) ? checklist : []} // nunca null
+                                        value={Array.isArray(selectedChecklist) ? selectedChecklist : []} // siempre array
+                                        getOptionLabel={(option) => option?.name ?? String(option ?? '')}
+                                        isOptionEqualToValue={(option, value) => {
+                                            // si tus opciones son objetos con id:
+                                            return (option?.id ?? option) === (value?.id ?? value);
+                                        }}
+                                        onChange={(event, newValue) => {
+                                            // newValue es un array cuando multiple
+                                            setSelectedChecklist(newValue);
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                            {...params}
+                                            variant="standard"
+                                            />
+                                        )}
+                                    />
                                 ) : (
+
                                     <InputWithIcon
                                         icon={field.icon}
                                         type={field.type}

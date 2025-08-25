@@ -75,5 +75,15 @@ class DataBaseSeeder extends Seeder
                 'updated_at'        => now(),
             ],
         ]);        
+
+        //Insertar registros en la tabla type_management
+        DB::table('type_management')->insert([
+            [
+                'campaign_id'   => $campaignId,
+                'name'          => 'LLAMADA ENTRANTE',
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ],
+        ]);        
     }
 }

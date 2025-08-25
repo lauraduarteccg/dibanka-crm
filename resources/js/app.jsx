@@ -10,6 +10,7 @@ import Campaing from "@pages/Campaing";
 import Consultation from "@pages/Consultation";
 import Contact from "@pages/Contact";
 import Management from "@pages/Management";
+import TypeManagement from "@pages/TypeManagement";
 
 const App = () => {
     const { user } = useContext(AuthContext);
@@ -41,6 +42,10 @@ const App = () => {
             <Route
                 path="/gestiones"
                 element={user ? <Layout><Management /></Layout> : <Navigate to="/" />}
+            />
+            <Route
+                path="/tipo_de_gestiones"
+                element={user ? <Layout><TypeManagement /></Layout> : <Navigate to="/" />}
             />
         </Routes>
     );

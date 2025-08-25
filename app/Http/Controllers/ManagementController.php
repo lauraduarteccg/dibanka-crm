@@ -64,10 +64,6 @@ class ManagementController extends Controller
         }
     }
 
-
-
-
-
     /**
      * Guardar una nueva gestión en la base de datos.
      */
@@ -104,13 +100,8 @@ class ManagementController extends Controller
      */
     public function show($id)
     {
-        $management = Management::with(['usuario', 'campaign', 'consultation', 'contact'])->find($id);
 
-        if (!$management) {
-            return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
-        }
-
-        return new ManagementResource($management);
+        
     }
 
     /**
