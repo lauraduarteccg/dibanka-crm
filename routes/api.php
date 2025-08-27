@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ManagementController;
-use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\ConsultationSpecificController;
 use App\Http\Controllers\UserController;
@@ -17,7 +17,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     // 🔹 Rutas de conteo de registros
     Route::get('/management/count', [ManagementController::class, 'count']);
-    Route::get('/campaigns/count', [CampaignController::class, 'count']);
+    Route::get('/payrolls/count', [PayrollController::class, 'count']);
     Route::get('/consultations/count', [ConsultationController::class, 'count']);
     Route::get('/contacts/count', [ContactController::class, 'count']);
 
@@ -28,12 +28,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
-    // 🔹 CRUD para Campañas
-    Route::get('/campaigns', [CampaignController::class, 'index']); // Listar campañas
-    Route::post('/campaigns', [CampaignController::class, 'store']); // Crear campaña
-    Route::get('/campaigns/{campaign}', [CampaignController::class, 'show']); // Mostrar una campaña específica
-    Route::put('/campaigns/{campaign}', [CampaignController::class, 'update']); // Actualizar campaña
-    Route::delete('/campaigns/{campaign}', [CampaignController::class, 'destroy']); // Eliminar campaña
+    // 🔹 CRUD para Pagadurías
+    Route::get('/payrolls', [PayrollController::class, 'index']);      // Listar pagadurías
+    Route::post('/payrolls', [PayrollController::class, 'store']);     // Crear pagaduría
+    Route::get('/payrolls/{payroll}', [PayrollController::class, 'show']);   // Mostrar una pagaduría específica
+    Route::put('/payrolls/{payroll}', [PayrollController::class, 'update']); // Actualizar pagaduría
+    Route::delete('/payrolls/{payroll}', [PayrollController::class, 'destroy']); // Activar/Desactivar pagaduría
 
     // 🔹 CRUD para Gestiones
     Route::get('/management', [ManagementController::class, 'index']); // Listar gestiones

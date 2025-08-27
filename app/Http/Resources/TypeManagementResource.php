@@ -11,8 +11,8 @@ class TypeManagementResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'campaigns' => $this->whenLoaded('campaigns', function () {
-                return $this->campaigns->map(function ($c) {
+            'payroll' => $this->whenLoaded('payroll', function () {
+                return $this->payroll->map(function ($c) {
                     return ['id' => $c->id, 'name' => $c->name];
                 });
             }),

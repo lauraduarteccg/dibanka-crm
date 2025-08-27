@@ -10,26 +10,26 @@ import { HiOutlineMail } from "react-icons/hi";
 
 const fields = [
   {
-    name: "campaign", label: "Pagaduría", type: "checklist", icon: FaRegComment,
-    options: ({ campaign }) => (campaign || []).map((c) => ({ label: c.name, value: c.id })),
+    name: "payroll", label: "Pagaduría", type: "checklist", icon: FaRegComment,
+    options: ({ payroll }) => (payroll || []).map((p) => ({ label: p.name, value: p.id })),
   },
   { name: "name", label: "Tipo de gestión", type: "text", icon: HiOutlineMail },
 ];
 
 const userSchema = yup.object().shape({
-  campaign: yup.array().of(yup.number().required()).min(1, "La pagaduría es obligatoria"),
+  payroll: yup.array().of(yup.number().required()).min(1, "La pagaduría es obligatoria"),
   name: yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
 });
 
 const columns = [
   { header: "ID", key: "id" },
-  { header: "Pagaduria", key: "campaign_names" },
+  { header: "Pagaduría", key: "payroll_names" },
   { header: "Tipo de gestión", key: "name" },
 ];
 
 const TypeManagement = () => {
   const {
-    campaign,
+    payroll,
     typemanagement,
     loading,
     error,
@@ -48,24 +48,21 @@ const TypeManagement = () => {
 
   // Normaliza la selección del checklist a array de ids antes de guardar en formData
   const handleSetSelectedChecklist = (selected) => {
-    // FormAdd podría enviar [{label,value}] o [id,...] o [{id,name}]
     if (!selected) {
-      setFormData((prev) => ({ ...prev, campaign: [] }));
+      setFormData((prev) => ({ ...prev, payroll: [] }));
       return;
     }
 
     if (Array.isArray(selected) && selected.length > 0) {
       const first = selected[0];
       if (typeof first === "object") {
-        // puede ser { value } o { id } o { label, value }
         const ids = selected.map((s) => s.value ?? s.id ?? s);
-        setFormData((prev) => ({ ...prev, campaign: ids }));
+        setFormData((prev) => ({ ...prev, payroll: ids }));
       } else {
-        // array de ids
-        setFormData((prev) => ({ ...prev, campaign: selected }));
+        setFormData((prev) => ({ ...prev, payroll: selected }));
       }
     } else {
-      setFormData((prev) => ({ ...prev, campaign: [] }));
+      setFormData((prev) => ({ ...prev, payroll: [] }));
     }
   };
 
@@ -87,8 +84,8 @@ const TypeManagement = () => {
         validationErrors={validationErrors}
         fields={fields}
         schema={userSchema}
-        checklist={campaign}
-        selectedChecklist={formData.campaign || []}
+        checklist={payroll}
+        selectedChecklist={formData.payroll || []}
         setSelectedChecklist={handleSetSelectedChecklist}
       />
 

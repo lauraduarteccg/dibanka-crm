@@ -7,7 +7,7 @@ export const useManagement = () => {
   const { token } = useContext(AuthContext);
   const [view, setView] = useState(false);
   const [management, setManagement] = useState([]);
-  const [campaign, setCampaign] = useState([]);
+  const [payroll, setPayroll] = useState([]); 
   const [contact, setContact] = useState([]);
   const [consultation, setConsultation] = useState([]);
   const [typeManagement, setTypeManagement] = useState([]);
@@ -16,13 +16,13 @@ export const useManagement = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState(""); // término de búsqueda
+  const [searchTerm, setSearchTerm] = useState(""); 
   const [IsOpenADD ,setIsOpenADD] = useState(false);
   const [validationErrors, setValidationErrors]    = useState({});
   const [formData, setFormData] = useState({
     id: null,
     usuario_id: "",
-    campaign_id: "",
+    payroll_id: "",   
     consultation_id: "",
     consultation_title: "",
     contact_id: "",
@@ -33,40 +33,39 @@ export const useManagement = () => {
     contact_phone: "",
   });
 
-  // Función principal: acepta page y search
+  // 🔹 Obtener gestiones (con payroll)
   const fetchManagement = useCallback(
     async (page = 1, search = "") => {
       setLoading(true);
       setError(null);
       try {
-        const url = `/api/management?page=${page}&search=${encodeURIComponent( search )}`;
+        const url = `/api/management?page=${page}&search=${encodeURIComponent(search)}`;
         const res = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-            const mappedData = res.data.data.map((gestion) => ({
-                id                      : gestion.id,
-                usuario_id              : gestion.usuario     ?.id                  || null,
-                usuario_name            : gestion.usuario     ?.name                || "—",
-                // ----------------------------------------------------------------------------------------------                                     
-                campaign_id             : gestion.campaign    ?.id                  || null,
-                campaign_name           : gestion.campaign    ?.name                || 
-                                          gestion.campaign    ?.type                || "—",
-                campaign                : gestion.campaign                          || "Sin pagaduria",
-                // ----------------------------------------------------------------------------------------------
-                consultation_id         : gestion.consultation?.id                  || null,
-                consultation_title      : gestion.consultation?.reason_consultation || "No hay consulta",
-                consultation            : gestion.consultation                      || {},
-                // ----------------------------------------------------------------------------------------------
-                contact_id              : gestion.contact     ?.id                  || null,
-                contact_name            : gestion.contact     ?.name                || "—",
-                contact                 : gestion.contact                           || "Sin contacto",
-                contact_email           : gestion.contact.email                     || "Sin correo",
-                contact_identification  : gestion.contact.identification_number     || "Número de identificación",
-                contact_phone           : gestion.contact.phone                     || "Sin Teléfono",
-                // -----------------------------------------------------------------------------------------------
-                created_at              : gestion.created_at
-            }));
+        const mappedData = res.data.data.map((gestion) => ({
+          id                  : gestion.id,
+          usuario_id          : gestion.usuario     ?.id   || null,
+          usuario_name        : gestion.usuario     ?.name || "—",
+          // ----------------------------------------------------------------------------------------------                                     
+          payroll_id          : gestion.payroll     ?.id   || null,
+          payroll_name        : gestion.payroll     ?.name || gestion.payroll?.type || "—",
+          payroll             : gestion.payroll            || "Sin payroll",
+          // ----------------------------------------------------------------------------------------------
+          consultation_id     : gestion.consultation?.id                  || null,
+          consultation_title  : gestion.consultation?.reason_consultation || "No hay consulta",
+          consultation        : gestion.consultation                      || {},
+          // ----------------------------------------------------------------------------------------------
+          contact_id          : gestion.contact     ?.id   || null,
+          contact_name        : gestion.contact     ?.name || "—",
+          contact             : gestion.contact            || "Sin contacto",
+          contact_email       : gestion.contact.email      || "Sin correo",
+          contact_identification : gestion.contact.identification_number || "Número de identificación",
+          contact_phone       : gestion.contact.phone     || "Sin Teléfono",
+          // -----------------------------------------------------------------------------------------------
+          created_at          : gestion.created_at
+        }));
 
         setManagement(mappedData);
 
@@ -103,134 +102,123 @@ export const useManagement = () => {
     fetchManagement(currentPage, searchTerm);
   }, [currentPage, searchTerm, fetchManagement]);
 
-  // Manejar la edición de gestiones
+  // 🔹 Manejar edición
   const handleEdit = (gestion) => {
-      setFormData({
-        id                      : gestion.id,
-        usuario_id              : gestion.usuario     ?.id                  || null,
-        usuario_name            : gestion.usuario     ?.name                || "—",
-        // ----------------------------------------------------------------------------------------------                                     
-        campaign_id             : gestion.campaign    ?.id                  || null,
-        campaign_name           : gestion.campaign    ?.name                || 
-                                  gestion.campaign    ?.type                || "—",
-        campaign                : gestion.campaign                          || "Sin pagaduria",
-        // ----------------------------------------------------------------------------------------------
-        consultation_id         : gestion.consultation?.id                  || null,
-        consultation_title      : gestion.consultation?.reason_consultation || "No hay consulta",
-        consultation            : gestion.consultation                      || {},
-        consultation_specific   : gestion.consultation?.specific_reason     || "No hay consulta especifica",
-        // ----------------------------------------------------------------------------------------------
-        contact_id              : gestion.contact     ?.id                  || null,
-        contact_name            : gestion.contact     ?.name                || "—",
-        contact                 : gestion.contact                           || "Sin contacto",
-        contact_email           : gestion.contact.email                     || "Sin correo",
-        contact_identification  : gestion.contact.identification_number     || "Número de identificación",
-        contact_phone           : gestion.contact.phone                     || "Sin Teléfono",
-        // -----------------------------------------------------------------------------------------------
-        created_at              : gestion.created_at
-      });
-      setValidationErrors({});
-      setIsOpenADD(true);
+    setFormData({
+      id                  : gestion.id,
+      usuario_id          : gestion.usuario?.id   || null,
+      usuario_name        : gestion.usuario?.name || "—",
+      // ----------------------------------------------------------------------------------------------                                     
+      payroll_id          : gestion.payroll?.id   || null,
+      payroll_name        : gestion.payroll?.name || gestion.payroll?.type || "—",
+      payroll             : gestion.payroll       || "Sin payroll",
+      // ----------------------------------------------------------------------------------------------
+      consultation_id     : gestion.consultation?.id                  || null,
+      consultation_title  : gestion.consultation?.reason_consultation || "No hay consulta",
+      consultation        : gestion.consultation                      || {},
+      consultation_specific: gestion.consultation?.specific_reason     || "No hay consulta especifica",
+      // ----------------------------------------------------------------------------------------------
+      contact_id          : gestion.contact?.id   || null,
+      contact_name        : gestion.contact?.name || "—",
+      contact             : gestion.contact       || "Sin contacto",
+      contact_email       : gestion.contact.email || "Sin correo",
+      contact_identification : gestion.contact.identification_number || "Número de identificación",
+      contact_phone       : gestion.contact.phone || "Sin Teléfono",
+      // -----------------------------------------------------------------------------------------------
+      created_at          : gestion.created_at
+    });
+    setValidationErrors({});
+    setIsOpenADD(true);
   };
 
-    // Crear o actualizar consulta
+  // 🔹 Crear o actualizar
   const handleSubmit = async (e) => {
-      e.preventDefault();
-      setLoading(true);
-      setValidationErrors({});
+    e.preventDefault();
+    setLoading(true);
+    setValidationErrors({});
 
-      try {
-          let response;
-          const payload = { ...formData };
+    try {
+      let response;
+      const payload = { ...formData };
 
-          // Normalizar valores antes de enviar
-          // Convertir strings "true"/"false" en booleanos reales
-          Object.keys(payload).forEach((key) => {
-              if (payload[key] === "true") payload[key] = true;
-              if (payload[key] === "false") payload[key] = false;
-          });
+      Object.keys(payload).forEach((key) => {
+        if (payload[key] === "true") payload[key] = true;
+        if (payload[key] === "false") payload[key] = false;
+      });
 
-          if (formData.id) {
-              // ✅ Actualizar consulta
-              response = await axios.put(
-                  `/api/management/${formData.id}`,
-                  payload,
-                  {
-                      headers: { Authorization: `Bearer ${token}` },
-                  }
-              );
-          } else {
-              // ✅ Crear consulta
-              response = await axios.post("/api/management", payload, {
-                  headers: { Authorization: `Bearer ${token}` },
-              });
-          }
-
-          if (response.status === 200 || response.status === 201) {
-              Swal.fire({
-                  title: formData.id
-                      ? "Gestión actualizada"
-                      : "Gestión creada",
-                  text: "Los cambios han sido guardados correctamente.",
-                  icon: "success",
-                  timer: 1500,
-                  showConfirmButton: false,
-              });
-
-              setIsOpenADD(false);
-              fetchConsultation(currentPage);
-          }
-      } catch (error) {
-          if (error.response?.status === 422) {
-              setValidationErrors(error.response.data.errors);
-          }
-      } finally {
-          setLoading(false);
+      if (formData.id) {
+        response = await axios.put(
+          `/api/management/${formData.id}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        response = await axios.post("/api/management", payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       }
+
+      if (response.status === 200 || response.status === 201) {
+        Swal.fire({
+          title: formData.id ? "Gestión actualizada" : "Gestión creada",
+          text: "Los cambios han sido guardados correctamente.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        setIsOpenADD(false);
+        fetchConsultation(currentPage);
+      }
+    } catch (error) {
+      if (error.response?.status === 422) {
+        setValidationErrors(error.response.data.errors);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-// ---------------------------------------------------------
-// Lista autocompletable de Pagaduria
-  const fetchCampaign = useCallback(
-      async () => {
-          try {
-              const res = await axios.get(`/api/campaigns`, {
-                  headers: { Authorization: `Bearer ${token}` },
-              });
-              setCampaign   (res.data.campaigns);
-          } catch (err) {
-              setError("Error al obtener las pagadurias.");
-          }
-      },
-      [token]
+  // ---------------------------------------------------------
+  // 🔹 Lista autocompletable de Payrolls
+  const fetchPayroll = useCallback(
+    async () => {
+      try {
+        const res = await axios.get(`/api/payrolls`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPayroll(res.data.payrolls);
+      } catch (err) {
+        setError("Error al obtener los payrolls.");
+      }
+    },
+    [token]
   );
 
-    useEffect(() => {
-    fetchCampaign();
-  }, [fetchCampaign]);
+  useEffect(() => {
+    fetchPayroll();
+  }, [fetchPayroll]);
 
-// ---------------------------------------------------------
-// Lista autocompletable de Pagaduria
+  // 🔹 Contactos
   const fetchContact = useCallback(
-      async () => {
-          try {
-              const res = await axios.get(`/api/contacts`, {
-                  headers: { Authorization: `Bearer ${token}` },
-              });
-              setContact   (res.data.contacts);
-          } catch (err) {
-              setError("Error al obtener las pagadurias.");
-          }
-      },
-      [token]
+    async () => {
+      try {
+        const res = await axios.get(`/api/contacts`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setContact(res.data.contacts);
+      } catch (err) {
+        setError("Error al obtener los contactos.");
+      }
+    },
+    [token]
   );
 
-    useEffect(() => {
+  useEffect(() => {
     fetchContact();
   }, [fetchContact]);
 
-// ---------------------------------------------------------
-// Lista autocompletable de tipo de gestiones
+  // 🔹 Tipos de gestión
   const fetchTypeManagement = useCallback(
     async (page = 1) => {
       setLoading(true);
@@ -243,13 +231,13 @@ export const useManagement = () => {
 
         const mappedData = list.map((typeManagement) => ({
           id: typeManagement.id,
-          // campaign_names: string para mostrar en la tabla
-          campaign_names:
-            (typeManagement.campaigns || typeManagement.campaign || []).length > 0
-              ? (typeManagement.campaigns || typeManagement.campaign).map((c) => c.name).join(", ")
+          // payroll_names: string para mostrar en tabla
+          payroll_names:
+            (typeManagement.payrolls || typeManagement.payroll || []).length > 0
+              ? (typeManagement.payrolls || typeManagement.payroll).map((c) => c.name).join(", ")
               : "—",
-          // campaign_array: array de objetos {id,name} si necesitas cuando editas desde la tabla
-          campaign_array: (typeManagement.campaigns || typeManagement.campaign || []).map((c) => ({
+          // payroll_array: array de objetos {id,name} si editas
+          payroll_array: (typeManagement.payrolls || typeManagement.payroll || []).map((c) => ({
             id: c.id,
             name: c.name,
           })),
@@ -258,13 +246,8 @@ export const useManagement = () => {
         }));
 
         setTypeManagement(mappedData);
-        setTotalPages(
-          (res.data.pagination && res.data.pagination.total_pages) ||
-            res.data.meta?.last_page ||
-            res.data.last_page ||
-            1
-        );
-        setCurrentPage(res.data.pagination?.current_page || res.data.meta?.current_page || page);
+        setTotalPages(res.data.meta?.last_page || 1);
+        setCurrentPage(res.data.meta?.current_page || page);
       } catch (err) {
         console.error(err);
         setError("Error al obtener los tipos de gestión.");
@@ -276,29 +259,27 @@ export const useManagement = () => {
   );
 
   useEffect(() => {
-  fetchTypeManagement();
-}, [fetchTypeManagement]);
+    fetchTypeManagement();
+  }, [fetchTypeManagement]);
 
-// ---------------------------------------------------------
-// Lista autocompletable de Pagaduria
+  // 🔹 Consultas
   const fetchConsultation = useCallback(
-      async () => {
-          try {
-              const res = await axios.get(`/api/consultations`, {
-                  headers: { Authorization: `Bearer ${token}` },
-              });
-              setConsultation   (res.data.consultations);
-          } catch (err) {
-              setError("Error al obtener las consultas.");
-          }
-      },
-      [token]
+    async () => {
+      try {
+        const res = await axios.get(`/api/consultations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setConsultation(res.data.consultations);
+      } catch (err) {
+        setError("Error al obtener las consultas.");
+      }
+    },
+    [token]
   );
 
-    useEffect(() => {
+  useEffect(() => {
     fetchConsultation();
   }, [fetchConsultation]);
-
 
   return {
     management,
@@ -320,12 +301,11 @@ export const useManagement = () => {
     handleSubmit,
     setIsOpenADD,
     IsOpenADD,
-    handleSubmit,
     validationErrors,
 
-    fetchCampaign,
+    fetchPayroll,    
     fetchTypeManagement,
-    campaign,
+    payroll,         
     contact,
     typeManagement,
     consultation,

@@ -9,16 +9,15 @@ class TypeManagement extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'is_active']; // quitar campaign_id
+    protected $fillable = ['name', 'is_active']; 
 
-    // relación many-to-many con Campaign
-    public function campaigns()
+    public function payroll()
     {
         return $this->belongsToMany(
-            Campaign::class,
-            'campaign_type_management',
+            Payroll::class,
+            'payrolls_type_management',
             'type_management_id',
-            'campaign_id'
+            'payroll_id'
         )->withTimestamps()->withPivot('is_active');
     }
 }

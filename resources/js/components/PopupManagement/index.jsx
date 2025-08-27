@@ -14,41 +14,43 @@ import axios from "axios";
 export default function PopupManagement({
   open,
   onClose,
-  campaign = [],
+  payroll = [], 
   typeManagement = [],
   contact = [],
   consultation = [],
   onClick = null,
 }) {
   const [afiliados_aliados, setAfiliados_aliados] = useState("");
-  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [selectedPayroll, setSelectedPayroll] = useState(null); 
   const [selectedTypeManagement, setSelectedTypeManagement] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedSolution, setSelectedSolution] = useState(""); // '' | true | false
   const [selectedConsultation, setSelectedConsultation] = useState(null);
-  const [selectedSpecificConsultation, setSelectedSpecificConsultation] = useState(null);
+  const [selectedSpecificConsultation, setSelectedSpecificConsultation] =
+    useState(null);
   const [observations, setObservations] = useState("");
-  const [filteredTypeManagement, setFilteredTypeManagement] = useState(typeManagement);
+  const [filteredTypeManagement, setFilteredTypeManagement] =
+    useState(typeManagement);
 
-    useEffect(() => {
-    // si no hay campaña seleccionada, mostramos todo
-    if (!selectedCampaign) {
+  useEffect(() => {
+    if (!selectedPayroll) {
       setFilteredTypeManagement(typeManagement);
       return;
     }
 
     const filtered = typeManagement.filter((tm) =>
-      // campaign_array viene de useManagement; ajusta si tu campo se llama distinto
-      (tm.campaign_array || []).some((c) => c.id === selectedCampaign.id)
+      (tm.payroll_array || []).some((c) => c.id === selectedPayroll.id)
     );
 
     setFilteredTypeManagement(filtered);
 
-    // si el tipo seleccionado ya no pertenece a la pagaduría seleccionada, lo reseteamos
-    if (selectedTypeManagement && !filtered.some((t) => t.id === selectedTypeManagement.id)) {
+    if (
+      selectedTypeManagement &&
+      !filtered.some((t) => t.id === selectedTypeManagement.id)
+    ) {
       setSelectedTypeManagement(null);
     }
-  }, [selectedCampaign, typeManagement, selectedTypeManagement]);
+  }, [selectedPayroll, typeManagement, selectedTypeManagement]);
 
   useEffect(() => {
     const apiValue = 0;
@@ -58,7 +60,7 @@ export default function PopupManagement({
   }, []);
 
   useEffect(() => {
-    const apiValue = 0; // 10 => true, 20 => false, otro => ''
+    const apiValue = 0;
     if (apiValue === 10) setSelectedSolution(true);
     else if (apiValue === 20) setSelectedSolution(false);
     else setSelectedSolution("");
@@ -66,7 +68,7 @@ export default function PopupManagement({
 
   const resetForm = () => {
     setAfiliados_aliados("");
-    setSelectedCampaign(null);
+    setSelectedPayroll(null);
     setSelectedContact(null);
     setSelectedTypeManagement(null);
     setSelectedSolution("");
@@ -81,8 +83,7 @@ export default function PopupManagement({
   };
 
   const validateBeforeSend = () => {
-    // Reglas mínimas: campaña, tipo gestión, contacto y motivo de consulta (ajusta según negocio)
-    if (!selectedCampaign) {
+    if (!selectedPayroll) {
       Swal.fire("Falta información", "Selecciona la pagaduría.", "warning");
       return false;
     }
@@ -104,37 +105,27 @@ export default function PopupManagement({
   const handleSave = async () => {
     if (!validateBeforeSend()) return;
 
-    // Normalizar selectedSolution a null|true|false
     const solucion_normalizada =
       selectedSolution === "" ? null : Boolean(selectedSolution);
 
-    // Construimos payload con IDs planos que tu backend normalmente espera
     const payload = {
-      // campo extra (opcional) que tenías en UI (Aliados/Afiliados)
-      campaña: afiliados_aliados || null,
-
-      // IDs planos
-      campaign_id: selectedCampaign?.id ?? null,
+      Pagaduría: afiliados_aliados || null,
+      payroll_id: selectedPayroll?.id ?? null, 
       type_management_id: selectedTypeManagement?.id ?? null,
       contact_id: selectedContact?.id ?? null,
       consultation_id: selectedConsultation?.id ?? null,
       specific_consultation_id: selectedSpecificConsultation?.id ?? null,
-
-      // solución y observaciones
-      solucion_primer_contacto: solucion_normalizada, // null | true | false
+      solucion_primer_contacto: solucion_normalizada,
       observations: observations?.trim() || null,
     };
 
     try {
       if (onClick && typeof onClick === "function") {
-        // si el padre quiere manejar el envío, le pasamos el payload
         const maybePromise = onClick(payload);
         if (maybePromise && typeof maybePromise.then === "function") {
           await maybePromise;
         }
       } else {
-        // por defecto hacemos POST directo
-        // Ajusta la ruta si tu backend usa otra (por ejemplo '/api/management' o '/api/gestions')
         await axios.post("/api/managements", payload);
       }
 
@@ -146,7 +137,6 @@ export default function PopupManagement({
         showConfirmButton: false,
       });
 
-      // Reiniciar y cerrar
       resetForm();
       onClose();
     } catch (error) {
@@ -155,9 +145,7 @@ export default function PopupManagement({
         error.response?.data?.message ||
         error.message ||
         "No se pudo guardar la gestión.";
-      // Si el backend devuelve errores de validación (422) puedes mapearlos aquí
       if (error.response?.status === 422 && error.response.data?.errors) {
-        // ejemplo: mostrar primer error
         const firstKey = Object.keys(error.response.data.errors)[0];
         const firstMessage = error.response.data.errors[firstKey][0];
         Swal.fire("Error de validación", firstMessage, "error");
@@ -197,16 +185,16 @@ export default function PopupManagement({
         </div>
         <div className="h-0.5 bg-gray-300 rounded"></div>
 
-        {/* Selector de campaña */}
+        {/* Selector de pagaduria */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Campaña</h2>
+          <h2 className="text-xl font-semibold">Pagaduría</h2>
           <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Campaña</InputLabel>
+            <InputLabel id="demo-simple-select-label">Pagaduría</InputLabel>
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               value={afiliados_aliados}
-              label="Campaña"
+              label="Pagaduría"
               onChange={(event) => setAfiliados_aliados(event.target.value)}
             >
               <MenuItem value={"Aliados"}>Aliados</MenuItem>
@@ -215,21 +203,21 @@ export default function PopupManagement({
           </FormControl>
         </div>
 
-        {/* Autocompletado de Pagaduria */}
+        {/* Autocompletado de Pagaduría */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Pagaduria</h2>
+          <h2 className="text-xl font-semibold">Pagaduría</h2>
           <Autocomplete
-            options={campaign}
+            options={payroll}
             getOptionLabel={(option) => option.name}
-            value={selectedCampaign}
+            value={selectedPayroll}
             onChange={(event, value) => {
-              setSelectedCampaign(value);
+              setSelectedPayroll(value);
             }}
-            renderInput={(params) => <TextField {...params} label="Pagaduria" />}
+            renderInput={(params) => <TextField {...params} label="Pagaduría" />}
           />
         </div>
 
-        {/*Autocompletado de Tipo de gestión */}
+        {/* Autocompletado de Tipo de gestión */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Tipo de gestión</h2>
           <Autocomplete
@@ -239,16 +227,20 @@ export default function PopupManagement({
             onChange={(event, value) => {
               setSelectedTypeManagement(value);
             }}
-            renderInput={(params) => <TextField {...params} label="Tipo de gestion" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Tipo de gestión" />
+            )}
           />
         </div>
 
-        {/*Autocompletado de Cliente/Contacto */}
+        {/* Autocompletado de Cliente/Contacto */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Información del cliente</h2>
           <Autocomplete
             options={contact}
-            getOptionLabel={(option) => option?.identification_number + " | " + option?.name}
+            getOptionLabel={(option) =>
+              option?.identification_number + " | " + option?.name
+            }
             value={selectedContact}
             onChange={(event, value) => {
               setSelectedContact(value);
@@ -269,24 +261,28 @@ export default function PopupManagement({
               Celular actualizado: <span>{selectedContact?.update_phone ?? "—"}</span>
             </h3>
             <h3>
-              Tipo de identificación: <span>{selectedContact?.identification_type ?? "—"}</span>
+              Tipo de identificación:{" "}
+              <span>{selectedContact?.identification_type ?? "—"}</span>
             </h3>
             <h3>
-              Número de identificación: <span>{selectedContact?.identification_number ?? "—"}</span>
+              Número de identificación:{" "}
+              <span>{selectedContact?.identification_number ?? "—"}</span>
             </h3>
           </div>
         </div>
 
-        {/* Selector de solucion en primer contacto */}
+        {/* Selector de solución en primer contacto */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Solución en el primer contacto </h2>
+          <h2 className="text-xl font-semibold">
+            Solución en el primer contacto{" "}
+          </h2>
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Solución</InputLabel>
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               value={selectedSolution}
-              label="Campaña"
+              label="Pagaduría"
               onChange={(event) => setSelectedSolution(event.target.value)}
             >
               <MenuItem value={true}>Sí</MenuItem>
@@ -295,12 +291,14 @@ export default function PopupManagement({
           </FormControl>
         </div>
 
-        {/*Autocompletado de motivo de consulta */}
+        {/* Autocompletado de motivo de consulta */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Motivo de consulta</h2>
           <Autocomplete
             options={consultation}
-            getOptionLabel={(option) => option?.id + " | " + option?.reason_consultation}
+            getOptionLabel={(option) =>
+              option?.id + " | " + option?.reason_consultation
+            }
             value={selectedConsultation}
             onChange={(event, value) => {
               setSelectedConsultation(value);
@@ -309,9 +307,9 @@ export default function PopupManagement({
           />
         </div>
 
-        {/*Autocompletado de motivo de consulta especifica */}
+        {/* Autocompletado de motivo de consulta específica */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Motivo especifico de consulta</h2>
+          <h2 className="text-xl font-semibold">Motivo específico de consulta</h2>
           <Autocomplete
             options={consultation}
             getOptionLabel={(option) => option?.id + " | " + option?.specific_reason}
@@ -319,16 +317,18 @@ export default function PopupManagement({
             onChange={(event, value) => {
               setSelectedSpecificConsultation(value);
             }}
-            renderInput={(params) => <TextField {...params} label="Consulta especifica" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Consulta específica" />
+            )}
           />
         </div>
 
-        {/*Observaciones */}
+        {/* Observaciones */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Observaciones</h2>
           <TextField
             id="standard-multiline-static"
-            label="Escriba aqui"
+            label="Escriba aquí"
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
             multiline

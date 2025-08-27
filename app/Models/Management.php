@@ -12,7 +12,7 @@ class Management extends Model
     protected $table = 'management';
 
     protected $fillable = [
-        'usuario_id', 'campaign_id', 'consultation_id', 'contact_id',
+        'usuario_id', 'payroll_id', 'consultation_id', 'contact_id',
     ];
 
     public function usuario()
@@ -20,9 +20,9 @@ class Management extends Model
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
-    public function campaign()
+    public function payroll()
     {
-        return $this->belongsTo(Campaign::class, 'campaign_id');
+        return $this->belongsTo(Payroll::class, 'payroll_id');
     }
 
     public function consultation()

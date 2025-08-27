@@ -18,7 +18,7 @@ class ManagementController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Management::with(['usuario', 'campaign', 'consultation', 'contact']);
+            $query = Management::with(['usuario', 'payroll', 'consultation', 'contact']);
             $q = $request->input('search');
 
             if (!empty($q)) {
@@ -27,7 +27,7 @@ class ManagementController extends Controller
                     if (is_numeric($q)) {
                         $subquery   ->where   ('id', $q)
                                     ->orWhere('usuario_id', $q)
-                                    ->orWhere('campaign_id', $q)
+                                    ->orWhere('payroll_id', $q)
                                     ->orWhere('consultation_id', $q)
                                     ->orWhere('contact_id', $q);
                     }
@@ -45,8 +45,8 @@ class ManagementController extends Controller
                                         ->orWhere   ('identification_type', 'LIKE', "%{$q}%")
                                         ->orWhere   ('identification_number', 'LIKE', "%{$q}%");
                     })
-                    ->orWhereHas('campaign', function($campaignQuery) use ($q) {
-                        $campaignQuery->where('name', 'LIKE', "%{$q}%");
+                    ->orWhereHas('payroll', function($payrollQuery) use ($q) {
+                        $payrollQuery->where('name', 'LIKE', "%{$q}%");
                     })
                     ->orWhereHas('consultation', function($consultationQuery) use ($q) {
                         $consultationQuery->where('reason_consultation', 'LIKE', "%{$q}%");
@@ -71,7 +71,7 @@ class ManagementController extends Controller
     {
         $rules = [
             'usuario_id'        => 'required|exists:users,id',
-            'campaign_id'       => 'required|exists:campaigns,id',
+            'payroll_id'       => 'required|exists:payroll,id',
             'consultation_id'   => 'required|exists:consultations,id',
             'contact_id'        => 'required|exists:contacts,id',
         ];
@@ -88,7 +88,7 @@ class ManagementController extends Controller
         $management = Management::create($data);
 
         // Carga relaciones para devolverlas en el resource
-        $management->load(['usuario', 'campaign', 'consultation', 'contact']);
+        $management->load(['usuario', 'payroll', 'consultation', 'contact']);
 
         return (new ManagementResource($management))
             ->response()
@@ -117,7 +117,7 @@ class ManagementController extends Controller
 
         $rules = [
             'usuario_id'        => 'sometimes|exists:users,id',
-            'campaign_id'       => 'sometimes|exists:campaigns,id',
+            'payroll_id'       => 'sometimes|exists:payroll,id',
             'consultation_id'   => 'sometimes|exists:consultations,id',
             'contact_id'        => 'sometimes|exists:contacts,id',
         ];
@@ -133,7 +133,7 @@ class ManagementController extends Controller
         $management->update($data);
 
         // Recargar relaciones para devolver la info actualizada
-        $management->load(['usuario', 'campaign', 'consultation', 'contact']);
+        $management->load(['usuario', 'payroll', 'consultation', 'contact']);
 
         return (new ManagementResource($management))
             ->response()

@@ -3,9 +3,9 @@ import axios from "axios";
 import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
 
-export const useCampaigns = () => {
+export const usePayrolls = () => {
     const { token } = useContext(AuthContext);
-    const [campaigns, setCampaigns] = useState([]);
+    const [payrolls, setPayrolls] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
@@ -16,22 +16,21 @@ export const useCampaigns = () => {
         id: null,
         pagaduria: "",
         tipo: "",
-
     });
 
-    //Tabla de pagadurias
-    const fetchCampaigns = useCallback(
+    // 🔹 Obtener lista de pagadurías
+    const fetchPayrolls = useCallback(
         async (page) => {
             setLoading(true);
             try {
-                const res = await axios.get(`/api/campaigns?page=${page}`, {
+                const res = await axios.get(`/api/payrolls?page=${page}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setCampaigns(res.data.campaigns);
+                setPayrolls(res.data.payrolls);
                 setTotalPages(res.data.pagination.total_pages);
                 setCurrentPage(res.data.pagination.current_page);
             } catch (err) {
-                setError("Error al obtener las campañas.");
+                setError("Error al obtener las pagadurías.");
             } finally {
                 setLoading(false);
             }
@@ -40,86 +39,84 @@ export const useCampaigns = () => {
     );
 
     useEffect(() => {
-        fetchCampaigns(1);
+        fetchPayrolls(1);
     }, []);
 
-    // Manejar la edición de campañas
-    const handleEdit = (campaign) => {
+    // 🔹 Manejar edición de pagadurías
+    const handleEdit = (payroll) => {
         setFormData({
-            id: campaign.id,
-            name: campaign.name,
-            type: campaign.type,
+            id: payroll.id,
+            pagaduria: payroll.pagaduria,
+            tipo: payroll.tipo,
         });
         setValidationErrors({});
         setIsOpenADD(true);
     };
 
-    // Crear o actualizar campaña
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setValidationErrors({});
+    // 🔹 Crear o actualizar pagaduría
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setValidationErrors({});
 
-    try {
-        let response;
-        const payload = { ...formData };
+        try {
+            let response;
+            const payload = { ...formData };
 
-        // Normalizar valores antes de enviar
-        // Convertir strings "true"/"false" en booleanos reales
-        Object.keys(payload).forEach((key) => {
-            if (payload[key] === "true") payload[key] = true;
-            if (payload[key] === "false") payload[key] = false;
-        });
+            // Normalizar valores
+            Object.keys(payload).forEach((key) => {
+                if (payload[key] === "true") payload[key] = true;
+                if (payload[key] === "false") payload[key] = false;
+            });
 
-        if (formData.id) {
-            // ✅ Actualizar campaña
-            response = await axios.put(
-                `/api/campaigns/${formData.id}`,
-                payload,
-                {
+            if (formData.id) {
+                // ✅ Actualizar
+                response = await axios.put(
+                    `/api/payrolls/${formData.id}`,
+                    payload,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+            } else {
+                // ✅ Crear
+                response = await axios.post("/api/payrolls", payload, {
                     headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-        } else {
-            // ✅ Crear campaña
-            response = await axios.post("/api/campaigns", payload, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+                });
+            }
+
+            if (response.status === 200 || response.status === 201) {
+                Swal.fire({
+                    title: formData.id
+                        ? "Pagaduría actualizada"
+                        : "Pagaduría creada",
+                    text: "Los cambios han sido guardados correctamente.",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+
+                setIsOpenADD(false);
+                fetchPayrolls(currentPage);
+            }
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setValidationErrors(error.response.data.errors);
+            }
+        } finally {
+            setLoading(false);
         }
+    };
 
-        if (response.status === 200 || response.status === 201) {
-            Swal.fire({
-                title: formData.id
-                    ? "Pagaduría actualizada"
-                    : "Pagaduría creada",
-                text: "Los cambios han sido guardados correctamente.",
-                icon: "success",
-                timer: 1500,
-                showConfirmButton: false,
-            });
-
-            setIsOpenADD(false);
-            fetchCampaigns(currentPage);
-        }
-    } catch (error) {
-        if (error.response?.status === 422) {
-            setValidationErrors(error.response.data.errors);
-        }
-    } finally {
-        setLoading(false);
-    }
-};
-
-
-    //Desactivar campaña
+    // 🔹 Activar / Desactivar pagaduría
     const handleDelete = async (id, status) => {
         const actionText = !status ? "activar" : "desactivar";
 
         Swal.fire({
             position: "top-end",
-            title: `¿Quieres ${actionText} esta pagaduria?`,
-            text: `La pagaduria será marcado como ${
-                !status ? "Activo" : "Inactivo"
+            title: `¿Quieres ${actionText} esta pagaduría?`,
+            text: `La pagaduría será marcada como ${
+                !status ? "Activa" : "Inactiva"
             }.`,
             icon: "warning",
             showCancelButton: true,
@@ -129,7 +126,6 @@ const handleSubmit = async (e) => {
             cancelButtonText: "Cancelar",
             width: "350px",
             padding: "0.8em",
-
             customClass: {
                 title: "swal-title-small",
                 popup: "swal-full-height",
@@ -140,20 +136,18 @@ const handleSubmit = async (e) => {
             if (result.isConfirmed) {
                 try {
                     const response = await axios.delete(
-                        `/api/campaigns/${id}`,
+                        `/api/payrolls/${id}`,
                         {
                             headers: { Authorization: `Bearer ${token}` },
                         }
                     );
-                    console.log(status);
 
                     if (response.status === 200) {
                         Swal.fire({
                             position: "top-end",
-
                             title: "Estado actualizado",
-                            text: `La pagaduria ahora está ${
-                                !status ? "Activo" : "Inactivo"
+                            text: `La pagaduría ahora está ${
+                                !status ? "Activa" : "Inactiva"
                             }.`,
                             icon: "success",
                             timer: 1500,
@@ -161,16 +155,13 @@ const handleSubmit = async (e) => {
                             width: "350px",
                             padding: "0.8em",
                         });
-                        fetchCampaigns(currentPage);
+                        fetchPayrolls(currentPage);
                     } else {
                         Swal.fire({
                             position: "top-end",
-
                             title: "Error",
-                            text: "No se pudo actualizar la pagaduria.",
+                            text: "No se pudo actualizar la pagaduría.",
                             icon: "error",
-                            width: "300px",
-                            padding: "0.6em",
                             width: "350px",
                             padding: "0.8em",
                         });
@@ -178,14 +169,11 @@ const handleSubmit = async (e) => {
                 } catch (error) {
                     Swal.fire({
                         position: "top-end",
-
                         title: "Error",
                         text:
                             error.response?.data?.message ||
-                            "No se pudo actualizar la pagaduria.",
+                            "No se pudo actualizar la pagaduría.",
                         icon: "error",
-                        width: "300px",
-                        padding: "0.6em",
                         width: "350px",
                         padding: "0.8em",
                     });
@@ -193,8 +181,9 @@ const handleSubmit = async (e) => {
             }
         });
     };
+
     return {
-        campaigns,
+        payrolls,
         loading,
         error,
         isOpenADD,
@@ -205,8 +194,8 @@ const handleSubmit = async (e) => {
         handleSubmit,
         currentPage,
         totalPages,
-        fetchCampaigns,
+        fetchPayrolls,
         handleEdit,
-        handleDelete
+        handleDelete,
     };
 };

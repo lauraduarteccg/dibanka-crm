@@ -22,10 +22,10 @@ class ManagementResource extends JsonResource
             }),
 
             // Campaña relacionada
-            'campaign' => $this->whenLoaded('campaign', function () {
+            'payroll' => $this->whenLoaded('payroll', function () {
                 return [
-                    'id'    => $this->campaign->id,
-                    'name'  => $this->campaign->name,
+                    'id'    => $this->payroll->id,
+                    'name'  => $this->payroll->name,
                 ];
             }),
 

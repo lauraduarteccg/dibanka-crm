@@ -8,19 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('campaign_type_management', function (Blueprint $table) {
+        Schema::create('payrolls_type_management', function (Blueprint $table) {
             $table->id();
             $table->foreignId('type_management_id')->constrained('type_management')->onDelete('cascade');
-            $table->foreignId('campaign_id')->constrained('campaigns')->onDelete('cascade');
-            $table->boolean('is_active')->default(1); // opcional: activo por asignación
+            $table->foreignId('payroll_id')->constrained('payrolls')->onDelete('cascade');
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
 
-            $table->unique(['type_management_id', 'campaign_id']);
+            $table->unique(['type_management_id', 'payroll_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('campaign_type_management');
+        Schema::dropIfExists('payrolls_type_management');
     }
 };

@@ -13,7 +13,7 @@ class TypeManagementController extends Controller
 {
     public function index()
     {
-        $typeManagement = TypeManagement::with('campaigns')->paginate(10);
+        $typeManagement = TypeManagement::with('payroll')->paginate(10);
 
         return response()->json([
             'message' => 'Tipos de gestion obtenidas con éxito',
@@ -22,7 +22,7 @@ class TypeManagementController extends Controller
                 'current_page' => $typeManagement->currentPage(),
                 'total_pages' => $typeManagement->lastPage(),
                 'per_page' => $typeManagement->perPage(),
-                'total_campaigns' => $typeManagement->total(),
+                'total_payroll' => $typeManagement->total(),
             ]
         ], Response::HTTP_OK);
     }
@@ -30,8 +30,8 @@ class TypeManagementController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'campaign_id'   => 'required|array|min:1',
-            'campaign_id.*' => 'integer|exists:campaigns,id',
+            'payroll_id'   => 'required|array|min:1',
+            'payroll_id.*' => 'integer|exists:payroll,id',
             'name'          => 'required|string',
         ];
 
@@ -49,9 +49,9 @@ class TypeManagementController extends Controller
             ]);
 
             // Sincronizar las campañas en la tabla pivote
-            $type->campaigns()->sync($request->input('campaign_id'));
+            $type->payroll()->sync($request->input('payroll_id'));
 
-            return $type->load('campaigns');
+            return $type->load('payroll');
         });
 
         return (new TypeManagementResource($created))
@@ -61,7 +61,7 @@ class TypeManagementController extends Controller
 
     public function show(string $id)
     {
-        $management = TypeManagement::with(['campaigns'])->find($id);
+        $management = TypeManagement::with(['payroll'])->find($id);
 
         if (!$management) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
@@ -74,8 +74,8 @@ class TypeManagementController extends Controller
     {
         $validated = $request->validate([
             'name'          => 'required|string|max:255',
-            'campaign_id'   => 'nullable|array',
-            'campaign_id.*' => 'integer|exists:campaigns,id',
+            'payroll_id'   => 'nullable|array',
+            'payroll_id.*' => 'integer|exists:payroll,id',
             'is_active'     => 'boolean',
         ]);
 
@@ -91,12 +91,12 @@ class TypeManagementController extends Controller
             'is_active' => $validated['is_active'] ?? $management->is_active,
         ]);
 
-        // Si vienen campaign_id, sincronizamos la relación
-        if (!empty($validated['campaign_id'])) {
-            $management->campaigns()->sync($validated['campaign_id']);
+        // Si vienen payroll_id, sincronizamos la relación
+        if (!empty($validated['payroll_id'])) {
+            $management->payroll()->sync($validated['payroll_id']);
         }
 
-        return new TypeManagementResource($management->load('campaigns'));
+        return new TypeManagementResource($management->load('payroll'));
     }
 
     public function destroy(string $id)

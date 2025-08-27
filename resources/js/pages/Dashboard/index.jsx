@@ -33,7 +33,7 @@ function Dashboard() {
                             subtitle="Gestiones Realizadas"
                         />
                         <Card
-                            title={<Counter value={dataCounts.campaigns} />}
+                            title={<Counter value={dataCounts.payrolls} />}
                             subtitle="Pagadurías Activas"
                         />
                         <Card

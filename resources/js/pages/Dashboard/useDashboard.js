@@ -1,4 +1,4 @@
-import  { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "@context/AuthContext";
 import axios from "axios";
 
@@ -7,9 +7,10 @@ const useDashboard = (onLoginSuccess) => {
     const [dataCounts, setDataCounts] = useState({
         contacts: 0,
         management: 0,
-        campaigns: 0,
+        payrolls: 0,       // ✅ agregado para que exista desde el inicio
         consultations: 0,
     });
+
     useEffect(() => {
         if (!token) {
             const storedToken = localStorage.getItem("token");
@@ -24,7 +25,7 @@ const useDashboard = (onLoginSuccess) => {
 
         const fetchData = async () => {
             try {
-                const [contacts, management, campaigns, consultations] =
+                const [contacts, management, payrolls, consultations] =
                     await Promise.all([
                         axios.get("/api/contacts/count", {
                             headers: { Authorization: `Bearer ${token}` },
@@ -32,7 +33,7 @@ const useDashboard = (onLoginSuccess) => {
                         axios.get("/api/management/count", {
                             headers: { Authorization: `Bearer ${token}` },
                         }),
-                        axios.get("/api/campaigns/count", {
+                        axios.get("/api/payrolls/count", {
                             headers: { Authorization: `Bearer ${token}` },
                         }),
                         axios.get("/api/consultations/count", {
@@ -43,7 +44,7 @@ const useDashboard = (onLoginSuccess) => {
                 setDataCounts({
                     contacts: contacts.data.count,
                     management: management.data.count,
-                    campaigns: campaigns.data.count,
+                    payrolls: payrolls.data.count,
                     consultations: consultations.data.count,
                 });
             } catch (error) {

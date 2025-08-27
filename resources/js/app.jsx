@@ -6,7 +6,7 @@ import { AuthContext } from "@context/AuthContext";
 import Dashboard from "@pages/Dashboard";
 import Users from "@pages/Users";
 import AuthPage from "@pages/AuthPage";
-import Campaing from "@pages/Campaing";
+import Payroll from "@pages/Payroll";
 import Consultation from "@pages/Consultation";
 import ConsultationSpecific from "@pages/ConsultationSpecific";
 import Contact from "@pages/Contact";
@@ -30,7 +30,7 @@ const App = () => {
             />
             <Route
                 path="/pagadurias"
-                element={user ? <Layout><Campaing /></Layout> : <Navigate to="/" />}
+                element={user ? <Layout><Payroll /></Layout> : <Navigate to="/" />}
             />
             <Route
                 path="/consultas"

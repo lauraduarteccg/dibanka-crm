@@ -9,23 +9,11 @@ import SearchBar from "@components/Search";
 import ClientInfoPopup from "@components/PopupManagement";
 import { HiOutlineMail } from "react-icons/hi";
 import * as yup from "yup";
-/* 
-const userSchema = yup.object().shape({
-    usuario_name:                   yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
-    campaign_name:                  yup.string().required("La campaña es obligatoria"),
-    contact_name:                   yup.string().required("El nombre del cliente es obligatorio"),
-    update_phone:                   yup.string().required("El teléfono es obligatorio"),
-    identification_type:            yup.string().required("El tipo de identificación es obligatorio"), 
-    identification_number:          yup.string().required("El número de identificación obligatorio"), 
-    contact_email:                  yup.string().required("El correo electronico obligatorio"), 
-    consultation_title:             yup.string().required("La consulta es obligatoria"), 
-    consultation_specific:          yup.string().required("La consulta especifica es obligatoria"), 
-});
- */
+
 const columns = [
   { header: "ID",                 key: "id" },
   { header: "Agente",             key: "usuario_name" },
-  { header: "Pagaduria",          key: "campaign_name" },
+  { header: "Pagaduría",          key: "payroll_name" },  // 🔹 Cambiado
   { header: "Consulta",           key: "consultation_title" },
   { header: "Nombre de cliente",  key: "contact_name" },
   { header: "Identificación",     key: "contact_identification" },
@@ -52,7 +40,7 @@ const Management = () => {
     totalPages,
     fetchPage,
     handleSearch,
-    campaign,
+    payroll,
     contact,
     typeManagement,
     consultation,
@@ -75,7 +63,7 @@ const Management = () => {
         <ClientInfoPopup 
           open={open} 
           onClose={() => setOpen(false)} 
-          campaign={campaign} 
+          payroll={payroll}     // 🔹 Cambiado
           contact={contact} 
           typeManagement={typeManagement} 
           consultation={consultation}
@@ -131,7 +119,7 @@ const Management = () => {
           </div>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <P text1="Pagaduría: " text2={formData.campaign_name ?? "Sin pagaduria"} />
+            <P text1="Pagaduría: " text2={formData.payroll_name ?? "Sin pagaduría"} /> {/* 🔹 Cambiado */}
             <P text1="Campaña: " text2={"Aliados o afiliados"} />
           </div>
 
@@ -146,7 +134,7 @@ const Management = () => {
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
             <P text1="Consulta: " text2={formData.consultation?.reason_consultation ?? "Sin consulta"}/>
-            <P text1="Consulta especifica: " text2={formData.consultation?.specific_reason ?? "Sin consulta"}/>
+            <P text1="Consulta específica: " text2={formData.consultation?.specific_reason ?? "Sin consulta"}/>
           </div>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
@@ -157,7 +145,7 @@ const Management = () => {
           </div>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <P text1="Fecha de creacion: " text2={formData.created_at ?? "No registra fecha"}/>
+            <P text1="Fecha de creación: " text2={formData.created_at ?? "No registra fecha"}/>
           </div>
         </div>
       </Drawer>

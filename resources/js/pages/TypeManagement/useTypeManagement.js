@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 export const useTypeManagement = () => {
   const { token } = useContext(AuthContext);
   const [typemanagement, setTypeManagement] = useState([]);
-  const [campaign, setCampaign] = useState([]);
+  const [payroll, setPayroll] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
@@ -16,7 +16,7 @@ export const useTypeManagement = () => {
   const [formData, setFormData] = useState({
     id: null,
     name: "",
-    campaign: [], // <-- array of campaign ids
+    payroll: [], // <-- array de payroll ids
     is_active: true,
   });
 
@@ -33,15 +33,15 @@ export const useTypeManagement = () => {
 
         const mappedData = list.map((typeManagement) => ({
           id: typeManagement.id,
-          // campaign_names: string para mostrar en la tabla
-          campaign_names:
-            (typeManagement.campaigns || typeManagement.campaign || []).length > 0
-              ? (typeManagement.campaigns || typeManagement.campaign).map((c) => c.name).join(", ")
+          // payroll_names: string para mostrar en la tabla
+          payroll_names:
+            (typeManagement.payrolls || typeManagement.payroll || []).length > 0
+              ? (typeManagement.payrolls || typeManagement.payroll).map((p) => p.name).join(", ")
               : "—",
-          // campaign_array: array de objetos {id,name} si necesitas cuando editas desde la tabla
-          campaign_array: (typeManagement.campaigns || typeManagement.campaign || []).map((c) => ({
-            id: c.id,
-            name: c.name,
+          // payroll_array: array de objetos {id,name} si necesitas cuando editas desde la tabla
+          payroll_array: (typeManagement.payrolls || typeManagement.payroll || []).map((p) => ({
+            id: p.id,
+            name: p.name,
           })),
           name: typeManagement.name,
           is_active: typeManagement.is_active,
@@ -67,13 +67,12 @@ export const useTypeManagement = () => {
 
   // Manejar la edición: cargar formData con ids
   const handleEdit = (typemanagementRow) => {
-    // typemanagementRow puede venir desde la tabla (mapeado más arriba)
-    const campaignIds =
-      typemanagementRow.campaign_array?.map((c) => c.id) ?? typemanagementRow.campaign ?? [];
+    const payrollIds =
+      typemanagementRow.payroll_array?.map((p) => p.id) ?? typemanagementRow.payroll ?? [];
     setFormData({
       id: typemanagementRow.id,
       name: typemanagementRow.name,
-      campaign: Array.isArray(campaignIds) ? campaignIds : [campaignIds],
+      payroll: Array.isArray(payrollIds) ? payrollIds : [payrollIds],
       is_active: typemanagementRow.is_active ?? true,
     });
     setValidationErrors({});
@@ -87,11 +86,11 @@ export const useTypeManagement = () => {
     setValidationErrors({});
 
     try {
-      // Normalizar payload: backend espera campaign_id => array
+      // Normalizar payload: backend espera payroll_id => array
       const payload = {
         name: formData.name,
         is_active: formData.is_active,
-        campaign_id: Array.isArray(formData.campaign) ? formData.campaign : [],
+        payroll_id: Array.isArray(formData.payroll) ? formData.payroll : [],
       };
 
       let response;
@@ -115,8 +114,7 @@ export const useTypeManagement = () => {
         });
 
         setIsOpenADD(false);
-        setFormData({ id: null, name: "", campaign: [], is_active: true });
-        // recargar la página actual
+        setFormData({ id: null, name: "", payroll: [], is_active: true });
         fetchConsultation(currentPage || 1);
       }
     } catch (error) {
@@ -189,33 +187,32 @@ export const useTypeManagement = () => {
   };
 
   // ---------------------------------------------------------
-  // Lista autocompletable de Pagaduria
-  const fetchCampaign = useCallback(
+  // Lista de Pagadurías
+  const fetchPayroll = useCallback(
     async () => {
       try {
-        const res = await axios.get(`/api/campaigns`, {
+        const res = await axios.get(`/api/payrolls`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        // soporta data o campaigns según tu response
-        setCampaign(res.data.campaigns || res.data.data || res.data || []);
+        setPayroll(res.data.payrolls || res.data.data || res.data || []);
       } catch (err) {
         console.error(err);
-        setError("Error al obtener las pagadurias.");
+        setError("Error al obtener las pagadurías.");
       }
     },
     [token]
   );
 
   useEffect(() => {
-    fetchCampaign();
-  }, [fetchCampaign]);
+    fetchPayroll();
+  }, [fetchPayroll]);
 
   useEffect(() => {
     fetchConsultation(1);
   }, [fetchConsultation]);
 
   return {
-    campaign,
+    payroll,
     typemanagement,
     loading,
     error,

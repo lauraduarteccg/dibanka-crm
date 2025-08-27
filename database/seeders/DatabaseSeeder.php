@@ -31,8 +31,8 @@ class DatabaseSeeder extends Seeder
 
         DB::table('users')->insert($users);
 
-        // Crear campañas (pagadurías)
-        $campaigns = [
+        // Crear pagadurías
+        $payroll = [
             [
                 'name'       => 'Pagaduría Bogotá',
                 'type'       => 'Marketing',
@@ -48,13 +48,13 @@ class DatabaseSeeder extends Seeder
         ];
 
         // Insertar campañas y obtener IDs
-        $campaignIds = [];
-        foreach ($campaigns as $campaign) {
-            $existing = DB::table('campaigns')->where('name', $campaign['name'])->first();
+        $payrollIds = [];
+        foreach ($payroll as $payroll) {
+            $existing = DB::table('payrolls')->where('name', $payroll['name'])->first();
             if ($existing) {
-                $campaignIds[] = $existing->id;
+                $payrollIds[] = $existing->id;
             } else {
-                $campaignIds[] = DB::table('campaigns')->insertGetId($campaign);
+                $payrollIds[] = DB::table('payrolls')->insertGetId($payroll);
             }
         }
 
@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
         DB::table('management')->insert([
             [
                 'usuario_id'        => 1,
-                'campaign_id'       => $campaignIds[0],
+                'payroll_id'       => $payrollIds[0],
                 'consultation_id'   => $consultationId,
                 'contact_id'        => $contactId,
                 'created_at'        => now(),
@@ -89,7 +89,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'usuario_id'        => 2,
-                'campaign_id'       => $campaignIds[1],
+                'payroll_id'       => $payrollIds[1],
                 'consultation_id'   => $consultationId,
                 'contact_id'        => $contactId,
                 'created_at'        => now(),
@@ -103,8 +103,8 @@ class DatabaseSeeder extends Seeder
             'is_active' => 1,
         ]);
 
-        // Asignar campañas al tipo de gestión
-        $type->campaigns()->sync($campaignIds);
+        // Asignar pagadurias al tipo de gestión
+        $type->payroll()->sync($payrollIds);
 
         $specificId = DB::table('consultation_specifics')->insert([
             [
