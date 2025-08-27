@@ -86,6 +86,18 @@ const NavBar = () => {
                         </ListItemButton>
                     </ListItem>
 
+                    {/* Consultas */}
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => navigate("/consultas_especificas")}>
+                            <Tooltip title="Consultas especificas">
+                                <ListItemIcon>
+                                    <IoDocumentTextOutline className="text-white w-6 h-auto" />
+                                </ListItemIcon>
+                            </Tooltip>
+                            {isOpenMenu && <ListItemText primary="Consultas especificas" />}
+                        </ListItemButton>
+                    </ListItem>
+
                     {/* Gestiones */}
                     <ListItem disablePadding>
                         <ListItemButton onClick={() => navigate("/gestiones")}>

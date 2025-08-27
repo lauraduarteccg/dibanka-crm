@@ -1,27 +1,25 @@
-import React from "react";
-import { useCampaigns } from "./useCampaigns";
 import Table from "@components/Table";
 import ButtonAdd from "@components/ButtonAdd";
 import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
+import { useConsultSpecifics } from "./useConsultSpecifics.js";
 import * as yup from "yup";
-import { GoPerson } from "react-icons/go";
-import { MdOutlineCategory } from "react-icons/md";
+import { FaRegComment, FaBullseye } from "react-icons/fa6";
 
 const fields = [
-    { name: "name",         label: "Nombre",    type: "text", icon: GoPerson            },
-    { name: "type",         label: "Tipo",      type: "text", icon: MdOutlineCategory   },
-    { name: "is_active",    label: "Activo",    type: "boolean-select"                  },
+    { name: "specific_reason",      label: "Motivo especifico",     type: "text", icon: FaBullseye      },
 ];
 const userSchema = yup.object().shape({
-    name:       yup.string().   required("El nombre es obligatorio"),
-    type:       yup.string().   required("El tipo es obligatorio"),
-    is_active:  yup.boolean().  required("El estado es obligatorio"),
+    specific_reason:        yup.string().required("El motivo especifico es obligatorio"),
 });
+const columns=[ 
+    { header: "ID",                 key: "id"                   },
+    { header: "Motivo especifico",  key: "specific_reason"      },
+];   
 
-const Campaigns = () => {
+const ConsultationSpecific = () => {
     const {
-        campaigns,
+        consultation,
         loading,
         error,
         isOpenADD,
@@ -32,25 +30,25 @@ const Campaigns = () => {
         handleSubmit,
         currentPage,
         totalPages,
-        fetchCampaigns,
+        fetchConsultation,
         handleDelete,
         handleEdit,
-    } = useCampaigns();
+    } = useConsultSpecifics();
 
     return (
         <>
             <ButtonAdd
                 onClickButtonAdd={() => setIsOpenADD(true)}
-                text="Agregar pagaduria"
+                text="Agregar Consulta"
             />
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
-                Lista de pagadurías
+                Lista de Consultas Especificas
             </h1>
 
             <FormAdd
                 isOpen={isOpenADD}
                 setIsOpen={setIsOpenADD}
-                title="Pagaduría"
+                title="Consultas especificas"
                 formData={formData}
                 setFormData={setFormData}
                 handleSubmit={handleSubmit}
@@ -64,14 +62,10 @@ const Campaigns = () => {
                 <Loader />
             ) : (
                 <Table
-                    columns={[
-                        { header: "ID",         key: "id"   },
-                        { header: "Pagaduría",  key: "name" },
-                        { header: "Tipo",       key: "type" },
-                    ]}
-                    data={campaigns}
+                    columns={columns}
+                    data={consultation}
                     currentPage={currentPage}
-                    fetch={fetchCampaigns}
+                    fetch={fetchConsultation}
                     onDelete={handleDelete}
                     totalPages={totalPages}
                     actions={true}
@@ -82,4 +76,4 @@ const Campaigns = () => {
     );
 };
 
-export default Campaigns;
+export default ConsultationSpecific;

@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ConsultationResource extends JsonResource
+class ConsultationSpecificResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,10 +16,9 @@ class ConsultationResource extends JsonResource
     {
         return [
             'id'                    => $this->id,
-            'reason_consultation'   => $this->reason_consultation,
-            'specifics'           => ConsultationSpecificResource::collection($this->whenLoaded('specifics')),
-            'created_at'            => $this->created_at->format('Y-m-d H:i:s'),
-            'is_active'             => $this->is_active
+            'specific_reason'       => $this->specific_reason,
+            'is_active'             => $this->is_active,
+            'created_at'            => $this->created_at->format('Y-m-d H:i:s')
         ];
     }
 }

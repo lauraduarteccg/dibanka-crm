@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('consultations', function (Blueprint $table) {
+        Schema::create('consultation_specifics', function (Blueprint $table) {
             $table->id();
-
-            $table->string('reason_consultation')->default('');
+            $table->string('specific_reason')->default('');
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('consultations');
+        Schema::dropIfExists('consultation_specifics');
     }
 };

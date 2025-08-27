@@ -18,7 +18,7 @@ export default function PopupManagement({
   typeManagement = [],
   contact = [],
   consultation = [],
-  onClick = null, // opcional: si el padre quiere manejar el envío
+  onClick = null,
 }) {
   const [afiliados_aliados, setAfiliados_aliados] = useState("");
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -28,6 +28,27 @@ export default function PopupManagement({
   const [selectedConsultation, setSelectedConsultation] = useState(null);
   const [selectedSpecificConsultation, setSelectedSpecificConsultation] = useState(null);
   const [observations, setObservations] = useState("");
+  const [filteredTypeManagement, setFilteredTypeManagement] = useState(typeManagement);
+
+    useEffect(() => {
+    // si no hay campaña seleccionada, mostramos todo
+    if (!selectedCampaign) {
+      setFilteredTypeManagement(typeManagement);
+      return;
+    }
+
+    const filtered = typeManagement.filter((tm) =>
+      // campaign_array viene de useManagement; ajusta si tu campo se llama distinto
+      (tm.campaign_array || []).some((c) => c.id === selectedCampaign.id)
+    );
+
+    setFilteredTypeManagement(filtered);
+
+    // si el tipo seleccionado ya no pertenece a la pagaduría seleccionada, lo reseteamos
+    if (selectedTypeManagement && !filtered.some((t) => t.id === selectedTypeManagement.id)) {
+      setSelectedTypeManagement(null);
+    }
+  }, [selectedCampaign, typeManagement, selectedTypeManagement]);
 
   useEffect(() => {
     const apiValue = 0;
@@ -212,7 +233,7 @@ export default function PopupManagement({
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Tipo de gestión</h2>
           <Autocomplete
-            options={typeManagement}
+            options={filteredTypeManagement}
             getOptionLabel={(option) => option.name}
             value={selectedTypeManagement}
             onChange={(event, value) => {

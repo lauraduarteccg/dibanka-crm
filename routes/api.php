@@ -6,6 +6,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ManagementController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\ConsultationSpecificController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TypeManagementController;
 
@@ -47,6 +48,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/consultations/{consultation}', [ConsultationController::class, 'show']); // Mostrar una consulta específica
     Route::put('/consultations/{consultation}', [ConsultationController::class, 'update']); // Actualizar consulta
     Route::delete('/consultations/{consultation}', [ConsultationController::class, 'destroy']); // Eliminar consulta
+    
+    // 🔹 CRUD para Consultas Especificas
+    Route::get('/consultationspecifics', [ConsultationSpecificController::class, 'index']); // Listar consultas especificas
+    Route::post('/consultationspecifics', [ConsultationSpecificController::class, 'store']); // Crear consulta especifica
+    Route::get('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'show']); // Mostrar una consulta específica especifica
+    Route::put('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'update']); // Actualizar consulta especifica
+    Route::delete('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'destroy']); // Eliminar consulta especifica
 
     // 🔹 CRUD para Contactos
     Route::get('/contacts', [ContactController::class, 'index']); // Listar contacto

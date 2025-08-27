@@ -6,6 +6,8 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\TypeManagement;
+use App\Models\Consultation;
+use App\Models\ConsultationSpecific;
 
 class DatabaseSeeder extends Seeder
 {
@@ -59,7 +61,6 @@ class DatabaseSeeder extends Seeder
         // Crear o tomar consulta
         $consultationId = DB::table('consultations')->first()->id ?? DB::table('consultations')->insertGetId([
             'reason_consultation'   => 'Consulta de saldo',
-            'specific_reason'       => 'Cuenta bancaria',
             'created_at'            => now(),
             'updated_at'            => now(),
         ]);
@@ -104,5 +105,22 @@ class DatabaseSeeder extends Seeder
 
         // Asignar campañas al tipo de gestión
         $type->campaigns()->sync($campaignIds);
+
+        $specificId = DB::table('consultation_specifics')->insert([
+            [
+                'specific_reason' => 'Consulta bancaria',
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]   
+         ]);
+
+         DB::table('consultations_and_specific')->insert([
+            'consultation_id'          => $consultationId,
+            'consultation_specific_id' => $specificId,
+            'is_active'                => 1,
+            'created_at'               => now(),
+            'updated_at'               => now(),
+        ]);
     }
 }

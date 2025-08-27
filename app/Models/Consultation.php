@@ -11,7 +11,17 @@ class Consultation extends Model
 
     protected $fillable = [
         'reason_consultation',
-        'specific_reason',
-        'is_active'
+        'is_active',
     ];
+
+    // Relación many-to-many con ConsultationSpecific
+    public function specifics()
+    {
+        return $this->belongsToMany(
+            ConsultationSpecific::class,
+            'consultations_and_specific',      // nombre tabla pivote
+            'consultation_id',                 // FK de este modelo en pivote
+            'consultation_specific_id'         // FK del otro modelo en pivote
+        )->withTimestamps();
+    }
 }

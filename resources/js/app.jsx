@@ -8,6 +8,7 @@ import Users from "@pages/Users";
 import AuthPage from "@pages/AuthPage";
 import Campaing from "@pages/Campaing";
 import Consultation from "@pages/Consultation";
+import ConsultationSpecific from "@pages/ConsultationSpecific";
 import Contact from "@pages/Contact";
 import Management from "@pages/Management";
 import TypeManagement from "@pages/TypeManagement";
@@ -46,6 +47,10 @@ const App = () => {
             <Route
                 path="/tipo_de_gestiones"
                 element={user ? <Layout><TypeManagement /></Layout> : <Navigate to="/" />}
+            />
+            <Route
+                path="/consultas_especificas"
+                element={user ? <Layout><ConsultationSpecific /></Layout> : <Navigate to="/" />}
             />
         </Routes>
     );

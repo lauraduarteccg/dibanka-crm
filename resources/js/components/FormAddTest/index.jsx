@@ -20,9 +20,9 @@ const FormAdd = ({
   validationErrors,
   fields,
   schema,
-  checklist, // array [{id,name},...]
-  selectedChecklist, // array of ids OR array of objects
-  setSelectedChecklist, // handler from parent (we'll pass ids to it)
+  checklist,
+  selectedChecklist,
+  setSelectedChecklist, // <-- lo recibimos ahora
 }) => {
   const [errors, setErrors] = useState({});
 
@@ -40,8 +40,9 @@ const FormAdd = ({
   const handleCloseModal = () => {
     setIsOpen(false);
     setErrors({});
-    // Reset formData using fields definition
-    setFormData(Object.fromEntries(fields.map(f => [f.name, f.type === "checkbox" ? false : ""])));
+    // Reset a estado consistente — adapta si tienes más campos persistentes
+    setFormData({ id: null, reason_consultation: "", specific_reason: [], is_active: true });
+    if (typeof setSelectedChecklist === "function") setSelectedChecklist([]);
   };
 
   // --- Helpers para checklist: normalizar selectedChecklist a objetos para Autocomplete.value
@@ -51,16 +52,16 @@ const FormAdd = ({
     ? selectedChecklist.map((item) => {
         // si ya es objeto con id/name
         if (item && typeof item === "object") {
-          // puede venir { id, name } o { label, value }
+          // puede venir { id, name } o { label, value } o { id, specific_reason }
           const id = item.id ?? item.value;
-          const found = checklistArray.find((c) => c.id === id);
+          const found = checklistArray.find((c) => c.id === id || String(c.id) === String(id));
           if (found) return found;
           // si no encontramos, devolver un objeto compatible
-          return { id: id, name: item.name ?? item.label ?? String(id) };
+          return { id: id, name: item.name ?? item.label ?? item.specific_reason ?? String(id) };
         }
 
         // si viene como id (number or string)
-        const found = checklistArray.find((c) => c.id === item);
+        const found = checklistArray.find((c) => String(c.id) === String(item));
         if (found) return found;
         return { id: item, name: String(item) };
       })
@@ -68,11 +69,11 @@ const FormAdd = ({
 
   // onChange handler: recibe array de objetos (opciones). Guardamos ids en formData y le pasamos ids al padre.
   const onChecklistChange = (event, newValue) => {
-    // newValue = [{id,name}, ...]
+    // newValue = [{...}, {...}]
     const ids = Array.isArray(newValue) ? newValue.map((v) => v?.id ?? v) : [];
-    // Actualizamos el formData (interno) con ids
-    setFormData((prev) => ({ ...prev, campaign: ids }));
-    // También notificamos al padre: le pasamos ids (el padre puede esperar ids o normalizarlos)
+    // Actualizamos el formData con ids en specific_reason
+    setFormData((prev) => ({ ...prev, specific_reason: ids }));
+    // También notificamos al padre
     if (typeof setSelectedChecklist === "function") {
       setSelectedChecklist(ids);
     }
@@ -151,21 +152,25 @@ const FormAdd = ({
                     multiple
                     id={`autocomplete-${field.name}`}
                     options={checklistArray}
-                    // Autocomplete espera los objetos completos para mostrar label (name)
+                    // Autocomplete espera los objetos completos para mostrar label
                     value={selectedChecklistObjects}
-                    getOptionLabel={(option) => option?.name ?? String(option ?? "")}
+                    getOptionLabel={(option) =>
+                      option?.name ?? option?.specific_reason ?? String(option ?? "")
+                    }
                     isOptionEqualToValue={(option, value) => {
-                      return (option?.id ?? option) === (value?.id ?? value);
+                      return String(option?.id ?? option) === String(value?.id ?? value);
                     }}
                     onChange={onChecklistChange}
-                    renderInput={(params) => <TextField {...params} variant="standard" />}
+                    renderInput={(params) => (
+                      <TextField {...params} variant="standard" placeholder={field.label} />
+                    )}
                   />
                 ) : (
                   <InputWithIcon
                     icon={field.icon}
                     type={field.type}
                     placeholder={field.label}
-                    value={formData[field.name] || ""}
+                    value={formData[field.name] ?? ""}
                     onChange={(e) => {
                       setFormData({ ...formData, [field.name]: e.target.value });
                       validateField(field.name, e.target.value);
@@ -175,9 +180,15 @@ const FormAdd = ({
                 )}
 
                 {/* Errores */}
-                {errors[field.name] && <Alert severity="error" className="mt-2">{errors[field.name]}</Alert>}
+                {errors[field.name] && (
+                  <Alert severity="error" className="mt-2">
+                    {errors[field.name]}
+                  </Alert>
+                )}
                 {validationErrors[field.name] && (
-                  <Alert severity="error" className="mt-2">{validationErrors[field.name][0]}</Alert>
+                  <Alert severity="error" className="mt-2">
+                    {validationErrors[field.name][0]}
+                  </Alert>
                 )}
               </div>
             );
