@@ -2,10 +2,12 @@ import { useState, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
+import { Campaign } from "@mui/icons-material";
 
 export const useContact = () => {
     const { token } = useContext(AuthContext);
     const [contact,          setContact]             = useState([]);
+    const [payroll,          setPayroll]             = useState([]);
     const [loading,          setLoading]             = useState(true);
     const [error,            setError]               = useState(null);
     const [validationErrors, setValidationErrors]    = useState({});
@@ -14,6 +16,8 @@ export const useContact = () => {
     const [isOpenADD,        setIsOpenADD]           = useState(false);
     const [formData,         setFormData]            = useState({
         id: null,
+        campaign                : "",
+        payroll_id              : "",
         name                    : "",
         identification_type     : "",
         phone                   : "",
@@ -31,10 +35,14 @@ export const useContact = () => {
                 const res = await axios.get(`/api/contacts?page=${page}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setContact      (res.data.contacts);
+                setContact(
+                    res.data.contacts.map((c) => ({
+                        ...c,
+                        payroll_name: c.payroll?.name ?? "",
+                    }))
+                    );
                 setTotalPages   (res.data.pagination.total_pages);
                 setCurrentPage  (res.data.pagination.current_page);
-                console.log     (res.data.contacts)
             } catch (err) {
                 setError("Error al obtener laos contactos.");
             } finally {
@@ -51,7 +59,10 @@ export const useContact = () => {
     // Manejar la edición de consultas
     const handleEdit = (contact) => {
         setFormData({
-            id: contact.id,
+            id                      : contact.id,
+            campaign                : contact.campaign,
+            payroll_id: contact.payroll?.id ?? "",
+payroll_name: contact.payroll?.name ?? "",
             name                    : contact.name,
             identification_type     : contact.identification_type,
             phone                   : contact.phone,
@@ -203,7 +214,30 @@ export const useContact = () => {
             }
         });
     };
+
+    // ---------------------------------------------------------
+    // Lista de Pagadurías
+    const fetchPayroll = useCallback(async () => {
+    try {
+        const res = await axios.get(`/api/payrolls`, {
+        headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = res.data.payrolls || res.data.data || res.data || [];
+        setPayroll(data);
+    } catch (err) {
+        console.error(err);
+        setError("Error al obtener las pagadurías.");
+    }
+    }, [token]);
+
+    useEffect(() => {
+    fetchPayroll();
+    }, [fetchPayroll]);
+
+
     return {
+        fetchPayroll,
+        payroll,
         contact,
         loading,
         error,

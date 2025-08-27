@@ -16,6 +16,14 @@ class ContactResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'campaign' => $this->campaign,
+            // Campaña relacionada
+            'payroll' => $this->whenLoaded('payroll', function () {
+                return [
+                    'id'    => $this->payroll->id,
+                    'name'  => $this->payroll->name,
+                ];
+            }),
             'name' => $this->name,
             'identification_type' => $this->identification_type,
             'identification_number' => $this->identification_number,

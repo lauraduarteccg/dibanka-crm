@@ -6,8 +6,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\TypeManagement;
-use App\Models\Consultation;
-use App\Models\ConsultationSpecific;
 
 class DatabaseSeeder extends Seeder
 {
@@ -67,6 +65,8 @@ class DatabaseSeeder extends Seeder
 
         // Crear o tomar contacto
         $contactId = DB::table('contacts')->first()->id ?? DB::table('contacts')->insertGetId([
+            'campaign'              => 'Aliados',
+            'payroll_id'            => $payrollIds[1],
             'name'                  => 'Juan Pérez',
             'identification_type'   => 'Cédula',
             'phone'                 => '3123456789',

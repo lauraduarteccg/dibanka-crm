@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
-      
+            $table->string('campaign');
+            $table->string('payroll_id')->constrained('payrolls')->onDelete('cascade');
             $table->string('name');
             $table->string('email');
             $table->string('phone');

@@ -11,6 +11,11 @@ import { SlPhone } from "react-icons/sl";
 import { HiOutlineMail } from "react-icons/hi";
 
 const fields = [
+    { name: "campaign",                 label: "Campaña",                   type: "text", icon: FaRegComment                },
+    { 
+        name: "payroll_id", label: "Pagaduría", type: "checklist", icon: FaRegComment,
+        options: ({ payroll }) => (payroll || []).map((p) => ({ label: p.name, value: p.id })),
+    },
     { name: "name",                     label: "Nombre",                    type: "text", icon: FaRegComment                },
     { name: "email",                    label: "Correo",                    type: "text", icon: HiOutlineMail               },
     { name: "phone",                    label: "Teléfono",                  type: "text", icon: SlPhone                     },
@@ -19,6 +24,8 @@ const fields = [
     { name: "identification_number",    label: "Numero de identificación",  type: "text", icon: PiIdentificationBadgeLight  },
 ];
 const userSchema = yup.object().shape({
+    campaign:               yup.string().required("La campaña es obligatorio"),
+    payroll_id:             yup.string().required("La pagaduria es obligatorio"),
     name:                   yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
     phone:                  yup.string().required("El teléfono es obligatorio"),
     email:                  yup.string().required("El correo electronico es obligatorio"),
@@ -28,6 +35,8 @@ const userSchema = yup.object().shape({
 });
 const columns=[ 
     { header: "ID",                         key: "id"                       },
+    { header: "Campaña",                    key: "campaign"                 },
+    { header: "Pagaduria",                  key: "payroll_name"             },
     { header: "Nombre",                     key: "name"                     },
     { header: "Correo",                     key: "email"                    },
     { header: "Telefono",                   key: "phone"                    },
@@ -38,6 +47,8 @@ const columns=[
 
 const Contact = () => {
     const {
+        fetchPayroll,
+        payroll,
         contact,
         loading,
         error,
@@ -53,6 +64,26 @@ const Contact = () => {
         handleDelete,
         handleEdit,
     } = useContact();
+
+      // Normaliza la selección del checklist a array de ids antes de guardar en formData
+    const handleSetSelectedChecklist = (selected) => {
+        if (!selected) {
+        setFormData((prev) => ({ ...prev, payroll: [] }));
+        return;
+        }
+
+        if (Array.isArray(selected) && selected.length > 0) {
+        const first = selected[0];
+        if (typeof first === "object") {
+            const ids = selected.map((s) => s.value ?? s.id ?? s);
+            setFormData((prev) => ({ ...prev, payroll: ids }));
+        } else {
+            setFormData((prev) => ({ ...prev, payroll: selected }));
+        }
+        } else {
+        setFormData((prev) => ({ ...prev, payroll: [] }));
+        }
+    };
 
     return (
         <>
@@ -75,6 +106,9 @@ const Contact = () => {
                 validationErrors={validationErrors}
                 fields={fields}
                 schema={userSchema}
+                checklist={payroll}
+                selectedChecklist={formData.payroll || []}
+                setSelectedChecklist={handleSetSelectedChecklist}
             />
 
             {loading ? (

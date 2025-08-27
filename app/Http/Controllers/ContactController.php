@@ -14,7 +14,7 @@ class ContactController extends Controller
     public function index()
     {
         $contacts = Contact::paginate(10);
-
+        $contacts = Contact::with('payroll')->paginate(10);
         return response()->json([
             'message'           => 'Consultas obtenidas con éxito',
             'contacts'          => ContactResource::collection($contacts),
@@ -33,6 +33,8 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'campaign'              => 'required|string|max:255',
+            'payroll_id'            => 'sometimes|exists:payrolls,id',
             'name'                  => 'required|string|max:255',
             'identification_type'   => 'required|string|max:255',
             'phone'                 => 'required|string|max:255',
@@ -48,6 +50,7 @@ class ContactController extends Controller
         }
 
         $contacts = Contact::create($request->all());
+        $contacts->load(['payroll']);
 
         return response()->json([
             'message' => 'Consulta creada con éxito',
@@ -77,6 +80,8 @@ class ContactController extends Controller
     {
         $contacts = Contact::findOrFail($id);
         $contacts->update($request->only(
+            'campaign',
+            'payroll_id',
             'name', 
             'identification_type', 
             'phone', 
@@ -85,6 +90,7 @@ class ContactController extends Controller
             'email', 
             'is_active'
         ));
+        $contacts->load(['payroll']);
         return response()->json([
             'success' => true,
             'message' => 'Contacto actualizada con éxito',
