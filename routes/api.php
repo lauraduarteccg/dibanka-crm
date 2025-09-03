@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TypeManagementController;
 use App\Http\Controllers\PayrollsConsultationsController;
 use App\Http\Controllers\PayrollsConsultationSpecificController;
+use App\Http\Controllers\SpecialCasesController;
 
 // Ruta de autenticación
 Route::post('/login', [AuthController::class, 'login']);
@@ -86,6 +87,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'show']); // Mostrar una pagaduría y consulta específica
     Route::put('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'update']); // Actualizar pagaduría y consulta
     Route::delete('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'destroy']); // Desactivar pagaduría y consulta
+    
+    // 🔹 CRUD para los casos especiales
+    Route::get('/specialcases', [SpecialCasesController::class, 'index']); // Listar casos especiales
+    Route::post('/specialcases', [SpecialCasesController::class, 'store']); // Crear caso especial
+    Route::get('/specialcases/{id}', [SpecialCasesController::class, 'show']); // Mostrar una caso especial
+    Route::put('/specialcases/{id}', [SpecialCasesController::class, 'update']); // Actualizar caso especial
+    Route::delete('/specialcases/{id}', [SpecialCasesController::class, 'destroy']); // Eliminar caso especial    
     
     // Rutas de autenticación protegidas
     Route::post('/logout', [AuthController::class, 'logout']);

@@ -17,7 +17,6 @@ class ConsultationResource extends JsonResource
         return [
             'id'                    => $this->id,
             'reason_consultation'   => $this->reason_consultation,
-            'specifics'           => ConsultationSpecificResource::collection($this->whenLoaded('specifics')),
             'created_at'            => $this->created_at->format('Y-m-d H:i:s'),
             'is_active'             => $this->is_active
         ];

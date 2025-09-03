@@ -14,9 +14,21 @@ use App\Http\Requests\User\StoreUserRequest;
 class UserController extends Controller
 {
     // Obtener todos los usuarios
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::paginate(10);
+        $query = User::query();
+
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+            });
+        } 
+
+        $users = $query->paginate(10);
+        
         return response()->json([
             'message'       => 'Usuarios obtenidos con éxito',
             'users'         => UserResource::collection($users),

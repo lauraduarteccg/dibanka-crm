@@ -26,7 +26,7 @@ class ContactRequest extends FormRequest
         $contactID = $this->route('contacts') ?->id;
         return [
             'campaign'      => 'required|string|max:255',
-            'payroll_id'    => 'required|numeric|min:1',        
+            'payroll_id'    => 'required|numeric',        
             'payroll_id.*'  => 'integer|exists:payrolls,id',
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|max:255',

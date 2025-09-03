@@ -13,15 +13,4 @@ class Consultation extends Model
         'reason_consultation',
         'is_active',
     ];
-
-    // Relación many-to-many con ConsultationSpecific
-    public function specifics()
-    {
-        return $this->belongsToMany(
-            ConsultationSpecific::class,
-            'consultations_and_specific',      // nombre tabla pivote
-            'consultation_id',                 // FK de este modelo en pivote
-            'consultation_specific_id'         // FK del otro modelo en pivote
-        )->withTimestamps();
-    }
 }

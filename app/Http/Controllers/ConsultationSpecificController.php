@@ -15,9 +15,19 @@ class ConsultationSpecificController extends Controller
     /**
      * Listar todas las consultas específicas con paginación
      */
-    public function index()
+    public function index(Request $request)
     {
-        $specifics = ConsultationSpecific::paginate(10);
+        $query = ConsultationSpecific::query();
+        
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('specific_reason', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        $specifics = $query->paginate(10);
 
         return response()->json([
             'message'       => 'Consultas específicas obtenidas con éxito',

@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
 
         DB::table('users')->insert($users);
 
+        $usersIds = DB::table('users')->pluck('id')->toArray();
+
         // Crear pagadurías
         $payroll = [
             [
@@ -62,6 +64,16 @@ class DatabaseSeeder extends Seeder
             'created_at'            => now(),
             'updated_at'            => now(),
         ]);
+        
+        $specificId = DB::table('consultation_specifics')->insert([
+            [
+                'specific_reason' => 'Consulta bancaria',
+                'consultation_id' => $consultationId,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]   
+         ]);
 
         // Crear o tomar contacto
         $contactId = DB::table('contacts')->first()->id ?? DB::table('contacts')->insertGetId([
@@ -82,16 +94,26 @@ class DatabaseSeeder extends Seeder
             [
                 'usuario_id'        => 1,
                 'payroll_id'       => $payrollIds[0],
-                'consultation_id'   => $consultationId,
                 'contact_id'        => $contactId,
+                'solution'          => 'Si',
+                'consultation_id'   => $consultationId,
+                'specific_id'       => $specificId,
+                'comments'          => 'Afiliado se comunica para conocer por qué aún su crédito se encuentra en estado de en revisión, esperando una autorización de Dibanka, se validan datos y se informa que es la entidad Financiera ',
+                'sms'               => 'Si',
+                'wsp'               => 'No',
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ],
             [
                 'usuario_id'        => 2,
                 'payroll_id'       => $payrollIds[1],
-                'consultation_id'   => $consultationId,
                 'contact_id'        => $contactId,
+                'solution'          => 'Si',
+                'consultation_id'   => $consultationId,
+                'specific_id'       => $specificId,
+                'comments'          => 'Aliado se comunica informa que necesita firmar la libranza pero no le llega el codigo otp, se validan datos se le indica que no tiene numero actualizado pero que valide todas las bandejas de entrada confirma que no hay nada se le solicita esperar un lapso de tiempo por si es un error de conexión',
+                'sms'               => 'Si',
+                'wsp'               => 'No',
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ],
@@ -106,15 +128,6 @@ class DatabaseSeeder extends Seeder
         // Asignar pagadurias al tipo de gestión
         $type->payroll()->sync($payrollIds);
 
-        $specificId = DB::table('consultation_specifics')->insert([
-            [
-                'specific_reason' => 'Consulta bancaria',
-                'consultation_id' => $consultationId,
-                'is_active' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]   
-         ]);
 
          DB::table('payrolls_consultation_specific')->insert([
             [
@@ -149,5 +162,17 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ]
          ]);
+        
+        DB::table('special_cases')->insert([
+            [
+                'user_id'           => $usersIds[0],
+                'contact_id'        => $contactId,
+                'management_messi'  => 'Nota Creada',
+                'id_call'           => '68b871ae742f0866f0010a1d',
+                'id_messi'          => 'CTR-881585',
+                'created_at'        => now(),
+                'updated_at'        => now()
+            ]
+            ]);
     }
 }

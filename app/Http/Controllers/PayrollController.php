@@ -10,10 +10,22 @@ use App\Http\Requests\PayrollRequest;
 
 class PayrollController extends Controller
 {
-    // Obtener todas las pagadurías con paginación
-    public function index()
+    // Obtener todas las pagadurías con paginación y búsqueda
+    public function index(Request $request)
     {
-        $payrolls = Payroll::paginate(10);
+        $query = Payroll::query();
+
+        // Si hay término de búsqueda, aplicar filtro
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('type', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        $payrolls = $query->paginate(10);
 
         return response()->json([
             'message'    => 'Pagadurías obtenidas con éxito',
@@ -30,11 +42,6 @@ class PayrollController extends Controller
     // Crear una nueva pagaduría
     public function store(PayrollRequest $request)
     {
-        $request->validate([
-            'name'      => 'required|string|max:255',
-            'type'      => 'nullable|string',
-        ]);
-
         $payroll = Payroll::create($request->only(['name', 'type', 'is_active']));
 
         return response()->json([

@@ -16,8 +16,13 @@ return new class extends Migration
             $table->timestamps();
             $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('payroll_id')->constrained('payrolls')->onDelete('cascade');
-            $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
             $table->foreignId('contact_id')->constrained('contacts')->onDelete('cascade');
+            $table->string('solution');
+            $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
+            $table->foreignId('specific_id')->constrained('consultation_specifics')->onDelete(('cascade'));
+            $table->text('comments');
+            $table->string('sms');
+            $table->string('wsp');
         });
     }
 
