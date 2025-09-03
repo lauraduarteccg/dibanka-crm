@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ConsultationSpecificResource;
+use App\Http\Requests\SpecificConsultRequest;
 
 class ConsultationSpecificController extends Controller
 {
@@ -35,14 +36,9 @@ class ConsultationSpecificController extends Controller
     /**
      * Crear una nueva consulta específica
      */
-    public function store(Request $request)
+    public function store(SpecificConsultRequest $request)
     {
-        $rules = [
-            'specific_reason' => 'required|string|max:255',
-            'is_active'       => 'sometimes|boolean',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all());
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }

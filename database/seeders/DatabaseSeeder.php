@@ -32,13 +32,13 @@ class DatabaseSeeder extends Seeder
         // Crear pagadurías
         $payroll = [
             [
-                'name'       => 'Pagaduría Bogotá',
-                'type'       => 'Marketing',
+                'name'       => 'Casur',
+                'type'       => 'Pagaduria',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name'       => 'EDUCAME',
+                'name'       => 'Educame',
                 'type'       => 'Medellín',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -109,18 +109,45 @@ class DatabaseSeeder extends Seeder
         $specificId = DB::table('consultation_specifics')->insert([
             [
                 'specific_reason' => 'Consulta bancaria',
+                'consultation_id' => $consultationId,
                 'is_active' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]   
          ]);
 
-         DB::table('consultations_and_specific')->insert([
-            'consultation_id'          => $consultationId,
-            'consultation_specific_id' => $specificId,
-            'is_active'                => 1,
-            'created_at'               => now(),
-            'updated_at'               => now(),
-        ]);
+         DB::table('payrolls_consultation_specific')->insert([
+            [
+                'payroll_id' => $payrollIds[0],
+                'consultation_specific_id' => $specificId,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'payroll_id' => $payrollIds[1],
+                'consultation_specific_id' => $specificId,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+         ]);
+
+        DB::table('payrolls_consultations')->insert([
+            [
+                'payroll_id' => $payrollIds[0],
+                'consultation_id' => $consultationId,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'payroll_id' => $payrollIds[1],
+                'consultation_id' => $consultationId,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+         ]);
     }
 }

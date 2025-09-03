@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ContactResource;
+USE App\Http\Requests\ContactRequest;
 
 class ContactController extends Controller
 {
@@ -30,25 +31,8 @@ class ContactController extends Controller
     }
 
     // Crear contact
-    public function store(Request $request)
+    public function store(ContactRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'campaign'              => 'required|string|max:255',
-            'payroll_id'            => 'sometimes|exists:payrolls,id',
-            'name'                  => 'required|string|max:255',
-            'identification_type'   => 'required|string|max:255',
-            'phone'                 => 'required|string|max:255',
-            'identification_number' => 'required|string|max:255',
-            'update_phone'          => 'required|string|max:255',
-            'email'                 => 'required|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         $contacts = Contact::create($request->all());
         $contacts->load(['payroll']);
 

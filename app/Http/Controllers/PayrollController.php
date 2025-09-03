@@ -6,6 +6,7 @@ use App\Models\Payroll;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Resources\PayrollResource;
+use App\Http\Requests\PayrollRequest;
 
 class PayrollController extends Controller
 {
@@ -27,12 +28,11 @@ class PayrollController extends Controller
     }
 
     // Crear una nueva pagaduría
-    public function store(Request $request)
+    public function store(PayrollRequest $request)
     {
         $request->validate([
             'name'      => 'required|string|max:255',
             'type'      => 'nullable|string',
-            'is_active' => 'required|boolean',
         ]);
 
         $payroll = Payroll::create($request->only(['name', 'type', 'is_active']));

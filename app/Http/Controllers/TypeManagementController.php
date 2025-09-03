@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use App\Http\Resources\TypeManagementResource;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\TypeManagementRequest;
 
 class TypeManagementController extends Controller
 {
@@ -27,15 +28,9 @@ class TypeManagementController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function store(Request $request)
+    public function store(TypeManagementRequest $request)
     {
-        $rules = [
-            'payroll_id'   => 'required|array|min:1',
-            'payroll_id.*' => 'integer|exists:payroll,id',
-            'name'          => 'required|string',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all());
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);

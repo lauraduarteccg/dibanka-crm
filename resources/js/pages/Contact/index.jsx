@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import Table from "@components/Table";
 import ButtonAdd from "@components/ButtonAdd";
 import FormAdd from "@components/FormAddTest";
@@ -11,12 +12,9 @@ import { SlPhone } from "react-icons/sl";
 import { HiOutlineMail } from "react-icons/hi";
 
 const fields = [
-    { name: "campaign",                 label: "Campaña",                   type: "text", icon: FaRegComment                },
-    { 
-        name: "payroll_id", label: "Pagaduría", type: "checklist", icon: FaRegComment,
-        options: ({ payroll }) => (payroll || []).map((p) => ({ label: p.name, value: p.id })),
-    },
-    { name: "name",                     label: "Nombre",                    type: "text", icon: FaRegComment                },
+    { name: "campaign",                 label: "Campaña",                   type: "select", options: [{value: "Aliados", label: "Aliados"},{value: "Afiliados", label: "Afiliados"}]                },
+    { name: "payroll_id",               label: "Pagaduría",                 type: "select" , options: [] },
+    { name: "name",                     label: "Nombre",                    type: "text", options: [{value: "NIT", label: "NIT"},{value: "CEDULA DE CIUDADANIA", label: "CEDULA DE CIUDADANIA"}]},
     { name: "email",                    label: "Correo",                    type: "text", icon: HiOutlineMail               },
     { name: "phone",                    label: "Teléfono",                  type: "text", icon: SlPhone                     },
     { name: "update_phone",             label: "Celular actualizado",       type: "text", icon: SlPhone                     },
@@ -65,25 +63,21 @@ const Contact = () => {
         handleEdit,
     } = useContact();
 
-      // Normaliza la selección del checklist a array de ids antes de guardar en formData
-    const handleSetSelectedChecklist = (selected) => {
-        if (!selected) {
-        setFormData((prev) => ({ ...prev, payroll: [] }));
-        return;
-        }
 
-        if (Array.isArray(selected) && selected.length > 0) {
-        const first = selected[0];
-        if (typeof first === "object") {
-            const ids = selected.map((s) => s.value ?? s.id ?? s);
-            setFormData((prev) => ({ ...prev, payroll: ids }));
-        } else {
-            setFormData((prev) => ({ ...prev, payroll: selected }));
+    // Efecto para cambiar automáticamente el tipo de identificación
+    useEffect(() => {
+        if (formData.campaign === "Aliados") {
+            setFormData(prev => ({
+                ...prev,
+                identification_type: "NIT"
+            }));
+        } else if (formData.campaign === "Afiliados") {
+            setFormData(prev => ({
+                ...prev,
+                identification_type: "CEDULA DE CIUDADANIA"
+            }));
         }
-        } else {
-        setFormData((prev) => ({ ...prev, payroll: [] }));
-        }
-    };
+    }, [formData.campaign, setFormData]);
 
     return (
         <>
@@ -104,11 +98,19 @@ const Contact = () => {
                 handleSubmit={handleSubmit}
                 loading={loading}
                 validationErrors={validationErrors}
-                fields={fields}
+                fields={fields.map(field => {
+                    if (field.name === "payroll_id") {
+                        return {
+                            ...field,
+                            options: payroll.map(p => ({ 
+                                value: p.id, 
+                                label: p.name 
+                            }))
+                        };
+                    }
+                    return field;
+                })}
                 schema={userSchema}
-                checklist={payroll}
-                selectedChecklist={formData.payroll || []}
-                setSelectedChecklist={handleSetSelectedChecklist}
             />
 
             {loading ? (

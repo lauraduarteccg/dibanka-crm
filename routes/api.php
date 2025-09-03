@@ -9,6 +9,8 @@ use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\ConsultationSpecificController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TypeManagementController;
+use App\Http\Controllers\PayrollsConsultationsController;
+use App\Http\Controllers\PayrollsConsultationSpecificController;
 
 // Ruta de autenticación
 Route::post('/login', [AuthController::class, 'login']);
@@ -70,6 +72,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/typemanagements/{typemanagement}', [TypeManagementController::class, 'update']); // Actualizar tipo de gestion
     Route::delete('/typemanagements/{typemanagement}', [TypeManagementController::class, 'destroy']); // Eliminar tipo de gestion
 
+    // 🔹 CRUD para Pagadurías y Consultas
+    Route::get('/payrollsconsultations', [PayrollsConsultationsController::class, 'index']); // Listar pagadurías y consultas
+    Route::post('/payrollsconsultations', [PayrollsConsultationsController::class, 'store']); // Crear pagaduia y consulta
+    Route::get('/payrollsconsultations/{id}', [PayrollsConsultationsController::class, 'show']); // Mostrar una pagaduría y consulta específica
+    Route::put('/payrollsconsultations/{id}', [PayrollsConsultationsController::class, 'update']); // Actualizar pagaduría y consulta
+    Route::delete('/payrollsconsultations/{payrollconsultation}', [PayrollsConsultationsController::class, 'destroy']); // Desactivar pagaduría y consulta
+
+    
+    // 🔹 CRUD para Pagadurías y Consultas especificas
+    Route::get('/payrollsconsultationspecifics', [PayrollsConsultationSpecificController::class, 'index']); // Listar pagadurías y consultas
+    Route::post('/payrollsconsultationspecifics', [PayrollsConsultationSpecificController::class, 'store']); // Crear pagaduia y consulta
+    Route::get('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'show']); // Mostrar una pagaduría y consulta específica
+    Route::put('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'update']); // Actualizar pagaduría y consulta
+    Route::delete('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'destroy']); // Desactivar pagaduría y consulta
+    
     // Rutas de autenticación protegidas
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);

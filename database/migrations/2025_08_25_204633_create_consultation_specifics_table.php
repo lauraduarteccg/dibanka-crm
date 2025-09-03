@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('consultation_specifics', function (Blueprint $table) {
             $table->id();
             $table->string('specific_reason')->default('');
+            $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });

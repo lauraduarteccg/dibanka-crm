@@ -1,9 +1,8 @@
-import React, { useState, forwardRef } from "react";
+import React, { useState, forwardRef, useEffect } from "react";
 import Button from "../Button";
 import Alert from "@mui/material/Alert";
 import { Dialog, Slide } from "@mui/material";
-import InputWithIcon from "@components/InputWithIcon";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, TextField, Select, MenuItem } from "@mui/material";
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="left" ref={ref} {...props} />;
@@ -20,11 +19,26 @@ const FormAdd = ({
   validationErrors,
   fields,
   schema,
-  checklist,
-  selectedChecklist,
-  setSelectedChecklist, // <-- lo recibimos ahora
 }) => {
   const [errors, setErrors] = useState({});
+  
+  // Crear estado inicial basado en la estructura de formData
+  const getInitialFormData = () => {
+    const initialState = {};
+    Object.keys(formData).forEach(key => {
+      // Determinar el valor inicial según el tipo de dato
+      if (Array.isArray(formData[key])) {
+        initialState[key] = [];
+      } else if (typeof formData[key] === 'boolean') {
+        initialState[key] = false;
+      } else {
+        initialState[key] = '';
+      }
+    });
+    return initialState;
+  };
+
+  const [initialFormState] = useState(getInitialFormData());
 
   // ✅ Validación dinámica usando el esquema recibido
   const validateField = async (field, value) => {
@@ -40,44 +54,17 @@ const FormAdd = ({
   const handleCloseModal = () => {
     setIsOpen(false);
     setErrors({});
-    // Reset a estado consistente — adapta si tienes más campos persistentes
-    setFormData({ id: null, reason_consultation: "", specific_reason: [], is_active: true });
-    if (typeof setSelectedChecklist === "function") setSelectedChecklist([]);
+    // Resetear a los valores iniciales correctos
+    setFormData({...initialFormState});
   };
 
-  // --- Helpers para checklist: normalizar selectedChecklist a objetos para Autocomplete.value
-  const checklistArray = Array.isArray(checklist) ? checklist : [];
-
-  const selectedChecklistObjects = Array.isArray(selectedChecklist)
-    ? selectedChecklist.map((item) => {
-        // si ya es objeto con id/name
-        if (item && typeof item === "object") {
-          // puede venir { id, name } o { label, value } o { id, specific_reason }
-          const id = item.id ?? item.value;
-          const found = checklistArray.find((c) => c.id === id || String(c.id) === String(id));
-          if (found) return found;
-          // si no encontramos, devolver un objeto compatible
-          return { id: id, name: item.name ?? item.label ?? item.specific_reason ?? String(id) };
-        }
-
-        // si viene como id (number or string)
-        const found = checklistArray.find((c) => String(c.id) === String(item));
-        if (found) return found;
-        return { id: item, name: String(item) };
-      })
-    : [];
-
-  // onChange handler: recibe array de objetos (opciones). Guardamos ids en formData y le pasamos ids al padre.
-  const onChecklistChange = (event, newValue) => {
-    // newValue = [{...}, {...}]
-    const ids = Array.isArray(newValue) ? newValue.map((v) => v?.id ?? v) : [];
-    // Actualizamos el formData con ids en specific_reason
-    setFormData((prev) => ({ ...prev, specific_reason: ids }));
-    // También notificamos al padre
-    if (typeof setSelectedChecklist === "function") {
-      setSelectedChecklist(ids);
+  // Efecto para resetear el formulario cuando se abre/cierra el modal
+  useEffect(() => {
+    if (!isOpen) {
+      // Limpiar errores cuando se cierra el modal
+      setErrors({});
     }
-  };
+  }, [isOpen]);
 
   return (
     <Dialog
@@ -109,14 +96,11 @@ const FormAdd = ({
 
         <form onSubmit={handleSubmit}>
           {fields.map((field) => {
-            // ❌ Ocultar "is_active" si estamos editando (igual que antes)
-            if (formData?.id && field.name === "is_active") {
-              return null;
-            }
+            if (formData?.id && field.name === "is_active") return null;
 
             return (
               <div key={field.name} className="mb-4">
-                <h2 className="text-lg">{field.label}</h2>
+                <h2 className="text-lg mb-2">{field.label}</h2>
 
                 {/* Render dinámico según tipo */}
                 {field.type === "checkbox" ? (
@@ -151,25 +135,52 @@ const FormAdd = ({
                   <Autocomplete
                     multiple
                     id={`autocomplete-${field.name}`}
-                    options={checklistArray}
-                    // Autocomplete espera los objetos completos para mostrar label
-                    value={selectedChecklistObjects}
-                    getOptionLabel={(option) =>
-                      option?.name ?? option?.specific_reason ?? String(option ?? "")
+                    options={field.options || []} 
+                    value={
+                      formData[field.name]
+                        ? field.options.filter((opt) =>
+                            formData[field.name].includes(opt.id)
+                          )
+                        : []
                     }
-                    isOptionEqualToValue={(option, value) => {
-                      return String(option?.id ?? option) === String(value?.id ?? value);
+                    getOptionLabel={(option) =>
+                      option?.name ?? option?.label ?? String(option ?? "")
+                    }
+                    isOptionEqualToValue={(option, value) =>
+                      String(option.id) === String(value.id)
+                    }
+                    onChange={(e, newValue) => {
+                      const ids = newValue.map((v) => v.id);
+                      setFormData({ ...formData, [field.name]: ids });
                     }}
-                    onChange={onChecklistChange}
                     renderInput={(params) => (
-                      <TextField {...params} variant="standard" placeholder={field.label} />
+                      <TextField {...params} variant="outlined" label="Seleccione aquí" />
                     )}
                   />
-                ) : (
-                  <InputWithIcon
-                    icon={field.icon}
+                ) : field.type === "select" ? (
+                    <>
+                      <Select
+                        value={formData[field.name] ?? ""}
+                        onChange={(e) => {
+                          setFormData({ ...formData, [field.name]: e.target.value });
+                          validateField(field.name, e.target.value);
+                        }}
+                        className="w-full"
+                      >
+                        {(field.options || []).map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </>
+                  ) : ( 
+                  <TextField
+                    fullWidth
+                    id={`input-${field.name}`}
+                    variant="outlined"
                     type={field.type}
-                    placeholder={field.label}
+                    label={field.label}
                     value={formData[field.name] ?? ""}
                     onChange={(e) => {
                       setFormData({ ...formData, [field.name]: e.target.value });
@@ -185,11 +196,16 @@ const FormAdd = ({
                     {errors[field.name]}
                   </Alert>
                 )}
-                {validationErrors[field.name] && (
-                  <Alert severity="error" className="mt-2">
-                    {validationErrors[field.name][0]}
-                  </Alert>
-                )}
+              {validationErrors[field.name] && (
+                <Alert severity="error" className="mt-2">
+                  {Array.isArray(validationErrors[field.name]) 
+                    ? validationErrors[field.name].map((error, index) => (
+                        <div key={index}>{error}</div>
+                      ))
+                    : validationErrors[field.name]
+                  }
+                </Alert>
+              )}
               </div>
             );
           })}

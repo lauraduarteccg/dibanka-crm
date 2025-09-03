@@ -8,7 +8,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ConsultationResource;
-
+use App\Http\Requests\ConsultRequest;
 class ConsultationController extends Controller
 {
     /**
@@ -42,17 +42,9 @@ class ConsultationController extends Controller
      * Crear una nueva consulta
      * Permite opcionalmente sincronizar la relación con 'specifics' (tabla pivote) si se provee
      */
-    public function store(Request $request)
+    public function store(ConsultRequest $request)
     {
-        $rules = [
-            'reason_consultation'   => 'required|string|max:255',
-            'is_active'             => 'sometimes|boolean',
-            // campo opcional para sincronizar pivote si la relación 'specifics' existe
-            'specific_id'           => 'sometimes|array|min:1',
-            'specific_id.*'         => 'integer|exists:consultation_specifics,id',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all());
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
