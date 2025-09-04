@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('management', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
-            $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('payroll_id')->constrained('payrolls')->onDelete('cascade');
             $table->foreignId('contact_id')->constrained('contacts')->onDelete('cascade');
             $table->string('solution');
@@ -23,6 +22,7 @@ return new class extends Migration
             $table->text('comments');
             $table->string('sms');
             $table->string('wsp');
+            $table->timestamps();
         });
     }
 

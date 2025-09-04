@@ -92,7 +92,7 @@ class DatabaseSeeder extends Seeder
         // Insertar gestiones de ejemplo
         DB::table('management')->insert([
             [
-                'usuario_id'        => 1,
+                'user_id'        => 1,
                 'payroll_id'       => $payrollIds[0],
                 'contact_id'        => $contactId,
                 'solution'          => 'Si',
@@ -105,7 +105,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at'        => now(),
             ],
             [
-                'usuario_id'        => 2,
+                'user_id'        => 2,
                 'payroll_id'       => $payrollIds[1],
                 'contact_id'        => $contactId,
                 'solution'          => 'Si',

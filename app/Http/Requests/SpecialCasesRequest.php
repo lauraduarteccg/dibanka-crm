@@ -42,8 +42,8 @@ class SpecialCasesRequest extends FormRequest
             'contact_id.exists'         => 'El cliente seleccionado no existe en la base de datos',
 
             'management_messi.required' => 'La gestión de messi es obligatoria',
-            'id_call'                   => 'El ID de la llamada es obligatorio',
-            'id_messi'                  => 'El ID de messi es obligatorio'
+            'id_call.required'          => 'El ID de la llamada es obligatorio',
+            'id_messi.required'         => 'El ID de messi es obligatorio'
         ];
     }
 }

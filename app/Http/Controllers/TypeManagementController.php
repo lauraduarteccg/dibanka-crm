@@ -12,9 +12,25 @@ use App\Http\Requests\TypeManagementRequest;
 
 class TypeManagementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $typeManagement = TypeManagement::with('payroll')->paginate(10);
+        $query = TypeManagement::with(('payroll'));
+
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%");
+                
+                // Para buscar en relaciones
+                $q->orWhereHas('payroll', function($userQuery) use ($searchTerm) {
+                $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('type', 'LIKE', "%{$searchTerm}%");
+               });
+            });
+        }
+
+        $typeManagement = $query->paginate(10);
 
         return response()->json([
             'message' => 'Tipos de gestion obtenidas con éxito',
@@ -30,21 +46,14 @@ class TypeManagementController extends Controller
 
     public function store(TypeManagementRequest $request)
     {
-        $validator = Validator::make($request->all());
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         $created = DB::transaction(function () use ($request) {
-            // Crear UN solo tipo de gestión
+            
             $type = TypeManagement::create([
-                'name' => $request->input('name'),
+                'name'      => $request->input('name'),
                 'is_active' => 1,
             ]);
 
-            // Sincronizar las campañas en la tabla pivote
-            $type->payroll()->sync($request->input('payroll_id'));
+            $type->payroll()->sync($request->input('payroll_id', []));
 
             return $type->load('payroll');
         });
@@ -56,24 +65,17 @@ class TypeManagementController extends Controller
 
     public function show(string $id)
     {
-        $management = TypeManagement::with(['payroll'])->find($id);
-
-        if (!$management) {
-            return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
-        }
+        $management = TypeManagement::with(['user', 'contact'])->findOrFail($id);
+        return response()->json([
+            'message' => 'Tipo de gestion encontrada',
+            'management type' => new TypeManagementResource($id)
+        ]);
 
         return new TypeManagementResource($management);
     }
 
-    public function update(Request $request, string $id)
+    public function update(TypeManagementRequest $request, string $id)
     {
-        $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'payroll_id'   => 'nullable|array',
-            'payroll_id.*' => 'integer|exists:payroll,id',
-            'is_active'     => 'boolean',
-        ]);
-
         $management = TypeManagement::find($id);
 
         if (!$management) {
@@ -82,13 +84,13 @@ class TypeManagementController extends Controller
 
         // Actualizar datos del tipo
         $management->update([
-            'name' => $validated['name'],
-            'is_active' => $validated['is_active'] ?? $management->is_active,
+            'name' => $request['name'],
+            'is_active' => $request['is_active'] ?? $management->is_active,
         ]);
 
         // Si vienen payroll_id, sincronizamos la relación
         if (!empty($validated['payroll_id'])) {
-            $management->payroll()->sync($validated['payroll_id']);
+            $management->payroll()->sync($request['payroll_id']);
         }
 
         return new TypeManagementResource($management->load('payroll'));

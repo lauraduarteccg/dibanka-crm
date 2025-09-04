@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ManagementRequest;
 use App\Models\Management;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Resources\ManagementResource;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
 
 class ManagementController extends Controller
 {
@@ -17,91 +17,84 @@ class ManagementController extends Controller
 
     public function index(Request $request)
     {
-        try {
-            $query = Management::with(['usuario', 'payroll', 'consultation', 'contact']);
-            $q = $request->input('search');
+        $query = Management::with(['user', 'payroll', 'consultation', 'contact', 'specific']);
 
-            if (!empty($q)) {
-                $query->where(function($subquery) use ($q) {
-                    // Búsqueda por IDs
-                    if (is_numeric($q)) {
-                        $subquery   ->where   ('id', $q)
-                                    ->orWhere('usuario_id', $q)
-                                    ->orWhere('payroll_id', $q)
-                                    ->orWhere('consultation_id', $q)
-                                    ->orWhere('contact_id', $q);
-                    }
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
 
-                    // Búsqueda en relaciones
-                    $subquery->orWhereHas('usuario', function($userQuery) use ($q) {
-                        $userQuery  ->where     ('name', 'LIKE', "%{$q}%")
-                                    ->orWhere   ('email', 'LIKE', "%{$q}%");
-                    })
-                    ->orWhereHas('contact', function($contactQuery) use ($q) {
-                        $contactQuery   ->where     ('name', 'LIKE', "%{$q}%")
-                                        ->orWhere   ('email', 'LIKE', "%{$q}%")
-                                        ->orWhere   ('phone', 'LIKE', "%{$q}%")
-                                        ->orWhere   ('update_phone', 'LIKE', "%{$q}%")
-                                        ->orWhere   ('identification_type', 'LIKE', "%{$q}%")
-                                        ->orWhere   ('identification_number', 'LIKE', "%{$q}%");
-                    })
-                    ->orWhereHas('payroll', function($payrollQuery) use ($q) {
-                        $payrollQuery->where('name', 'LIKE', "%{$q}%");
-                    })
-                    ->orWhereHas('consultation', function($consultationQuery) use ($q) {
-                        $consultationQuery->where('reason_consultation', 'LIKE', "%{$q}%");
-                    });
-                });
-            }
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('id', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('solution', 'LIKE'. "%{$searchTerm}%")
+                    ->orWhere('comments', 'LIKE'. "%{$searchTerm}%")
+                    ->orWhere('sms', 'LIKE'. "%{$searchTerm}%")
+                    ->orWhere('wsp', 'LIKE'. "%{$searchTerm}%");
+                
+                // Para buscar en relaciones
+                $q->orWhereHas('user', function($userQuery) use ($searchTerm) {
+                $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+               });
 
-            $management = $query->orderBy('created_at', 'asc')->paginate(10);
+                $q->orWhereHas('payroll', function($userQuery) use ($searchTerm) {
+                $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('type', 'LIKE', "%{$searchTerm}%");
+               });
 
-            return ManagementResource::collection($management);
-            
-        } catch (\Throwable $e) {
-            Log::error('Index management error: '.$e->getMessage());
-            return response()->json(['message' => 'Error interno del servidor.'], 500);
+                $q->orWhereHas('consultation', function($userQuery) use ($searchTerm) {
+                $userQuery->where('reason_consultation', 'LIKE', "%{$searchTerm}%");
+               });
+               
+                $q->orWhereHas('contact', function($userQuery) use ($searchTerm) {
+                    $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('update_phone', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('identification_type', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%");
+               });
+               
+                $q->orWhereHas('specific', function($userQuery) use ($searchTerm) {
+                $userQuery->where('specific_reason', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('consultation_id', 'LIKE', "%{$searchTerm}%");
+               });
+            });
         }
+        
+        $management = $query->paginate(10);
+
+        return response()->json([
+            'message'       => 'Gestiones obtenida con exito',
+            'managements'   => ManagementResource::collection($management),
+            'pagination'    => [
+                'current_page'          => $management->currentPage(),
+                'total_pages'           => $management->lastPage(),
+                'per_page'              => $management->perPage(),
+                'total_special_cases'   => $management->total(),
+            ] 
+        ]);
     }
 
     /**
      * Guardar una nueva gestión en la base de datos.
      */
-    public function store(Request $request)
+    public function store(ManagementRequest $request)
     {
-        $rules = [
-            'usuario_id'        => 'required|exists:users,id',
-            'payroll_id'       => 'required|exists:payroll,id',
-            'consultation_id'   => 'required|exists:consultations,id',
-            'contact_id'        => 'required|exists:contacts,id',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        // Use only validated fields to avoid mass assignment of extra inputs
-        $data = $request->only(array_keys($rules));
-
-        $management = Management::create($data);
+        $management = Management::create($request->all());
 
         // Carga relaciones para devolverlas en el resource
-        $management->load(['usuario', 'payroll', 'consultation', 'contact']);
+        $management->load(['user', 'payroll', 'consultation', 'contact', 'specific']);
 
-        return (new ManagementResource($management))
-            ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+        return response()->json([
+            'message' => 'Gestión creada correctamente',
+            'management' => new ManagementResource($management)
+        ], Response::HTTP_CREATED)  ;
     }
 
     /**
      * Mostrar una gestión específica.
      */
     public function show($id)
-    {
-
-        
+    {       
     }
 
     /**

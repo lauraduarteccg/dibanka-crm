@@ -26,8 +26,7 @@ class TypeManagementRequest extends FormRequest
         $typeManagementID = $this->route('type_management') ?->id;
         return [
             'name'      => ['required', 'string', 'max:255', Rule::unique(TypeManagement::class)->ignore($typeManagementID)],
-            'payroll_id' => 'required|array|min:1',        
-            'payroll_id.*' => 'integer|exists:payrolls,id',
+            'payroll_id' => 'required|exists:payrolls,id',
         ];
     }
 
@@ -39,7 +38,7 @@ class TypeManagementRequest extends FormRequest
             'name.max'          => 'El campo tipo de gestion no debe exceder los 255 caracteres.',
             'name.unique'       => 'El tipo de gestion ya está en uso. Por favor, elige otro.',
             'payroll_id.required' => 'Debe seleccionar al menos una pagaduría',
-            'payroll_id.*.exists' => 'La pagaduría seleccionada no existe',
+            'payroll_id.exists' => 'La pagaduría seleccionada no existe',
         ];
     }
 }

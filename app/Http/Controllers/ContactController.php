@@ -12,10 +12,33 @@ USE App\Http\Requests\ContactRequest;
 class ContactController extends Controller
 {
     //Listar todos los contactos con paginación
-    public function index()
+    public function index(Request $request)
     {
-        $contacts = Contact::paginate(10);
-        $contacts = Contact::with('payroll')->paginate(10);
+        $query = Contact::query();
+
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('campaign', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('update_phone', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('identification_type', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%");
+
+                // Para buscar en relaciones
+                $q->orWhereHas('payroll', function($payrollQuery) use ($searchTerm) {
+                    $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                                    ->orWhere('type', 'LIKE', "%{$searchTerm}%")
+                                    ->orWhere('is_active', 'LIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+
+        $contacts = $query->with('payroll')->paginate(10);
+
         return response()->json([
             'message'           => 'Consultas obtenidas con éxito',
             'contacts'          => ContactResource::collection($contacts),
