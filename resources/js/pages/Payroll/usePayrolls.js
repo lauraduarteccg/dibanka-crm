@@ -9,6 +9,7 @@ export const usePayrolls = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
+    const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [isOpenADD, setIsOpenADD] = useState(false);
@@ -20,10 +21,10 @@ export const usePayrolls = () => {
 
     // 🔹 Obtener lista de pagadurías
     const fetchPayrolls = useCallback(
-        async (page) => {
+        async (page, search = "") => {
             setLoading(true);
             try {
-                const res = await axios.get(`/api/payrolls?page=${page}`, {
+                const res = await axios.get(`/api/payrolls?page=${page}&search=${encodeURIComponent(search)}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setPayrolls(res.data.payrolls);
@@ -41,6 +42,20 @@ export const usePayrolls = () => {
     useEffect(() => {
         fetchPayrolls(1);
     }, []);
+
+    const fetchPage = useCallback(
+        (page) => fetchPayrolls(page, searchTerm),
+        [fetchPayrolls, searchTerm]
+    );
+
+    const handleSearch = useCallback((value) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    }, []);
+
+    useEffect(() => {
+        fetchPayrolls(currentPage, searchTerm);
+    }, [currentPage, searchTerm, fetchPayrolls]);
 
     // 🔹 Manejar edición de pagadurías
     const handleEdit = (payroll) => {
@@ -183,6 +198,8 @@ export const usePayrolls = () => {
     };
 
     return {
+        fetchPage,
+        handleSearch,
         payrolls,
         loading,
         error,

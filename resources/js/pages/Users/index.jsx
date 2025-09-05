@@ -44,8 +44,6 @@ const Users = () => {
         handleDelete,
         handleEdit,
         handleSearch,
-        searchTerm,
-        setSearchTerm,
         fetchPage,
     } = useUsers();
 

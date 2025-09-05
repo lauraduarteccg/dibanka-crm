@@ -5,7 +5,7 @@ import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
 import { useContact } from "./useContact.js";
 import * as yup from "yup";
-import Search from "@components/Search"
+import Search from "@components/Search";
 
 
 
@@ -32,7 +32,7 @@ const userSchema = yup.object().shape({
 const columns=[ 
     { header: "ID",                         key: "id"                       },
     { header: "Campaña",                    key: "campaign"                 },
-    { header: "Pagaduria",                  key: "payroll_name"             },
+    { header: "Pagaduria",                  key: "payroll.name"             },
     { header: "Nombre",                     key: "name"                     },
     { header: "Correo",                     key: "email"                    },
     { header: "Telefono",                   key: "phone"                    },
@@ -43,6 +43,10 @@ const columns=[
 
 const Contact = () => {
     const {
+        handleSearch,
+        fetchPage,
+        setSearchTerm,
+        searchTerm,
         fetchPayroll,
         payroll,
         contact,
@@ -56,7 +60,7 @@ const Contact = () => {
         handleSubmit,
         currentPage,
         totalPages,
-        fetchConsultation,
+        fetchContact,
         handleDelete,
         handleEdit,
     } = useContact();
@@ -83,6 +87,9 @@ const Contact = () => {
                 onClickButtonAdd={() => setIsOpenADD(true)}
                 text="Agregar contacto"
             />
+            <div className="flex justify-end px-36 -mt-10 ">
+                <Search onSearch={handleSearch} placeholder="Buscar contacto..." />
+            </div>
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
                 Lista de Contactos
             </h1>
@@ -118,7 +125,7 @@ const Contact = () => {
                     columns={columns}
                     data={contact}
                     currentPage={currentPage}
-                    fetch={fetchConsultation}
+                    fetch={(page) => fetchPage(page)}
                     onDelete={handleDelete}
                     totalPages={totalPages}
                     actions={true}

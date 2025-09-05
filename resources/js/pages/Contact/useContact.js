@@ -13,6 +13,7 @@ export const useContact = () => {
     const [validationErrors, setValidationErrors]    = useState({});
     const [currentPage,      setCurrentPage]         = useState(1);
     const [totalPages,       setTotalPages]          = useState(1);
+    const [searchTerm, setSearchTerm] = useState("");
     const [isOpenADD,        setIsOpenADD]           = useState(false);
     const [formData,         setFormData]            = useState({
         id: null,
@@ -28,21 +29,17 @@ export const useContact = () => {
     });
 
     //Tabla de pagadurias
-    const fetchConsultation = useCallback(
-        async (page) => {
+    const fetchContact = useCallback(
+        async (page, search = "") => {
             setLoading(true);
             try {
-                const res = await axios.get(`/api/contacts?page=${page}`, {
+                const res = await axios.get(`/api/contacts?page=${page}&search=${encodeURIComponent(search)}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setContact(
-                    res.data.contacts.map((c) => ({
-                        ...c,
-                        payroll_name: c.payroll?.name ?? "",
-                    }))
-                    );
+                setContact(res.data.contacts);
                 setTotalPages   (res.data.pagination.total_pages);
                 setCurrentPage  (res.data.pagination.current_page);
+                console.log(res.data.contacts);
             } catch (err) {
                 setError("Error al obtener laos contactos.");
             } finally {
@@ -53,24 +50,25 @@ export const useContact = () => {
     );
 
     useEffect(() => {
-        fetchConsultation(1);
+        fetchContact(1);
     }, []);
+
+    const fetchPage = useCallback(
+        (page) => fetchContact(page, searchTerm),
+        [fetchContact, searchTerm]
+    );
+
+    const handleSearch = useCallback((value) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    }, []);
+
+    useEffect(() => {
+        fetchContact(currentPage, searchTerm);
+    }, [currentPage, searchTerm, fetchContact]);
 
     // Manejar la edición de consultas
     const handleEdit = (contact) => {
-        setFormData({
-            id                      : contact.id,
-            campaign                : contact.campaign,
-            payroll_id: contact.payroll?.id ?? "",
-payroll_name: contact.payroll?.name ?? "",
-            name                    : contact.name,
-            identification_type     : contact.identification_type,
-            phone                   : contact.phone,
-            identification_number   : contact.identification_number,
-            update_phone            : contact.update_phone,
-            email                   : contact.email,         
-            is_active               : contact.is_active
-        });
         setValidationErrors({});
         setIsOpenADD(true);
     };
@@ -120,7 +118,7 @@ payroll_name: contact.payroll?.name ?? "",
                 });
 
                 setIsOpenADD(false);
-                fetchConsultation(currentPage);
+                fetchContact(currentPage);
             }
         } catch (error) {
             if (error.response?.status === 422) {
@@ -182,7 +180,7 @@ payroll_name: contact.payroll?.name ?? "",
                             width: "350px",
                             padding: "0.8em",
                         });
-                        fetchConsultation(currentPage);
+                        fetchContact(currentPage);
                     } else {
                         Swal.fire({
                             position: "top-end",
@@ -236,6 +234,10 @@ payroll_name: contact.payroll?.name ?? "",
 
 
     return {
+        handleSearch,
+        fetchPage,
+        setSearchTerm,
+        searchTerm,
         fetchPayroll,
         payroll,
         contact,
@@ -249,7 +251,7 @@ payroll_name: contact.payroll?.name ?? "",
         handleSubmit,
         currentPage,
         totalPages,
-        fetchConsultation,
+        fetchContact,
         handleEdit,
         handleDelete
     };

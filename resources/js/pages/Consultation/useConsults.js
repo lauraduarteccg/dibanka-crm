@@ -7,45 +7,29 @@ export const useConsults = () => {
   const { token } = useContext(AuthContext);
 
   const [consultations, setConsultations] = useState([]);
-  const [consultationSpecifics, setConsultationSpecifics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [searchTerm, setSearchTerm] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isOpenADD, setIsOpenADD] = useState(false);
   const [formData, setFormData] = useState({
     id: null,
     reason_consultation: "",
-    specific_reason: [],
     is_active: true,
   });
 
   // ---------------------------------------------------------
   // Traer lista de consultations
   const fetchConsultation = useCallback(
-    async (page = 1) => {
+    async (page = 1, search = "") => {
       setLoading(true);
       try {
-        const res = await axios.get(`/api/consultations?page=${page}`, {
+        const res = await axios.get(`/api/consultations?page=${page}&search=${encodeURIComponent(search)}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        const list = res.data.consultations || res.data.data || [];
-        // mapeo ligero por si cambia la estructura
-        const mapped = list.map((i) => {
-        const specifics = i.specifics || []; // array de objects [{id, specific_reason, ...}]
-        return {
-            id: i.id,
-            reason_consultation: i.reason_consultation,
-            specifics,
-            specific_names: specifics.map((s) => s.specific_reason).join(", "), // para la tabla
-            is_active: i.is_active,
-        };
-        });
-        setConsultations(mapped);
-
-        console.log("Consultations fetched:", mapped);
+        setConsultations(res.data.consultations);
         setTotalPages(res.data.pagination?.total_pages || res.data.meta?.last_page || 1);
         setCurrentPage(res.data.pagination?.current_page || page);
       } catch (err) {
@@ -58,70 +42,32 @@ export const useConsults = () => {
     [token]
   );
 
-  // ---------------------------------------------------------
-  // Traer lista de consultationSpecifics (para llenar specific_reason)
-  const fetchConsultationSpecifics = useCallback(
-    async (page = 1) => {
-      // Nota: si quieres todas las specifics para un select, pide un endpoint sin paginar
-      setLoading(true);
-      try {
-        const res = await axios.get(`/api/consultationspecifics?page=${page}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+    const fetchPage = useCallback(
+        (page) => fetchConsultation(page, searchTerm),
+        [fetchConsultation, searchTerm]
+    );
 
-        const list = res.data.consultations || res.data.data || [];
+    const handleSearch = useCallback((value) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    }, []);
 
-        // Mapeamos a la forma que probablemente usarás: { id, specific_reason, is_active }
-        const mapped = list.map((s) => ({
-          id: s.id,
-          specific_reason: s.specific_reason,
-          is_active: s.is_active,
-        }));
-
-        setConsultationSpecifics(mapped);
-        // Si este endpoint también controla paginación (para su propia tabla), la dejamos
-        setTotalPages(res.data.pagination?.total_pages || res.data.meta?.last_page || totalPages);
-        setCurrentPage(res.data.pagination?.current_page || currentPage || page);
-      } catch (err) {
-        console.error(err);
-        setError("Error al obtener las consultas específicas.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [token]
-  );
-
+    useEffect(() => {
+        fetchConsultation(currentPage, searchTerm);
+    }, [currentPage, searchTerm, fetchConsultation]);
+  
   // ---------------------------------------------------------
   // Manejar la edición de una consulta (rellenar form)
     const handleEdit = (row) => {
-    // Obtener los IDs de los motivos específicos
-    const specificIds = row.specifics 
-        ? row.specifics.map(s => s.id) 
-        : (Array.isArray(row.specific_reason) ? row.specific_reason : []);
 
     setFormData({
         id: row.id ?? null,
         reason_consultation: row.reason_consultation ?? "",
-        specific_reason: specificIds, // Aquí deben ir los IDs, no los textos
         is_active: row.is_active ?? true,
     });
     setValidationErrors({});
     setIsOpenADD(true);
     };
-
-
-  // utilidad: asignar specific_reason seleccionada (por texto o por id)
-  // si recibes id, busca en consultationSpecifics y asigna el texto
-  const handleSelectSpecificById = (specificId) => {
-    const found = consultationSpecifics.find((s) => String(s.id) === String(specificId));
-    if (found) {
-      setFormData((prev) => ({ ...prev, specific_reason: found.specific_reason }));
-    } else {
-      // si no existe, deja el valor vacío o como el id si prefieres
-      setFormData((prev) => ({ ...prev, specific_reason: "" }));
-    }
-  };
 
   // ---------------------------------------------------------
 // Crear o actualizar consulta
@@ -131,12 +77,9 @@ const handleSubmit = async (e) => {
   setValidationErrors({});
 
   try {
-    // Normalizar payload: backend espera specific_id => array
+    // Normalizar payload
     const payload = {
       reason_consultation: formData.reason_consultation,
-      specific_id: Array.isArray(formData.specific_reason)
-        ? formData.specific_reason
-        : [],
       is_active: formData.is_active,
     };
 
@@ -161,7 +104,7 @@ const handleSubmit = async (e) => {
       });
 
       setIsOpenADD(false);
-      setFormData({ id: null, reason_consultation: "", specific_reason: [], is_active: true });
+      setFormData({ id: null, reason_consultation: "", is_active: true });
 
       // refrescar tablas
       fetchConsultation(currentPage || 1);
@@ -240,13 +183,11 @@ const handleSubmit = async (e) => {
   useEffect(() => {
     // cargamos ambas listas al montar (la específica la puedes usar en selects/autocomplete)
     fetchConsultation(1);
-    fetchConsultationSpecifics(1);
-  }, [fetchConsultation, fetchConsultationSpecifics]);
+  }, [fetchConsultation]);
 
   return {
     // datos para tablas
     consultations,
-    consultationSpecifics, // <-- lista que debes usar para poblar specific_reason (select/datalist)
 
     // estados y control
     loading,
@@ -261,10 +202,10 @@ const handleSubmit = async (e) => {
 
     // acciones
     fetchConsultation,
-    fetchConsultationSpecifics,
     handleEdit,
-    handleSelectSpecificById, // util para cuando tu select te devuelve un id
     handleSubmit,
     handleDelete,
+    fetchPage,
+    handleSearch,
   };
 };

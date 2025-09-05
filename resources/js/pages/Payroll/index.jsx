@@ -7,6 +7,7 @@ import Loader from "@components/Loader";
 import * as yup from "yup";
 import { GoPerson } from "react-icons/go";
 import { MdOutlineCategory } from "react-icons/md";
+import Search from "@components/Search";
 
 const fields = [
   { name: "name", label: "Nombre", type: "text", icon: GoPerson },
@@ -22,6 +23,8 @@ const payrollSchema = yup.object().shape({
 
 const Payrolls = () => {
   const {
+    fetchPage,
+    handleSearch,
     payrolls, 
     loading,
     error,
@@ -41,6 +44,10 @@ const Payrolls = () => {
   return (
     <>
       <ButtonAdd onClickButtonAdd={() => setIsOpenADD(true)} text="Agregar pagaduría" />
+
+      <div className="flex justify-end px-36 -mt-10 ">
+          <Search onSearch={handleSearch} placeholder="Buscar pagaduria..." />
+      </div>
 
       <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
         Lista de pagadurías
@@ -70,7 +77,7 @@ const Payrolls = () => {
           ]}
           data={payrolls}
           currentPage={currentPage}
-          fetch={fetchPayrolls}
+          fetch={(page) => fetchPage(page)}
           onDelete={handleDelete}
           totalPages={totalPages}
           actions={true}
