@@ -4,6 +4,10 @@ import { FiEdit } from "react-icons/fi";
 import { FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import { GoEye } from "react-icons/go";
 
+export const getNestedValue = (obj, path) => {
+  return path.split(".").reduce((acc, key) => acc?.[key], obj) ?? "—";
+};
+
 const Table = ({
     columns,
     data,
@@ -56,46 +60,42 @@ const Table = ({
                                         key={colIndex}
                                         className="py-2 px-2 text-center"
                                     >
-                                        {row[col.key]}
+                                        {getNestedValue(row, col.key)}
                                     </td>
                                 ))}
-                                
+
                                 {actions && (
                                     <td className="py-2 px-4 text-center flex justify-center gap-4">
-                                        {edit &&
-                                        <button
-                                            onClick={() => onEdit(row)}
-                                            className="text-blue-500 hover:text-blue-700"
-                                        >
-                                            <FiEdit size={20} />
-                                        </button>
-                                        }
-                                        {view &&
-                                        <button
-                                            onClick={() => onView(row)}
-                                            className="text-blue-500 hover:text-blue-700"
-                                        >
-                                            <GoEye size={20} />
-                                        </button>
-                                        }
-                                        {onActiveOrInactive &&
-                                        <button
-                                            onClick={() => onDelete(row.id, row.is_active)}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            {row.is_active === 1 ? (
-                                                <FaToggleOn
-                                                    size={20}
-                                                    color="green"
-                                                />
-                                            ) : (
-                                                <FaToggleOff
-                                                    size={20}
-                                                    color="red"
-                                                />
-                                            )}
-                                        </button>
-                                        }
+                                        {edit && (
+                                            <button
+                                                onClick={() => onEdit(row)}
+                                                className="text-blue-500 hover:text-blue-700"
+                                            >
+                                                <FiEdit size={20} />
+                                            </button>
+                                        )}
+                                        {view && (
+                                            <button
+                                                onClick={() => onView(row)}
+                                                className="text-blue-500 hover:text-blue-700"
+                                            >
+                                                <GoEye size={20} />
+                                            </button>
+                                        )}
+                                        {onActiveOrInactive && (
+                                            <button
+                                                onClick={() =>
+                                                    onDelete(row.id, row.is_active)
+                                                }
+                                                className="text-red-500 hover:text-red-700"
+                                            >
+                                                {row.is_active === 1 ? (
+                                                    <FaToggleOn size={20} color="green" />
+                                                ) : (
+                                                    <FaToggleOff size={20} color="red" />
+                                                )}
+                                            </button>
+                                        )}
                                     </td>
                                 )}
                             </tr>
@@ -112,6 +112,8 @@ const Table = ({
                     )}
                 </tbody>
             </table>
+
+            {/* 📌 Paginación */}
             <div className="flex justify-center items-center gap-4 mt-4 w-full text-primary-strong">
                 <button
                     onClick={() => fetch(currentPage - 1)}

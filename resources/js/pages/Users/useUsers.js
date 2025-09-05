@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
@@ -10,6 +10,7 @@ export const useUsers = () => {
        const [error, setError] = useState(null);
        const [validationErrors, setValidationErrors] = useState({});
        const [currentPage, setCurrentPage] = useState(1);
+       const [searchTerm, setSearchTerm] = useState("");
        const [totalPages, setTotalPages] = useState(1);
        const [isOpenADD, setIsOpenADD] = useState(false);
        const [formData, setFormData] = useState({
@@ -23,22 +24,40 @@ export const useUsers = () => {
            fetchUsers(1);
        }, []);
    
-       const fetchUsers = async (page) => {
-           setLoading(true);
-           try {
-               const res = await axios.get(`/api/users?page=${page}`, {
-                   headers: { Authorization: `Bearer ${token}` },
-               });
-               setUsers(res.data.users);
-               setTotalPages(res.data.pagination.total_pages);
-               setCurrentPage(res.data.pagination.current_page);
-           } catch (err) {
-               setError("Error al obtener la lista de usuarios.");
-           } finally {
-               setLoading(false);
-           }
-       };
-   
+       const fetchUsers = useCallback(
+            async (page, search = "") => {
+                setLoading(true);
+                try {
+                    const res = await axios.get(`/api/users?page=${page}&search=${encodeURIComponent(search)}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    setUsers(res.data.users);
+                    setTotalPages(res.data.pagination.total_pages);
+                    setCurrentPage(res.data.pagination.current_page);
+                } catch (err) {
+                    setError("Error al obtener la lista de usuarios.");
+                } finally {
+                    setLoading(false);
+                }
+            },
+                [token]
+        )
+
+        const fetchPage = useCallback(
+            (page) => fetchUsers(page, searchTerm),
+            [fetchUsers, searchTerm]
+        );
+
+        const handleSearch = useCallback((value) => {
+            setSearchTerm(value);
+            setCurrentPage(1);
+        }, []);
+
+        useEffect(() => {
+            fetchUsers(currentPage, searchTerm);
+        }, [currentPage, searchTerm, fetchUsers]);
+
+
        const handleEdit = (user) => {
            setFormData({
                id: user.id,
@@ -240,6 +259,10 @@ export const useUsers = () => {
         totalPages,
         fetchUsers ,
         handleDelete,
-        handleEdit
+        handleEdit,
+        handleSearch,
+        searchTerm,
+        setSearchTerm,
+        fetchPage
        }
 };

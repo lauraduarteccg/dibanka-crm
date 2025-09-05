@@ -2,6 +2,7 @@ import Table from "@components/Table";
 import ButtonAdd from "@components/ButtonAdd";
 import FormAddTest from "@components/FormAddTest";
 import Loader from "@components/Loader";
+import Search from "@components/Search";
 import { useUsers } from "./useUsers";
 import * as yup from 'yup';
 
@@ -41,7 +42,11 @@ const Users = () => {
         totalPages,
         fetchUsers,
         handleDelete,
-        handleEdit
+        handleEdit,
+        handleSearch,
+        searchTerm,
+        setSearchTerm,
+        fetchPage,
     } = useUsers();
 
     return (
@@ -60,6 +65,10 @@ const Users = () => {
                 }}
                 text="Agregar Usuario"
             />
+
+            <div className="flex justify-end px-36 -mt-10 ">
+            <Search onSearch={handleSearch} placeholder="Buscar usuario..." />
+            </div>
             
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
                 Lista de Usuarios
@@ -74,8 +83,8 @@ const Users = () => {
                 validationErrors={validationErrors}
                 loading={loading}
                 handleSubmit={handleSubmit}
-                fields={userFields} // ✅ Prop fields agregada
-                schema={userSchema} // ✅ Schema de validación
+                fields={userFields} 
+                schema={userSchema}
             />
 
             {loading ? (
@@ -90,7 +99,7 @@ const Users = () => {
                     data={users}
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    fetch={fetchUsers}
+                    fetch={(page) => fetchPage(page)}
                     actions={true}
                     onEdit={handleEdit}
                     onDelete={handleDelete}

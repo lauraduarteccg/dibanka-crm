@@ -5,21 +5,19 @@ import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
 import { useContact } from "./useContact.js";
 import * as yup from "yup";
-import { FaRegComment } from "react-icons/fa6";
-import { HiOutlineIdentification } from "react-icons/hi2";
-import { PiIdentificationBadgeLight } from "react-icons/pi";
-import { SlPhone } from "react-icons/sl";
-import { HiOutlineMail } from "react-icons/hi";
+import Search from "@components/Search"
+
+
 
 const fields = [
-    { name: "campaign",                 label: "Campaña",                   type: "select", options: [{value: "Aliados", label: "Aliados"},{value: "Afiliados", label: "Afiliados"}]                },
-    { name: "payroll_id",               label: "Pagaduría",                 type: "select" , options: [] },
-    { name: "name",                     label: "Nombre",                    type: "text", options: [{value: "NIT", label: "NIT"},{value: "CEDULA DE CIUDADANIA", label: "CEDULA DE CIUDADANIA"}]},
-    { name: "email",                    label: "Correo",                    type: "text", icon: HiOutlineMail               },
-    { name: "phone",                    label: "Teléfono",                  type: "text", icon: SlPhone                     },
-    { name: "update_phone",             label: "Celular actualizado",       type: "text", icon: SlPhone                     },
-    { name: "identification_type",      label: "Tipo de identificación",    type: "text", icon: HiOutlineIdentification     },
-    { name: "identification_number",    label: "Numero de identificación",  type: "text", icon: PiIdentificationBadgeLight  },
+    { name: "campaign",                 label: "Campaña",                   type: "select", options: [{value: "Aliados", label: "Aliados"},{value: "Afiliados", label: "Afiliados"}]},
+    { name: "payroll_id",               label: "Pagaduría",                 type: "select", options: [] },
+    { name: "name",                     label: "Nombre",                    type: "text",   options: [{value: "NIT", label: "NIT"},{value: "CEDULA DE CIUDADANIA", label: "CEDULA DE CIUDADANIA"}]},
+    { name: "email",                    label: "Correo",                    type: "text",               },
+    { name: "phone",                    label: "Teléfono",                  type: "text",               },
+    { name: "update_phone",             label: "Celular actualizado",       type: "text",               },
+    { name: "identification_type",      label: "Tipo de identificación",    type: "text",               },
+    { name: "identification_number",    label: "Numero de identificación",  type: "text",               },
 ];
 const userSchema = yup.object().shape({
     campaign:               yup.string().required("La campaña es obligatorio"),

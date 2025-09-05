@@ -3,23 +3,21 @@ import Table from "@components/Table";
 import { useManagement } from "./useManagement.js";
 import Drawer from '@mui/material/Drawer';
 import ButtonAdd from "@components/ButtonAdd";
-import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
 import SearchBar from "@components/Search";
 import ClientInfoPopup from "@components/PopupManagement";
-import { HiOutlineMail } from "react-icons/hi";
-import * as yup from "yup";
 
 const columns = [
-  { header: "ID",                 key: "id" },
-  { header: "Agente",             key: "usuario_name" },
-  { header: "Pagaduría",          key: "payroll_name" },  // 🔹 Cambiado
-  { header: "Consulta",           key: "consultation_title" },
-  { header: "Nombre de cliente",  key: "contact_name" },
-  { header: "Identificación",     key: "contact_identification" },
-  { header: "Celular",            key: "contact_phone" },
-  { header: "Fecha de creación",  key: "created_at" },
+  { header: "ID", key: "id" },
+  { header: "Agente", key: "user.name" },
+  { header: "Pagaduría", key: "payroll.name" },
+  { header: "Consulta", key: "consultation.reason_consultation" },
+  { header: "Nombre de cliente", key: "contact.name" },
+  { header: "Identificación", key: "contact.identification_number" },
+  { header: "Celular", key: "contact.phone" },
+  { header: "Fecha de creación", key: "created_at" },
 ];
+
 
 const P = ({ text1, text2 }) => (
   <p className="text-gray-600 leading-relaxed">
@@ -115,16 +113,16 @@ const Management = () => {
           </button>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <P text1="Agente: " text2={formData.usuario_name ?? "Usuario sin nombre"} />
+            <P text1="Agente: " text2={formData.user?.name ?? "Usuario sin nombre"} />
           </div>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <P text1="Pagaduría: " text2={formData.payroll_name ?? "Sin pagaduría"} /> {/* 🔹 Cambiado */}
+            <P text1="Pagaduría: " text2={formData.payroll?.name ?? "Sin pagaduría"} />
             <P text1="Campaña: " text2={"Aliados o afiliados"} />
           </div>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <P text1="Nombre del cliente: " text2={formData.contact_name ?? "Sin Nombre"} />
+            <P text1="Nombre del cliente: " text2={formData.contact?.name ?? "Sin Nombre"} />
             <P text1="Teléfono: " text2={formData.contact?.phone ?? "No tiene teléfono"} />
             <P text1="Tipo de identificación: " text2={formData.contact?.identification_type ?? "Sin tipo de identificación"} />
             <P text1="Número de identificación: " text2={formData.contact?.identification_number ?? "Sin número de identificación"} />
@@ -134,13 +132,13 @@ const Management = () => {
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
             <P text1="Consulta: " text2={formData.consultation?.reason_consultation ?? "Sin consulta"}/>
-            <P text1="Consulta específica: " text2={formData.consultation?.specific_reason ?? "Sin consulta"}/>
+            <P text1="Consulta específica: " text2={formData.specific?.specific_reason ?? "Sin consulta"}/>
           </div>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <P text1="Solución en primer contacto: " text2={formData.consultation?.reason_consultation ?? "Sin consulta"}/>
-            <P text1="Observaciones: " text2={formData.consultation?.reason_consultation ?? "Sin consulta"}/>
-            <P text1="Fecha de solución: " text2={formData.consultation?.reason_consultation ?? "Sin consulta"}/>
+            <P text1="Solución en primer contacto: " text2={formData.solution ?? "Sin consulta"}/>
+            <P text1="Observaciones: " text2={formData.comments ?? "Sin consulta"}/>
+            <P text1="Fecha de solución: " text2={formData.created_at ?? "Sin consulta"}/>
             <P text1="Seguimiento: " text2={formData.consultation?.reason_consultation ?? "Sin consulta"}/>
           </div>
 

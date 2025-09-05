@@ -109,7 +109,7 @@ class ManagementController extends Controller
         }
 
         $rules = [
-            'usuario_id'        => 'sometimes|exists:users,id',
+            'user_id'        => 'sometimes|exists:users,id',
             'payroll_id'       => 'sometimes|exists:payroll,id',
             'consultation_id'   => 'sometimes|exists:consultations,id',
             'contact_id'        => 'sometimes|exists:contacts,id',
