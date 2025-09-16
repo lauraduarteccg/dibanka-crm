@@ -1,30 +1,38 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Tooltip, List, ListItem, ListItemButton, ListItemIcon, ListItemText,IconButton } from "@mui/material";
 import { FaUserCircle } from "react-icons/fa"; 
 import { RxHamburgerMenu } from "react-icons/rx";
-import { HiOutlineUserGroup } from "react-icons/hi";
-import { MdCampaign, MdOutlineContactMail } from "react-icons/md";
-import { FaClipboardList } from "react-icons/fa";
 import { IoDocumentTextOutline } from "react-icons/io5"
 import { IoIosLogOut } from "react-icons/io";
 import { AuthContext } from "@context/AuthContext";
+import { AiOutlineFileSearch } from "react-icons/ai";
+import { HiOutlineRectangleGroup } from "react-icons/hi2";
+import { HiOutlineCollection } from "react-icons/hi";
+import { MdOutlineFolderSpecial } from "react-icons/md";
+import { HiOutlineIdentification } from "react-icons/hi2";
+import { LuMegaphone } from "react-icons/lu";
+import { FiUsers } from "react-icons/fi";
+
 import logo from "@assets/logo.png";
 
 const NavBar = () => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [isOpenMenu, setIsOpenMenu] = useState(false);
+    const location = useLocation();
 
     return (
         <div className="flex w-full h-full">
             <motion.div
                 initial={{ width: "2.5rem" }}
-                animate={{ width: isOpenMenu ? "13rem" : "3.5rem" }}
+                animate={{ width: isOpenMenu ? "16rem" : "3.5rem" }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="h-screen fixed flex flex-col left-0 top-0 
                     bg-gradient-secondary text-white z-50 shadow-custom"
+                onMouseEnter={() => setIsOpenMenu(true)}
+                onMouseLeave={() => setIsOpenMenu(false)} 
             >
                 {/* Botón para abrir/cerrar el menú */}
                 <button
@@ -40,10 +48,11 @@ const NavBar = () => {
                     <ListItem disablePadding>
                         <ListItemButton
                             onClick={() => navigate("/usuarios")}
+                            selected={location.pathname === "/usuarios"}
                         >
                             <Tooltip title="Usuarios">
                                 <ListItemIcon>
-                                    <HiOutlineUserGroup className="text-white w-6 h-auto" />
+                                    <FiUsers className="text-white w-6 h-auto" />
                                 </ListItemIcon>
                             </Tooltip>
                             {isOpenMenu && <ListItemText primary="Usuarios" />}
@@ -52,10 +61,13 @@ const NavBar = () => {
 
                     {/* Contactos */}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate("/contactos")}>
+                        <ListItemButton 
+                            onClick={() => navigate("/contactos")}
+                            selected={location.pathname === "/contactos"}
+                        >
                             <Tooltip title="Contactos">
                                 <ListItemIcon>
-                                    <MdOutlineContactMail className="text-white w-6 h-auto" />
+                                    <HiOutlineIdentification className="text-white w-6 h-auto" />
                                 </ListItemIcon>
                             </Tooltip>
                             {isOpenMenu && <ListItemText primary="Contactos" />}
@@ -64,10 +76,13 @@ const NavBar = () => {
 
                     {/* Campañas */}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate("/pagadurias")}>
+                        <ListItemButton 
+                            onClick={() => navigate("/pagadurias")}
+                            selected={location.pathname === "/pagadurias"}
+                        >
                             <Tooltip title="pagadurías">
                                 <ListItemIcon>
-                                    <MdCampaign className="text-white w-6 h-auto" />
+                                    <LuMegaphone className="text-white w-6 h-auto" />
                                 </ListItemIcon>
                             </Tooltip>
                             {isOpenMenu && <ListItemText primary="Pagadurías" />}
@@ -76,7 +91,10 @@ const NavBar = () => {
 
                     {/* Consultas */}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate("/consultas")}>
+                        <ListItemButton 
+                            onClick={() => navigate("/consultas")}
+                            selected={location.pathname === "/consultas"}
+                        >
                             <Tooltip title="Consultas">
                                 <ListItemIcon>
                                     <IoDocumentTextOutline className="text-white w-6 h-auto" />
@@ -86,12 +104,15 @@ const NavBar = () => {
                         </ListItemButton>
                     </ListItem>
 
-                    {/* Consultas */}
+                    {/* Consultas especificas */}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate("/consultas_especificas")}>
+                        <ListItemButton 
+                            onClick={() => navigate("/consultas_especificas")}
+                            selected={location.pathname === "/consultas_especificas"}
+                        >
                             <Tooltip title="Consultas especificas">
                                 <ListItemIcon>
-                                    <IoDocumentTextOutline className="text-white w-6 h-auto" />
+                                    <AiOutlineFileSearch className="text-white w-6 h-auto" />
                                 </ListItemIcon>
                             </Tooltip>
                             {isOpenMenu && <ListItemText primary="Consultas especificas" />}
@@ -100,10 +121,13 @@ const NavBar = () => {
 
                     {/* Gestiones */}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate("/gestiones")}>
+                        <ListItemButton 
+                            onClick={() => navigate("/gestiones")}
+                            selected={location.pathname === "/gestiones"}
+                        >
                             <Tooltip title="Gestiones">
                                 <ListItemIcon>
-                                    <FaClipboardList className="text-white w-6 h-auto" />
+                                    <HiOutlineRectangleGroup className="text-white w-6 h-auto" />
                                 </ListItemIcon>
                             </Tooltip>
                             {isOpenMenu && <ListItemText primary="Gestiones" />}
@@ -112,13 +136,31 @@ const NavBar = () => {
 
                     {/* Tipo de Gestiones */}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate("/tipo_de_gestiones")}>
+                        <ListItemButton 
+                            onClick={() => navigate("/tipo_de_gestiones")}
+                            selected={location.pathname === "/tipo_de_gestiones"}    
+                        >
                             <Tooltip title="Tipo de gestiones">
                                 <ListItemIcon>
-                                    <FaClipboardList className="text-white w-6 h-auto" />
+                                    <HiOutlineCollection className="text-white w-6 h-auto" />
                                 </ListItemIcon>
                             </Tooltip>
                             {isOpenMenu && <ListItemText primary="Tipo de gestiones" />}
+                        </ListItemButton>
+                    </ListItem>
+
+                    {/* casos especiales */}
+                    <ListItem disablePadding>
+                        <ListItemButton 
+                            onClick={() => navigate("/casos_especiales")}
+                            selected={location.pathname === "/casos_especiales"}
+                        >
+                            <Tooltip title="Casos especiales">
+                                <ListItemIcon>
+                                    <MdOutlineFolderSpecial className="text-white w-6 h-auto" />
+                                </ListItemIcon>
+                            </Tooltip>
+                            {isOpenMenu && <ListItemText primary="Casos especiales" />}
                         </ListItemButton>
                     </ListItem>
                 </List>

@@ -13,6 +13,7 @@ import Contact from "@pages/Contact";
 import Management from "@pages/Management";
 import AddManagement from "@pages/AddManagement";
 import TypeManagement from "@pages/TypeManagement";
+import SpecialCases from "@pages/SpecialCases";
 
 const App = () => {
     const { user } = useContext(AuthContext);
@@ -56,6 +57,10 @@ const App = () => {
             <Route
                 path="/consultas_especificas"
                 element={user ? <Layout><ConsultationSpecific /></Layout> : <Navigate to="/" />}
+            />
+            <Route
+                path="/casos_especiales"
+                element={user ? <Layout><SpecialCases /></Layout> : <Navigate to="/" />}
             />
         </Routes>
     );

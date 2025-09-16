@@ -251,7 +251,7 @@ const AddManagement = () => {
     </div>
     <div className="grid grid-cols-2 gap-4">
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <h2 className="text-xl font-semibold">Enviar SMS de canar de WhatsApp</h2>
+            <h2 className="text-xl font-semibold">Enviar SMS de canal de WhatsApp</h2>
             <Switch  inputProps={{ 'aria-label': 'Checkbox demo' }}/>
           </div>
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">

@@ -42,7 +42,7 @@ class SpecialCasesController extends Controller
 
         return response()->json([
             'message'       => 'Casos especiales obtenidos con éxito',
-            'special cases' => SpecialCasesResource::collection($specialcases),
+            'specialcases' => SpecialCasesResource::collection($specialcases),
             'pagination'    => [
                 'current_page'          => $specialcases->currentPage(),
                 'total_pages'           => $specialcases->lastPage(),
