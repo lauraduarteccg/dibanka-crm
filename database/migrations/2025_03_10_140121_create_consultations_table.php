@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('consultations', function (Blueprint $table) {
             $table->id();
-
-            $table->string('reason_consultation')->default('');
+            $table->string('name')->default('');
+            $table->foreignId('payroll_id')->constrained('payrolls')->onDelete('cascade');
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });

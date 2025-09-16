@@ -11,12 +11,11 @@ class TypeManagementResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'payroll' => $this->whenLoaded('payroll', function () {
-                return $this->payroll->map(function ($c) {
-                    return ['id' => $c->id, 'name' => $c->name];
-                });
-            }),
             'name' => $this->name,
+            'payrolls' => [
+                'id'    => optional($this->payroll)->id,
+                'name'  => optional($this->payroll)->name,
+            ], 
             'is_active' => $this->is_active,
         ];
     }

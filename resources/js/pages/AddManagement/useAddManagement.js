@@ -3,7 +3,7 @@ import axios from "axios";
 import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
 
-export const useManagement = () => {
+export const useAddManagement = () => {
   const { token } = useContext(AuthContext);
 
   const [management, setManagement] = useState([]);
@@ -11,6 +11,7 @@ export const useManagement = () => {
   const [contact, setContact] = useState([]);
   const [consultation, setConsultation] = useState([]);
   const [typeManagement, setTypeManagement] = useState([]);
+  const [specific, setSpecific] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,21 +22,15 @@ export const useManagement = () => {
   const [view, setView] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
-  const [formData, setFormData] = useState({
-    id: null,
-    user_id: "",
-    payroll_id: "",
-    consultation_id: "",
-    contact_id: "",
-  });
-
   // 🔹 Obtener gestiones
   const fetchManagement = useCallback(
     async (page = 1, search = "") => {
       setLoading(true);
       setError(null);
       try {
-        const url = `/api/management?page=${page}&search=${encodeURIComponent(search)}`;
+        const url = `/api/management?page=${page}&search=${encodeURIComponent(
+          search
+        )}`;
         const res = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -67,31 +62,16 @@ export const useManagement = () => {
     fetchManagement(currentPage, searchTerm);
   }, [currentPage, searchTerm, fetchManagement]);
 
-  // 🔹 Editar gestión
-  const handleEdit = (gestion) => {
-    setFormData({
-      id: gestion.id,
-      user_id: gestion.user_id ?? "",
-      payroll_id: gestion.payroll_id ?? "",
-      consultation_id: gestion.consultation_id ?? "",
-      contact_id: gestion.contact_id ?? "",
-    });
-    setValidationErrors({});
-    setIsOpenADD(true);
-  };
-
   // 🔹 Crear o actualizar gestión
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (payload) => {
     setLoading(true);
     setValidationErrors({});
 
     try {
-      const payload = { ...formData };
       let response;
 
-      if (formData.id) {
-        response = await axios.put(`/api/management/${formData.id}`, payload, {
+      if (payload.id) {
+        response = await axios.put(`/api/management/${payload.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
@@ -102,7 +82,7 @@ export const useManagement = () => {
 
       if (response.status === 200 || response.status === 201) {
         Swal.fire({
-          title: formData.id ? "Gestión actualizada" : "Gestión creada",
+          title: payload.id ? "Gestión actualizada" : "Gestión creada",
           text: "Los cambios han sido guardados correctamente.",
           icon: "success",
           timer: 1500,
@@ -120,31 +100,110 @@ export const useManagement = () => {
     }
   };
 
+  // 🔹 Payrolls
+  const fetchPayroll = useCallback(async () => {
+    try {
+      const res = await axios.get(`/api/payrolls/active`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPayroll(res.data.payrolls || []);
+    } catch {
+      setError("Error al obtener los payrolls.");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchPayroll();
+  }, [fetchPayroll]);
+
+  // 🔹 Contactos
+  const fetchContact = useCallback(async () => {
+    try {
+      const res = await axios.get(`/api/contacts`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setContact(res.data.contacts || []);
+    } catch {
+      setError("Error al obtener los contactos.");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchContact();
+  }, [fetchContact]);
+
+  // 🔹 Tipos de gestión
+  const fetchTypeManagement = useCallback(async () => {
+    try {
+      const res = await axios.get(`/api/typemanagements/active`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTypeManagement(res.data.typeManagement || []);
+    } catch {
+      setError("Error al obtener los tipos de gestión.");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchTypeManagement();
+  }, [fetchTypeManagement]);
+
+
+  // 🔹 Consultas
+  const fetchConsultation = useCallback(async () => {
+    try {
+      const res = await axios.get(`/api/consultations/active`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setConsultation(res.data.consultation || []);
+    } catch {
+      setError("Error al obtener las consultas.");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchConsultation();
+  }, [fetchConsultation]);
+  
+
+  // 🔹 Consultas especificas
+  const fetchSpecific = useCallback(async () => {
+    try {
+      const res = await axios.get(`/api/consultationspecifics/active`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSpecific(res.data.consultationspecific || []);
+    } catch {
+      setError("Error al obtener las consultas especificas.");
+    }
+  }, [token]);
+
+
+  useEffect(() => {
+    fetchSpecific();
+  }, [fetchSpecific]);
+
+
   return {
     view,
     setView,
-
+    specific,
     management,
     payroll,
     contact,
     consultation,
     typeManagement,
-
     loading,
     error,
-    formData,
-    setFormData,
     currentPage,
     totalPages,
     searchTerm,
     IsOpenADD,
     validationErrors,
-
     fetchManagement,
     fetchPage,
     handleSearch,
     setCurrentPage,
-    handleEdit,
     handleSubmit,
     setIsOpenADD,
   };

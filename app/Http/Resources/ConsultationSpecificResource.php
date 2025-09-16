@@ -15,10 +15,14 @@ class ConsultationSpecificResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'                    => $this->id,
-            'specific_reason'       => $this->specific_reason,
-            'is_active'             => $this->is_active,
-            'created_at'            => $this->created_at->format('Y-m-d H:i:s')
+            'id'           => $this->id,
+            'consultation' => [
+                'id' => optional($this->consultation)->id,
+                'name' => optional($this->consultation)->name,
+            ],        
+            'name'         => $this->name,
+            'is_active'    => $this->is_active,
+            'created_at'   => $this->created_at->format('Y-m-d H:i:s')
         ];
     }
 }

@@ -10,7 +10,19 @@ class ConsultationSpecific extends Model
     use HasFactory;
 
     protected $fillable = [
-        'specific_reason',
-        'is_active'
+        'name',
+        'consultation_id',
+        'is_active',
     ];
+
+    public function consultation()
+    {
+        return $this->belongsTo(Consultation::class, 'consultation_id');
+    }
+
+    // Scope para traer solo registros activos
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
+    }
 }

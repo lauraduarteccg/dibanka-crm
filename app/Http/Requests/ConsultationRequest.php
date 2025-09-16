@@ -26,17 +26,20 @@ class ConsultationRequest extends FormRequest
         $consultID = $this->route('consultations') ?->id;
 
         return [
-            'reason_consultation'   => ['required', 'string', 'max:255', 'min:1', Rule::unique(Consultation::class)->ignore($consultID)],
+            'name'          => 'required|string|max:255|min:1',
+            'payroll_id'    => 'required|integer|exists:payrolls,id'
         ];
     }
 
     public function messages(): array
     {
         return [
-            'reason_consultation.required' => 'El campo motivo de consulta es obligatorio.',
-            'reason_consultation.string'   => 'El campo motivo de consulta debe ser una cadena de texto.',
-            'reason_consultation.max'      => 'El campo motivo de consulta no debe exceder los 255 caracteres.',
-            'reason_consultation.unique'   => 'El motivo de consulta ya está en uso. Por favor, elige otro.',
+            'name.required' => 'El campo motivo de consulta es obligatorio.',
+            'name.string'   => 'El campo motivo de consulta debe ser una cadena de texto.',
+            'name.max'      => 'El campo motivo de consulta no debe exceder los 255 caracteres.',
+
+            'payroll_id.required' => 'La pagaduria es obligatoria.',
+            'payroll_id.exists' => 'La pagaduria seleccionada no existe.'
         ];
     }
 }

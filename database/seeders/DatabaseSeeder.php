@@ -60,14 +60,15 @@ class DatabaseSeeder extends Seeder
 
         // Crear o tomar consulta
         $consultationId = DB::table('consultations')->first()->id ?? DB::table('consultations')->insertGetId([
-            'reason_consultation'   => 'Consulta de saldo',
+            'payroll_id' => $payrollIds[1],
+            'name'   => 'Consulta de saldo',
             'created_at'            => now(),
             'updated_at'            => now(),
         ]);
         
         $specificId = DB::table('consultation_specifics')->insert([
             [
-                'specific_reason' => 'Consulta bancaria',
+                'name' => 'Consulta bancaria',
                 'consultation_id' => $consultationId,
                 'is_active' => 1,
                 'created_at' => now(),
@@ -119,49 +120,19 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Crear un tipo de gestión
-        $type = TypeManagement::create([
-            'name' => 'LLAMADA ENTRANTE',
-            'is_active' => 1,
+        DB::table('type_management')->insert([
+            [
+                'name' => 'LLAMADA ENTRANTE',
+                'payroll_id' => $payrollIds[1],
+                'is_active' => 1,
+            ],
+            [
+                'name' => 'LLAMADA SALIENTE',
+                'payroll_id' => $payrollIds[0],
+                'is_active' => 1,
+            ]
         ]);
 
-        // Asignar pagadurias al tipo de gestión
-        $type->payroll()->sync($payrollIds);
-
-
-         DB::table('payrolls_consultation_specific')->insert([
-            [
-                'payroll_id' => $payrollIds[0],
-                'consultation_specific_id' => $specificId,
-                'is_active' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'payroll_id' => $payrollIds[1],
-                'consultation_specific_id' => $specificId,
-                'is_active' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-         ]);
-
-        DB::table('payrolls_consultations')->insert([
-            [
-                'payroll_id' => $payrollIds[0],
-                'consultation_id' => $consultationId,
-                'is_active' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'payroll_id' => $payrollIds[1],
-                'consultation_id' => $consultationId,
-                'is_active' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-         ]);
         
         DB::table('special_cases')->insert([
             [

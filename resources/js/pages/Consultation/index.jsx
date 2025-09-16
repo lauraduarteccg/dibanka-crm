@@ -1,4 +1,3 @@
-import React from "react";
 import Table from "@components/Table";
 import ButtonAdd from "@components/ButtonAdd";
 import FormAdd from "@components/FormAddTest";
@@ -8,21 +7,25 @@ import * as yup from "yup";
 import Search from "@components/Search";
 
 const fields = [
-  { name: "reason_consultation", label: "Motivo de consulta", type: "text" },
+  { name: "payroll_id", label: "Pagaduría", type: "select", options: [] },
+  { name: "name", label: "Motivo de consulta", type: "text" },
 ];
 
 const userSchema = yup.object().shape({
-  reason_consultation: yup.string().required("El motivo de consulta es obligatorio"),
+  name: yup.string().required("El motivo de consulta es obligatorio"),
+  payroll_id: yup.string().required("La pagaduría es obligatoria"),
 });
 
 const columns = [
   { header: "ID", key: "id" },
-  { header: "Motivo de consulta", key: "reason_consultation" },
+  { header: "Pagaduría", key: "payrolls.name" },
+  { header: "Motivo de consulta", key: "name" },
 ];
 
 
 const Consults = () => {
   const {
+    payroll,
     fetchPage,
     handleSearch,
     consultations,
@@ -59,7 +62,18 @@ const Consults = () => {
         handleSubmit={handleSubmit}
         loading={loading}
         validationErrors={validationErrors}
-        fields={fields}
+        fields={fields.map(field => {
+          if (field.name === "payroll_id") {
+              return {
+                  ...field,
+                  options: payroll.map(p => ({ 
+                      value: p.id,
+                      label: p.name 
+                  }))
+              };
+          }
+          return field;
+        })}
         schema={userSchema}
       />
 

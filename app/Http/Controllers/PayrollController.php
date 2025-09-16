@@ -39,6 +39,24 @@ class PayrollController extends Controller
         ], Response::HTTP_OK);
     }
 
+    // Trae solo pagadurias
+    public function active(Request $request)
+    {
+        $payrolls = Payroll::active()->paginate(10);
+
+        return response()->json([
+            'message'       => 'Pagadurias activas obtenidas con éxito',
+            'payrolls' => PayrollResource::collection($payrolls),
+            'pagination'    => [
+                'current_page'          => $payrolls->currentPage(),
+                'total_pages'           => $payrolls->lastPage(),
+                'per_page'              => $payrolls->perPage(),
+                'total_payrolls'        => $payrolls->total(),
+            ],
+        ], Response::HTTP_OK);
+
+    }
+
     // Crear una nueva pagaduría
     public function store(PayrollRequest $request)
     {

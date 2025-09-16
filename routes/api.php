@@ -12,6 +12,7 @@ use App\Http\Controllers\TypeManagementController;
 use App\Http\Controllers\PayrollsConsultationsController;
 use App\Http\Controllers\PayrollsConsultationSpecificController;
 use App\Http\Controllers\SpecialCasesController;
+use App\Models\Consultation;
 
 // Ruta de autenticación
 Route::post('/login', [AuthController::class, 'login']);
@@ -33,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // 🔹 CRUD para Pagadurías
     Route::get('/payrolls', [PayrollController::class, 'index']);      // Listar pagadurías
+    Route::get('/payrolls/active', [PayrollController::class, 'active']); // Listar unicamente pagadurias activas
     Route::post('/payrolls', [PayrollController::class, 'store']);     // Crear pagaduría
     Route::get('/payrolls/{payroll}', [PayrollController::class, 'show']);   // Mostrar una pagaduría específica
     Route::put('/payrolls/{payroll}', [PayrollController::class, 'update']); // Actualizar pagaduría
@@ -47,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
  
     // 🔹 CRUD para Consultas
     Route::get('/consultations', [ConsultationController::class, 'index']); // Listar consultas
+    Route::get('/consultations/active', [ConsultationController::class, 'active']); // Listar unicamente consultas activas
     Route::post('/consultations', [ConsultationController::class, 'store']); // Crear consulta
     Route::get('/consultations/{consultation}', [ConsultationController::class, 'show']); // Mostrar una consulta específica
     Route::put('/consultations/{consultation}', [ConsultationController::class, 'update']); // Actualizar consulta
@@ -54,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // 🔹 CRUD para Consultas Especificas
     Route::get('/consultationspecifics', [ConsultationSpecificController::class, 'index']); // Listar consultas especificas
+    Route::get('/consultationspecifics/active', [ConsultationSpecificController::class, 'active']); // Listar unicamente consultas especificas activas
     Route::post('/consultationspecifics', [ConsultationSpecificController::class, 'store']); // Crear consulta especifica
     Route::get('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'show']); // Mostrar una consulta específica especifica
     Route::put('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'update']); // Actualizar consulta especifica
@@ -69,24 +73,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // 🔹 CRUD para Tipo de Gestiones
     Route::get('/typemanagements', [TypeManagementController::class, 'index']); // Listar tipo de gestiones
     Route::post('/typemanagements', [TypeManagementController::class, 'store']); // Crear tipo de gestion
+    Route::get('/typemanagements/active', [TypeManagementController::class, 'active']); // Listar gestiones
     Route::get('/typemanagements/{typemanagement}', [TypeManagementController::class, 'show']); // Mostrar un tipo de gestion específica
     Route::put('/typemanagements/{typemanagement}', [TypeManagementController::class, 'update']); // Actualizar tipo de gestion
     Route::delete('/typemanagements/{typemanagement}', [TypeManagementController::class, 'destroy']); // Eliminar tipo de gestion
 
-    // 🔹 CRUD para Pagadurías y Consultas
-    Route::get('/payrollsconsultations', [PayrollsConsultationsController::class, 'index']); // Listar pagadurías y consultas
-    Route::post('/payrollsconsultations', [PayrollsConsultationsController::class, 'store']); // Crear pagaduia y consulta
-    Route::get('/payrollsconsultations/{id}', [PayrollsConsultationsController::class, 'show']); // Mostrar una pagaduría y consulta específica
-    Route::put('/payrollsconsultations/{id}', [PayrollsConsultationsController::class, 'update']); // Actualizar pagaduría y consulta
-    Route::delete('/payrollsconsultations/{payrollconsultation}', [PayrollsConsultationsController::class, 'destroy']); // Desactivar pagaduría y consulta
-
-    
-    // 🔹 CRUD para Pagadurías y Consultas especificas
-    Route::get('/payrollsconsultationspecifics', [PayrollsConsultationSpecificController::class, 'index']); // Listar pagadurías y consultas
-    Route::post('/payrollsconsultationspecifics', [PayrollsConsultationSpecificController::class, 'store']); // Crear pagaduia y consulta
-    Route::get('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'show']); // Mostrar una pagaduría y consulta específica
-    Route::put('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'update']); // Actualizar pagaduría y consulta
-    Route::delete('/payrollsconsultationspecifics/{id}', [PayrollsConsultationSpecificController::class, 'destroy']); // Desactivar pagaduría y consulta
     
     // 🔹 CRUD para los casos especiales
     Route::get('/specialcases', [SpecialCasesController::class, 'index']); // Listar casos especiales

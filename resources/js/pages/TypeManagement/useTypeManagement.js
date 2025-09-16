@@ -5,59 +5,39 @@ import Swal from "sweetalert2";
 
 export const useTypeManagement = () => {
   const { token } = useContext(AuthContext);
-  const [typemanagement, setTypeManagement] = useState([]);
+
+  const [typeManagement, setTypeManagement] = useState([]);
   const [payroll, setPayroll] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [searchTerm, setSearchTerm] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isOpenADD, setIsOpenADD] = useState(false);
   const [formData, setFormData] = useState({
     id: null,
     name: "",
-    payroll: [], // <-- array de payroll ids
+    payroll_id: [],
     is_active: true,
   });
 
-  // Traer lista de tipos (paginated)
-  const fetchConsultation = useCallback(
-    async (page = 1) => {
+  // ---------------------------------------------------------
+  // Traer lista de tipos de gestion
+  const fetchTypeManagement = useCallback(
+    async (page = 1, search = "") => {
       setLoading(true);
       try {
-        const res = await axios.get(`/api/typemanagements?page=${page}`, {
+        const res = await axios.get(`/api/typemanagements?page=${page}&search=${encodeURIComponent(search)}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        const list = res.data.typeManagement || res.data.data || [];
-
-        const mappedData = list.map((typeManagement) => ({
-          id: typeManagement.id,
-          // payroll_names: string para mostrar en la tabla
-          payroll_names:
-            (typeManagement.payrolls || typeManagement.payroll || []).length > 0
-              ? (typeManagement.payrolls || typeManagement.payroll).map((p) => p.name).join(", ")
-              : "—",
-          // payroll_array: array de objetos {id,name} si necesitas cuando editas desde la tabla
-          payroll_array: (typeManagement.payrolls || typeManagement.payroll || []).map((p) => ({
-            id: p.id,
-            name: p.name,
-          })),
-          name: typeManagement.name,
-          is_active: typeManagement.is_active,
-        }));
-
-        setTypeManagement(mappedData);
-        setTotalPages(
-          (res.data.pagination && res.data.pagination.total_pages) ||
-            res.data.meta?.last_page ||
-            res.data.last_page ||
-            1
-        );
-        setCurrentPage(res.data.pagination?.current_page || res.data.meta?.current_page || page);
+        setTypeManagement(res.data.typeManagement);
+        setTotalPages(res.data.pagination?.total_pages || res.data.meta?.last_page || 1);
+        setCurrentPage(res.data.pagination?.current_page || page);
+        console.log(res.data.typeManagement);        
       } catch (err) {
         console.error(err);
-        setError("Error al obtener los tipos de gestión.");
+        setError("Error al obtener los tipos de gestiones.");
       } finally {
         setLoading(false);
       }
@@ -65,78 +45,103 @@ export const useTypeManagement = () => {
     [token]
   );
 
-  // Manejar la edición: cargar formData con ids
-  const handleEdit = (typemanagementRow) => {
-    const payrollIds =
-      typemanagementRow.payroll_array?.map((p) => p.id) ?? typemanagementRow.payroll ?? [];
-    setFormData({
-      id: typemanagementRow.id,
-      name: typemanagementRow.name,
-      payroll: Array.isArray(payrollIds) ? payrollIds : [payrollIds],
-      is_active: typemanagementRow.is_active ?? true,
-    });
-    setValidationErrors({});
-    setIsOpenADD(true);
-  };
+    const fetchPage = useCallback(
+        (page) => fetchTypeManagement(page, searchTerm),
+        [fetchTypeManagement, searchTerm]
+    );
+    
+    console.log(formData)
 
-  // Crear o actualizar
-  const handleSubmit = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    setLoading(true);
-    setValidationErrors({});
+    const handleSearch = useCallback((value) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    }, []);
 
-    try {
-      // Normalizar payload: backend espera payroll_id => array
-      const payload = {
-        name: formData.name,
-        is_active: formData.is_active,
-        payroll_id: Array.isArray(formData.payroll) ? formData.payroll : [],
-      };
+    useEffect(() => {
+        fetchTypeManagement(currentPage, searchTerm);
+    }, [currentPage, searchTerm, fetchTypeManagement]);
+  
+  // ---------------------------------------------------------
+// ---------------------------------------------------------
+// Manejar la edición de una consulta (rellenar form)
+const handleEdit = (row) => {
+  setFormData({
+    id: row.id ?? null,
+    name: row.name ?? "",
+    payroll_id: row.payrolls?.id ?? [], 
+    is_active: row.is_active ?? true,
+  });
+  setValidationErrors({});
+  setIsOpenADD(true);
+};
 
-      let response;
-      if (formData.id) {
-        response = await axios.put(`/api/typemanagements/${formData.id}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } else {
-        response = await axios.post("/api/typemanagements", payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
+  // ---------------------------------------------------------
+// Crear o actualizar consulta
+const handleSubmit = async (e) => {
+  if (e && e.preventDefault) e.preventDefault();
+  setLoading(true);
+  setValidationErrors({});
 
-      if (response.status === 200 || response.status === 201) {
-        Swal.fire({
-          title: formData.id ? "Tipo actualizado" : "Tipo creado",
-          text: "Los cambios han sido guardados correctamente.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+  try {
+    // Normalizar payload
+    const payload = {
+      name: formData.name,
+      payroll_id: formData.payroll_id,
+    };
 
-        setIsOpenADD(false);
-        setFormData({ id: null, name: "", payroll: [], is_active: true });
-        fetchConsultation(currentPage || 1);
-      }
-    } catch (error) {
-      console.error(error);
-      if (error.response?.status === 422) {
-        setValidationErrors(error.response.data.errors || {});
-      } else {
-        setError(error.response?.data?.message || "Error al guardar tipo de gestión.");
-      }
-    } finally {
-      setLoading(false);
+    let response;
+    if (formData.id) {
+      response = await axios.put(`/api/typemanagements/${formData.id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } else {
+      response = await axios.post("/api/typemanagements", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
     }
-  };
 
-  // Activar/Desactivar (toggle)
+    if (response.status === 200 || response.status === 201) {
+      Swal.fire({
+        title: formData.id ? "Tipo de gestión actualizado" : "Tipo de gestión creado",
+        text: "Los cambios han sido guardados correctamente.",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      setIsOpenADD(false);
+      setFormData({ name: "",  payroll_id: [], is_active: true });
+
+      // refrescar tablas
+      fetchTypeManagement(currentPage || 1);
+    }
+  } catch (error) {
+    console.error(error);
+    if (error.response?.status === 422) {
+      setValidationErrors(error.response.data.errors || {});
+    } else {
+      setError(error.response?.data?.message || "Error al guardar el tipo de gestión.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  if (!isOpenADD) {
+    setValidationErrors({});
+  }
+}, [isOpenADD]);
+
+  // ---------------------------------------------------------
+  // Activar/Desactivar consulta
   const handleDelete = async (id, status) => {
     const actionText = !status ? "activar" : "desactivar";
 
     const result = await Swal.fire({
       position: "top-end",
-      title: `¿Quieres ${actionText} este tipo?`,
-      text: `El tipo será marcado como ${!status ? "Activo" : "Inactivo"}.`,
+      title: `¿Quieres ${actionText} este tipo de gestión?`,
+      text: `El tipo de gestión será marcado como ${!status ? "Activo" : "Inactivo"}.`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: !status ? "#28a745" : "#d33",
@@ -158,62 +163,70 @@ export const useTypeManagement = () => {
         Swal.fire({
           position: "top-end",
           title: "Estado actualizado",
-          text: `El tipo ahora está ${!status ? "Activo" : "Inactivo"}.`,
+          text: `El tipo de gestión ahora está ${!status ? "Activo" : "Inactivo"}.`,
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
           width: "350px",
           padding: "0.8em",
         });
-        fetchConsultation(currentPage || 1);
+        fetchTypeManagement(currentPage || 1);
       } else {
         Swal.fire({
           position: "top-end",
           title: "Error",
-          text: "No se pudo actualizar el tipo.",
+          text: "No se pudo actualizar el tipo de gestión.",
           icon: "error",
-          width: "350px",
-          padding: "0.8em",
         });
       }
-    } catch (error) {
+    } catch (err) {
       Swal.fire({
         position: "top-end",
         title: "Error",
-        text: error.response?.data?.message || "No se pudo actualizar el tipo.",
+        text: err.response?.data?.message || "No se pudo actualizar el tipo de gestión.",
         icon: "error",
       });
     }
   };
 
   // ---------------------------------------------------------
-  // Lista de Pagadurías
-  const fetchPayroll = useCallback(
-    async () => {
-      try {
-        const res = await axios.get(`/api/payrolls`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setPayroll(res.data.payrolls || res.data.data || res.data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Error al obtener las pagadurías.");
-      }
-    },
-    [token]
-  );
-
   useEffect(() => {
-    fetchPayroll();
-  }, [fetchPayroll]);
+    // cargamos ambas listas al montar (la específica la puedes usar en selects/autocomplete)
+    fetchTypeManagement(1);
+  }, [fetchTypeManagement]);
 
-  useEffect(() => {
-    fetchConsultation(1);
-  }, [fetchConsultation]);
+      // ------------------------------------------------------------
+    // Selector de pagadurias
+    const fetchPayroll = useCallback(
+        async (page) => {
+            setLoading(true);
+            try {
+                const res = await axios.get(`/api/payrolls?page=${page}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setPayroll(res.data.payrolls);
+                setTotalPages(res.data.pagination.total_pages);
+                setCurrentPage(res.data.pagination.current_page);
+                //console.log("Consultations =>", res.data.payrolls);
+            } catch (err) {
+                setError("Error al obtener las pagadurias.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [token]
+    );
+
+    useEffect(() => {
+        fetchPayroll(1);
+    }, [fetchPayroll]);
 
   return {
+    // datos para tablas
+    typeManagement,
     payroll,
-    typemanagement,
+
+    // estados y control
     loading,
     error,
     isOpenADD,
@@ -221,11 +234,15 @@ export const useTypeManagement = () => {
     formData,
     setFormData,
     validationErrors,
-    handleSubmit,
     currentPage,
     totalPages,
-    fetchConsultation,
+
+    // acciones
+    fetchTypeManagement,
     handleEdit,
+    handleSubmit,
     handleDelete,
+    fetchPage,
+    handleSearch,
   };
 };

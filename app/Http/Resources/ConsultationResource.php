@@ -16,7 +16,11 @@ class ConsultationResource extends JsonResource
     {
         return [
             'id'                    => $this->id,
-            'reason_consultation'   => $this->reason_consultation,
+            'name'                  => $this->name,
+            'payrolls' => [
+                'id'    => optional($this->payroll)->id,
+                'name'  => optional($this->payroll)->name,
+            ],             
             'created_at'            => $this->created_at->format('Y-m-d H:i:s'),
             'is_active'             => $this->is_active
         ];

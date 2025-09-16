@@ -17,13 +17,18 @@ class ConsultationSpecificController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ConsultationSpecific::query();
+        $query = ConsultationSpecific::with(['consultation']);
         
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
             
             $query->where(function($q) use ($searchTerm) {
-                $q->where('specific_reason', 'LIKE', "%{$searchTerm}%");
+                $q->where('name', 'LIKE', "%{$searchTerm}%");
+
+                // Para buscar en relaciones
+                $q->orWhereHas('consultation', function($consultationQuery) use ($searchTerm) {
+                $consultationQuery->where('name', 'LIKE', "%{$searchTerm}%");
+               });
             });
         }
 
@@ -31,7 +36,7 @@ class ConsultationSpecificController extends Controller
 
         return response()->json([
             'message'       => 'Consultas específicas obtenidas con éxito',
-            'consultations' => ConsultationSpecificResource::collection($specifics),
+            'specifics' => ConsultationSpecificResource::collection($specifics),
             'pagination'    => [
                 'current_page'        => $specifics->currentPage(),
                 'total_pages'         => $specifics->lastPage(),
@@ -42,29 +47,35 @@ class ConsultationSpecificController extends Controller
             ],
         ], Response::HTTP_OK);
     }
+    
+    // Trae solo consultas
+    public function active(Request $request)
+    {
+        $consultations = ConsultationSpecific::active()->paginate(10);
+
+        return response()->json([
+            'message'       => 'Consultas especificas activas obtenidas con éxito',
+            'consultationspecific' => ConsultationSpecificResource::collection($consultations),
+            'pagination'    => [
+                'current_page'          => $consultations->currentPage(),
+                'total_pages'           => $consultations->lastPage(),
+                'per_page'              => $consultations->perPage(),
+                'total_consultations'        => $consultations->total(),
+            ],
+        ], Response::HTTP_OK);
+    }
 
     /**
      * Crear una nueva consulta específica
      */
     public function store(SpecificConsultRequest $request)
     {
-        $validator = Validator::make($request->all());
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
+        $specific = ConsultationSpecific::create($request->all());
 
-        $created = DB::transaction(function () use ($request) {
-            $specific = ConsultationSpecific::create([
-                'specific_reason' => $request->input('specific_reason'),
-                'is_active'       => $request->boolean('is_active', true),
-            ]);
-
-            return $specific;
-        });
-
-        return (new ConsultationSpecificResource($created))
-            ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+        return response()->json([
+            'message' => 'Consulta especifica creada correctamente',
+            'specific' => new ConsultationSpecificResource($specific)
+        ], Response::HTTP_CREATED);
     }
 
     /**
@@ -84,33 +95,16 @@ class ConsultationSpecificController extends Controller
     /**
      * Actualizar una consulta específica
      */
-    public function update(Request $request, string $id)
+    public function update(SpecificConsultRequest $request, $id)
     {
-        $rules = [
-            'specific_reason' => 'required|string|max:255',
-            'is_active'       => 'sometimes|boolean',
-        ];
+        $specific = ConsultationSpecific::findOrFail($id);
+        $specific->update($request->all());
 
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $specific = ConsultationSpecific::find($id);
-        if (! $specific) {
-            return response()->json(['message' => 'Consulta específica no encontrada'], Response::HTTP_NOT_FOUND);
-        }
-
-        DB::transaction(function () use ($request, $specific) {
-            $specific->update([
-                'specific_reason' => $request->input('specific_reason', $specific->specific_reason),
-                'is_active'       => $request->has('is_active')
-                    ? $request->boolean('is_active')
-                    : $specific->is_active,
-            ]);
-        });
-
-        return new ConsultationSpecificResource($specific);
+        return response()->json([
+            'succes' => true,
+            'message' => 'Consults especifica actualizada con exito',
+            'specific' => new ConsultationSpecificResource($specific)
+        ]);
     }
 
     /**

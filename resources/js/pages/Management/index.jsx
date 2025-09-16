@@ -5,7 +5,7 @@ import Drawer from '@mui/material/Drawer';
 import ButtonAdd from "@components/ButtonAdd";
 import Loader from "@components/Loader";
 import SearchBar from "@components/Search";
-import ClientInfoPopup from "@components/PopupManagement";
+import { useNavigate } from "react-router-dom";
 
 const columns = [
   { header: "ID", key: "id" },
@@ -50,22 +50,14 @@ const Management = () => {
     setView(true);
   };
 
-  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
       <ButtonAdd
-          onClickButtonAdd={() => setOpen(true)}
+          onClickButtonAdd={() => navigate("/gestiones/añadir")}
           text="Agregar Gestión"
       />
-        <ClientInfoPopup 
-          open={open} 
-          onClose={() => setOpen(false)} 
-          payroll={payroll}     // 🔹 Cambiado
-          contact={contact} 
-          typeManagement={typeManagement} 
-          consultation={consultation}
-        />
 
       <div className="flex justify-end px-36 -mt-10 ">
         <SearchBar onSearch={handleSearch} placeholder="Buscar gestión..." />

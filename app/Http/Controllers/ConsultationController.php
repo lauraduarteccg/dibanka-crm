@@ -16,14 +16,20 @@ class ConsultationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Consultation::query();
+        $query = Consultation::with(['payroll']);
 
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
 
             $query->where(function($q) use ($searchTerm) {
-                $q->where('reason_consultation', 'LIKE', "%{$searchTerm}%");
+                $q->where('name', 'LIKE', "%{$searchTerm}%");
+
+                // Para buscar en relaciones
+                $q->orWhereHas('payroll', function($payrolQuery) use ($searchTerm) {
+                $payrolQuery->where('name', 'LIKE', "%{$searchTerm}%");
+               });
             });
+            
         }
 
         $consultations = $query->paginate(10);
@@ -38,6 +44,23 @@ class ConsultationController extends Controller
                 'total_consultations'   => $consultations->total(),
                 'next_page_url'         => $consultations->nextPageUrl(),
                 'prev_page_url'         => $consultations->previousPageUrl(),
+            ],
+        ], Response::HTTP_OK);
+    }
+    
+    // Trae solo consultas
+    public function active(Request $request)
+    {
+        $consultations = Consultation::active()->paginate(10);
+
+        return response()->json([
+            'message'       => 'Consultas activas obtenidas con éxito',
+            'consultation' => ConsultationResource::collection($consultations),
+            'pagination'    => [
+                'current_page'          => $consultations->currentPage(),
+                'total_pages'           => $consultations->lastPage(),
+                'per_page'              => $consultations->perPage(),
+                'total_consultations'        => $consultations->total(),
             ],
         ], Response::HTTP_OK);
     }

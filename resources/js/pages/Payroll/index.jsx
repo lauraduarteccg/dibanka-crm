@@ -11,14 +11,12 @@ import Search from "@components/Search";
 
 const fields = [
   { name: "name", label: "Nombre", type: "text", icon: GoPerson },
-  { name: "type", label: "Tipo", type: "text", icon: MdOutlineCategory },
-  { name: "is_active", label: "Activo", type: "boolean-select" },
+  { name: "type", label: "Tipo", type: "text", icon: MdOutlineCategory }
 ];
 
 const payrollSchema = yup.object().shape({
   name: yup.string().required("El nombre es obligatorio"),
-  type: yup.string().required("El tipo es obligatorio"),
-  is_active: yup.boolean().required("El estado es obligatorio"),
+  type: yup.string().required("El tipo es obligatorio")
 });
 
 const Payrolls = () => {

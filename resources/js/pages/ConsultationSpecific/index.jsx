@@ -4,21 +4,31 @@ import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
 import { useConsultSpecifics } from "./useConsultSpecifics.js";
 import * as yup from "yup";
-import { FaRegComment, FaBullseye } from "react-icons/fa6";
+import Search from "@components/Search"
 
 const fields = [
-    { name: "specific_reason",      label: "Motivo especifico",     type: "text", icon: FaBullseye      },
+    { name: "consultation_id",      label: "Motivo",                type: "select",         options: []      },
+    { name: "name",                 label: "Motivo especifico",     type: "text"      },
 ];
 const userSchema = yup.object().shape({
-    specific_reason:        yup.string().required("El motivo especifico es obligatorio"),
+    name:        yup.string().required("El motivo especifico es obligatorio"),
+    consultation_id: yup
+        .number()
+        .required("El motivo general es obligatorio")
+        .typeError("Debes seleccionar un motivo general"),
 });
 const columns=[ 
     { header: "ID",                 key: "id"                   },
-    { header: "Motivo especifico",  key: "specific_reason"      },
+    { header: "Motivo",             key: "consultation"      },
+    { header: "Motivo especifico",  key: "name"      },
 ];   
 
 const ConsultationSpecific = () => {
     const {
+        fetchPage,
+        handleSearch,
+        handleOpenForm,
+        consultationNoSpecific,
         consultation,
         loading,
         error,
@@ -38,9 +48,13 @@ const ConsultationSpecific = () => {
     return (
         <>
             <ButtonAdd
-                onClickButtonAdd={() => setIsOpenADD(true)}
+                onClickButtonAdd={handleOpenForm}
                 text="Agregar Consulta"
             />
+
+            <div className="flex justify-end px-36 -mt-10 ">
+                <Search onSearch={handleSearch} placeholder="Buscar consulta..." />
+            </div>
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
                 Lista de Consultas Especificas
             </h1>
@@ -54,7 +68,18 @@ const ConsultationSpecific = () => {
                 handleSubmit={handleSubmit}
                 loading={loading}
                 validationErrors={validationErrors}
-                fields={fields}
+                fields={fields.map(field => {
+                    if (field.name === "consultation_id") {
+                        return {
+                            ...field,
+                            options: consultationNoSpecific.map(p => ({ 
+                                value: p.id,
+                                label: p.name 
+                            }))
+                        };
+                    }
+                    return field;
+                })}
                 schema={userSchema}
             />
 
@@ -65,7 +90,7 @@ const ConsultationSpecific = () => {
                     columns={columns}
                     data={consultation}
                     currentPage={currentPage}
-                    fetch={fetchConsultation}
+                    fetch={(page) => fetchPage(page)}
                     onDelete={handleDelete}
                     totalPages={totalPages}
                     actions={true}

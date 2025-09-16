@@ -2,7 +2,7 @@ import React, { useState, forwardRef, useEffect } from "react";
 import Button from "../Button";
 import Alert from "@mui/material/Alert";
 import { Dialog, Slide } from "@mui/material";
-import { Autocomplete, TextField, Select, MenuItem } from "@mui/material";
+import { Autocomplete, TextField, Select, MenuItem, InputLabel, FormControl } from "@mui/material";
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="left" ref={ref} {...props} />;
@@ -159,13 +159,17 @@ const FormAdd = ({
                   />
                 ) : field.type === "select" ? (
                     <>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-standard-label">{field.label}</InputLabel>
                       <Select
+                        labelId="demo-simple-select-standard-label"
+                        id="demo-simple-select-standard"
                         value={formData[field.name] ?? ""}
                         onChange={(e) => {
                           setFormData({ ...formData, [field.name]: e.target.value });
                           validateField(field.name, e.target.value);
                         }}
-                        className="w-full"
+                        label={field.name}
                       >
                         {(field.options || []).map((option) => (
                           <MenuItem key={option.value} value={option.value}>
@@ -173,6 +177,7 @@ const FormAdd = ({
                           </MenuItem>
                         ))}
                       </Select>
+                    </FormControl>
                     </>
                   ) : ( 
                   <TextField

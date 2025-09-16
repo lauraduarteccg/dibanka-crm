@@ -25,17 +25,20 @@ class SpecificConsultRequest extends FormRequest
     {
         $specificConsultID = $this->route('consultation_specifics') ?->id;
         return [
-            'specific_reason'   => ['required', 'string', 'max:255', Rule::unique(ConsultationSpecific::class)->ignore($specificConsultID)],
+            'name'              => 'required|string|max:255',
+            'consultation_id'   => 'required|integer|exists:consultations,id'
         ];
     }
 
     public function messages(): array
     {
         return [
-            'specific_reason.required' => 'El motivo especifico es obligatorio.',
-            'specific_reason.string'   => 'El motivo especifico debe ser una cadena de texto.',
-            'specific_reason.max'      => 'El motivo especifico no debe exceder los 255 caracteres.',
-            'specific_reason.unique'   => 'Este motivo especifico ya está en uso. Por favor, elige otro.',
+            'name.required' => 'El motivo especifico es obligatorio.',
+            'name.string'   => 'El motivo especifico debe ser una cadena de texto.',
+            'name.max'      => 'El motivo especifico no debe exceder los 255 caracteres.',
+
+            'consultation_id.required' => 'La consulta es requerida',
+            'consultation_id.exists' => 'La consulta seleccionada no existe'
         ];
     }
 }

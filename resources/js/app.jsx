@@ -11,6 +11,7 @@ import Consultation from "@pages/Consultation";
 import ConsultationSpecific from "@pages/ConsultationSpecific";
 import Contact from "@pages/Contact";
 import Management from "@pages/Management";
+import AddManagement from "@pages/AddManagement";
 import TypeManagement from "@pages/TypeManagement";
 
 const App = () => {
@@ -43,6 +44,10 @@ const App = () => {
             <Route
                 path="/gestiones"
                 element={user ? <Layout><Management /></Layout> : <Navigate to="/" />}
+            />
+            <Route
+                path="/gestiones/añadir"
+                element={user ? <Layout><AddManagement /></Layout> : <Navigate to="/" />}
             />
             <Route
                 path="/tipo_de_gestiones"
