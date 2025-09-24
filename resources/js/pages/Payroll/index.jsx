@@ -1,22 +1,30 @@
-import React from "react";
 import { usePayrolls } from "./usePayrolls";
 import Table from "@components/Table";
 import ButtonAdd from "@components/ButtonAdd";
 import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
 import * as yup from "yup";
-import { GoPerson } from "react-icons/go";
-import { MdOutlineCategory } from "react-icons/md";
 import Search from "@components/Search";
 
 const fields = [
-  { name: "name", label: "Nombre", type: "text", icon: GoPerson },
-  { name: "type", label: "Tipo", type: "text", icon: MdOutlineCategory }
+  { name: "name", label: "Nombre", type: "text", },
+  { name: "description", label: "Descripción", type: "longtext" },
+  { name: "img_payroll", label: "Imagen de pagaduría", type: "file", withLabel: false }
 ];
 
 const payrollSchema = yup.object().shape({
   name: yup.string().required("El nombre es obligatorio"),
-  type: yup.string().required("El tipo es obligatorio")
+  description: yup.string().required("La descripción es obligatoria"),img_payroll: yup
+  .mixed()
+  .test("required", "La imagen de la pagaduría es obligatoria", (value) => {
+    // ✅ Acepta cuando viene como URL string (imagen guardada en BD)
+    if (typeof value === "string" && value.trim() !== "") return true;
+
+    // ✅ Acepta cuando es un File nuevo
+    if (value instanceof File) return true;
+
+    return false;
+  }),
 });
 
 const Payrolls = () => {
@@ -25,7 +33,6 @@ const Payrolls = () => {
     handleSearch,
     payrolls, 
     loading,
-    error,
     isOpenADD,
     setIsOpenADD,
     formData,
@@ -33,17 +40,18 @@ const Payrolls = () => {
     validationErrors,
     handleSubmit,
     currentPage,
-    totalPages,
-    fetchPayrolls,    
+    totalPages,   
     handleDelete,
     handleEdit,
+    totalItems,
+    perPage,
   } = usePayrolls();
 
   return (
     <>
       <ButtonAdd onClickButtonAdd={() => setIsOpenADD(true)} text="Agregar pagaduría" />
 
-      <div className="flex justify-end px-36 -mt-10 ">
+      <div className="flex justify-end px-12 -mt-10 ">
           <Search onSearch={handleSearch} placeholder="Buscar pagaduria..." />
       </div>
 
@@ -71,13 +79,15 @@ const Payrolls = () => {
           columns={[
             { header: "ID", key: "id" },
             { header: "Pagaduría", key: "name" },
-            { header: "Tipo", key: "type" },
+            { header: "Imagen", key: "img_payroll" },
           ]}
           data={payrolls}
           currentPage={currentPage}
+          totalPages={totalPages}
+          rowsPerPage={perPage}
+          totalItems={totalItems}
           fetch={(page) => fetchPage(page)}
           onDelete={handleDelete}
-          totalPages={totalPages}
           actions={true}
           onEdit={handleEdit}
         />

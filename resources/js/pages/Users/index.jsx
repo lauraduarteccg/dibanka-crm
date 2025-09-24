@@ -38,6 +38,8 @@ const Users = () => {
         validationErrors,
         setValidationErrors,
         handleSubmit,
+        per_page,
+        total_users,
         currentPage,
         totalPages,
         fetchUsers,
@@ -64,8 +66,8 @@ const Users = () => {
                 text="Agregar Usuario"
             />
 
-            <div className="flex justify-end px-36 -mt-10 ">
-            <Search onSearch={handleSearch} placeholder="Buscar usuario..." />
+            <div className="flex justify-end px-12 -mt-10 ">
+                <Search onSearch={handleSearch} placeholder="Buscar usuario..." />
             </div>
             
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
@@ -75,7 +77,7 @@ const Users = () => {
             <FormAddTest
                 isOpen={isOpenADD}
                 setIsOpen={setIsOpenADD}
-                title={formData.id ? "Editar Usuario" : "Añadir Usuario"}
+                title={formData.id ? "Usuario" : "Usuario"}
                 formData={formData}
                 setFormData={setFormData}
                 validationErrors={validationErrors}
@@ -97,7 +99,9 @@ const Users = () => {
                     data={users}
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    fetch={(page) => fetchPage(page)}
+                    rowsPerPage={per_page}
+                    totalItems={total_users}
+                    fetchPage={(page) => fetchPage(page)}
                     actions={true}
                     onEdit={handleEdit}
                     onDelete={handleDelete}

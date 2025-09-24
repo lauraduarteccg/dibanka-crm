@@ -23,10 +23,16 @@ class PayrollRequest extends FormRequest
      */
     public function rules(): array
     {
-        $payrollID = $this->route('payrolls') ?->id;
+        $payrollID = $this->route('payroll') ?->id;
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique(Payroll::class)->ignore($payrollID)],
-            'type' => ['required', 'string', 'max:255'],
+            'description' => 'required|string|max:255',
+            'img_payroll' => [
+                $this->isMethod('post') ? 'required' : 'nullable',
+                'image',
+                'mimes:jpeg,png,gif',
+                'max:1000',
+            ],
         ];
     }
     public function messages(): array
@@ -36,9 +42,15 @@ class PayrollRequest extends FormRequest
             'name.string'   => 'El campo pagaduría debe ser una cadena de texto.',
             'name.max'      => 'El campo pagaduría no debe exceder los 255 caracteres.',
             'name.unique'   => 'Esta pagaduría ya está en uso. Por favor, elige otro.',
-            'type.required' => 'El campo tipo es obligatorio.',
-            'type.string'   => 'El campo tipo debe ser una cadena de texto.',
-            'type.max'      => 'El campo tipo no debe exceder los 255 caracteres.',
+
+            'description.required' => 'El campo descripción es obligatorio.',
+            'description.string'   => 'El campo descripción debe ser una cadena de texto.',
+            'description.max'      => 'El campo descripción no debe exceder los 255 caracteres.',
+            
+            'img_payroll.image'     => 'La imagen adjunto no es una imagen',
+            'img_payroll.mimes'     => 'La imagen debe ser tipo jpeg, png o gif',
+            'img_payroll.max'       => 'La imagen excede los 1000 mb',
+            'img_payroll.required'  => 'La imagen es obligatoria.',
         ];
     }
 }

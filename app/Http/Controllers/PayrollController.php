@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Resources\PayrollResource;
 use App\Http\Requests\PayrollRequest;
+use Illuminate\Support\Facades\Storage;
 
 class PayrollController extends Controller
 {
@@ -21,7 +22,7 @@ class PayrollController extends Controller
             
             $query->where(function($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('type', 'LIKE', "%{$searchTerm}%");
+                  ->orWhere('description', 'LIKE', "%{$searchTerm}%");
             });
         }
 
@@ -60,7 +61,16 @@ class PayrollController extends Controller
     // Crear una nueva pagaduría
     public function store(PayrollRequest $request)
     {
-        $payroll = Payroll::create($request->only(['name', 'type', 'is_active']));
+        // Guardar los datos básicos
+        $payroll = Payroll::create($request->all());
+
+        if ($request->hasFile('img_payroll')) {
+            $path = $request->file('img_payroll')->store('img_payroll', 'public');
+
+            // Guardar la ruta en la BD (asegúrate de que tu tabla tenga una columna img_payroll)
+            $payroll->img_payroll = $path;
+            $payroll->save();
+        }
 
         return response()->json([
             'message' => 'Pagaduría creada con éxito',
@@ -78,18 +88,34 @@ class PayrollController extends Controller
     }
 
     // Actualizar una pagaduría
-    public function update(Request $request, $id)
-    {
-        $payroll = Payroll::findOrFail($id);
+public function update(Request $request, $id)
+{
+    $payroll = Payroll::findOrFail($id);
 
-        $payroll->update($request->only(['name', 'type', 'is_active']));
+    $payroll->name = $request->name;
+    $payroll->description = $request->description;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pagaduría actualizada con éxito',
-            'payroll' => new PayrollResource($payroll)
-        ], Response::HTTP_OK);
+    // 🔹 Si viene un archivo nuevo, lo guardamos
+    if ($request->hasFile('img_payroll')) {
+        // Borrar imagen anterior si existe
+        if ($payroll->img_payroll && \Storage::disk('public')->exists($payroll->img_payroll)) {
+            \Storage::disk('public')->delete($payroll->img_payroll);
+        }
+
+        $path = $request->file('img_payroll')->store('img_payrolls', 'public');
+        $payroll->img_payroll = $path;
     }
+
+    // 🔹 Si NO viene archivo, conservamos el string actual (no hacemos nada)
+
+    $payroll->save();
+
+    return response()->json([
+        'message' => 'Pagaduría actualizada correctamente',
+        'payroll' => $payroll,
+    ], 200);
+}
+
 
     // Activar/Desactivar una pagaduría
     public function destroy($id)

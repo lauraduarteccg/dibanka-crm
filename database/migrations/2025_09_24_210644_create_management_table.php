@@ -13,15 +13,19 @@ return new class extends Migration
     {
         Schema::create('management', function (Blueprint $table) {
             $table->id();
+            $table->text('wolkvox_id');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('payroll_id')->constrained('payrolls')->onDelete('cascade');
             $table->foreignId('contact_id')->constrained('contacts')->onDelete('cascade');
-            $table->string('solution');
+            $table->boolean('solution')->default(1);
             $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
-            $table->foreignId('specific_id')->constrained('consultation_specifics')->onDelete(('cascade'));
+            $table->foreignId('specific_id')->constrained('consultation_specifics')->onDelete('cascade');
+            $table->foreignId('type_management_id')->constrained('type_management')->onDelete('cascade');
             $table->text('comments');
-            $table->string('sms');
-            $table->string('wsp');
+            $table->date('solution_date')->nullable();
+            $table->foreignId('monitoring_id')->nullable()->constrained('monitoring')->onDelete('cascade');
+            $table->boolean('sms')->default(1);
+            $table->boolean('wsp')->default(1);
             $table->timestamps();
         });
     }

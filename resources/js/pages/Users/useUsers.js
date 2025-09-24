@@ -12,6 +12,8 @@ export const useUsers = () => {
        const [currentPage, setCurrentPage] = useState(1);
        const [searchTerm, setSearchTerm] = useState("");
        const [totalPages, setTotalPages] = useState(1);
+       const [per_page, setPer_page] = useState(1);
+       const [total_users, setTotal_users] = useState(1);
        const [isOpenADD, setIsOpenADD] = useState(false);
        const [formData, setFormData] = useState({
            id: null,
@@ -24,24 +26,29 @@ export const useUsers = () => {
            fetchUsers(1);
        }, []);
    
-       const fetchUsers = useCallback(
-            async (page, search = "") => {
-                setLoading(true);
-                try {
-                    const res = await axios.get(`/api/users?page=${page}&search=${encodeURIComponent(search)}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-                    setUsers(res.data.users);
-                    setTotalPages(res.data.pagination.total_pages);
-                    setCurrentPage(res.data.pagination.current_page);
-                } catch (err) {
-                    setError("Error al obtener la lista de usuarios.");
-                } finally {
-                    setLoading(false);
-                }
-            },
-                [token]
-        )
+        const fetchUsers = useCallback(
+        async (page, search = "", pageSize = per_page) => {
+            setLoading(true);
+            try {
+            const res = await axios.get(
+                `/api/users?page=${page}&per_page=${pageSize}&search=${encodeURIComponent(search)}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setUsers(res.data.users);
+            setTotalPages(res.data.pagination.total_pages);
+            setPer_page(res.data.pagination.per_page);
+            setTotal_users(res.data.pagination.total_users);
+            setCurrentPage(res.data.pagination.current_page);
+            } catch (err) {
+            setError("Error al obtener la lista de usuarios.");
+            } finally {
+            setLoading(false);
+            }
+        },
+        [token, per_page]
+        );
+
 
         const fetchPage = useCallback(
             (page) => fetchUsers(page, searchTerm),
@@ -243,6 +250,7 @@ export const useUsers = () => {
                setLoading(false);
            }
        };
+       console.log(total_users)
    
        return{
         users,
@@ -256,6 +264,7 @@ export const useUsers = () => {
         setValidationErrors,
         handleSubmit,
         currentPage,
+        per_page,total_users,
         totalPages,
         fetchUsers ,
         handleDelete,

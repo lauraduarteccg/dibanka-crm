@@ -15,6 +15,8 @@ export const useConsultSpecifics = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [isOpenADD, setIsOpenADD] = useState(false);
+    const [perPage, setPerPage] = useState(1);
+    const [totalItems, setTotalItems] =useState(1);
     const [formData, setFormData] = useState({
         id: null,
         name: "",
@@ -41,6 +43,8 @@ export const useConsultSpecifics = () => {
                 setConsultation(specifics);
                 setTotalPages(res.data.pagination.total_pages);
                 setCurrentPage(res.data.pagination.current_page);
+                setPerPage(res.data.pagination.per_page);
+                setTotalItems(res.data.pagination.total_consultations)
                 //console.log("Specifics =>", specifics);
             } catch (err) {
                 setError("Error al obtener las consultas.");
@@ -277,6 +281,8 @@ export const useConsultSpecifics = () => {
         setFormData,
         validationErrors,
         handleSubmit,
+        perPage,
+        totalItems,
         currentPage,
         totalPages,
         fetchConsultation,

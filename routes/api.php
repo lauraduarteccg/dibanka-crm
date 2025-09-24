@@ -9,10 +9,8 @@ use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\ConsultationSpecificController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TypeManagementController;
-use App\Http\Controllers\PayrollsConsultationsController;
-use App\Http\Controllers\PayrollsConsultationSpecificController;
 use App\Http\Controllers\SpecialCasesController;
-use App\Models\Consultation;
+use App\Http\Controllers\MonitoringController;
 
 // Ruta de autenticación
 Route::post('/login', [AuthController::class, 'login']);
@@ -45,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/management', [ManagementController::class, 'store']); // Crear gestion
     Route::get('/management/{id}', [ManagementController::class, 'show']); // Mostrar una gestion específica
     Route::put('/management/{id}', [ManagementController::class, 'update']); // Actualizar gestion
+    Route::put('/managementmonitoring/{id}', [ManagementController::class, 'updateMonitoring']); // Actualizar gestion
     Route::delete('/management/{id}', [ManagementController::class, 'destroy']); // Eliminar gestion
  
     // 🔹 CRUD para Consultas
@@ -62,6 +61,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'show']); // Mostrar una consulta específica especifica
     Route::put('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'update']); // Actualizar consulta especifica
     Route::delete('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'destroy']); // Eliminar consulta especifica
+    
+    // 🔹 CRUD para Seguimientos
+    Route::get('/monitorings', [MonitoringController::class, 'index']); // Listar seguimiento
+    Route::get('/monitorings/active', [MonitoringController::class, 'active']); // Listar unicamente seguimiento activas
+    Route::post('/monitorings', [MonitoringController::class, 'store']); // Crear seguimiento
+    Route::get('/monitorings/{id}', [MonitoringController::class, 'show']); // Mostrar una seguimiento especifica
+    Route::put('/monitorings/{id}', [MonitoringController::class, 'update']); // Actualizar seguimiento
+    Route::delete('/monitorings/{id}', [MonitoringController::class, 'destroy']); // Eliminar seguimiento
 
     // 🔹 CRUD para Contactos
     Route::get('/contacts', [ContactController::class, 'index']); // Listar contacto

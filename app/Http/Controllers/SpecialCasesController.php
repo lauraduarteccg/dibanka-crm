@@ -18,22 +18,26 @@ class SpecialCasesController extends Controller
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
 
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('id', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('management_messi', 'LIKE'. "%{$searchTerm}%")
-                    ->orWhere('id_call', 'LIKE'. "%{$searchTerm}%")
-                    ->orWhere('id_messi', 'LIKE'. "%{$searchTerm}%");
-                
-                // Para buscar en relaciones
-                $q->orWhereHas('user', function($userQuery) use ($searchTerm) {
-                $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
-                         ->orWhere('email', 'LIKE', "%{$searchTerm}%");
-               });
-            
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('id', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('management_messi', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('id_call', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('id_messi', 'LIKE', "%{$searchTerm}%");
+                    
+                    // Para buscar en relaciones
+                    $q->orWhereHas('user', function($userQuery) use ($searchTerm) {
+                        $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+                    });
+
                 $q->orWhereHas('contact', function($contactQuery) use ($searchTerm) {
                     $contactQuery->where('name', 'LIKE', "%{$searchTerm}%")
                                 ->orWhere('email', 'LIKE', "%{$searchTerm}%")
-                                ->orWhere('phone', 'LIKE', "%{$searchTerm}%");
+                                ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
+                                ->orWhereHas('payroll', function($payrollQuery) use ($searchTerm) {
+                                    $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                                });
                 });
             });
         }

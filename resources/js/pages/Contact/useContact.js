@@ -2,7 +2,6 @@ import { useState, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
-import { Campaign } from "@mui/icons-material";
 
 export const useContact = () => {
     const { token } = useContext(AuthContext);
@@ -12,8 +11,15 @@ export const useContact = () => {
     const [error,            setError]               = useState(null);
     const [validationErrors, setValidationErrors]    = useState({});
     const [currentPage,      setCurrentPage]         = useState(1);
+    const [currentPageM,      setCurrentPageM]         = useState(1);
     const [totalPages,       setTotalPages]          = useState(1);
-    const [searchTerm, setSearchTerm] = useState("");
+    const [totalPagesM,       setTotalPagesM]          = useState(1);
+    const [perPage, setPerPage] = useState(1);
+    const [totalItems, setTotalItems] =useState(1);
+    const [managements,      setManagements]         = useState(false);
+    const [management,       setManagement]          = useState([]);
+    const [selectedContact,  setSelectedContact]     = useState(null);
+    const [searchTerm,       setSearchTerm]          = useState("");
     const [isOpenADD,        setIsOpenADD]           = useState(false);
     const [formData,         setFormData]            = useState({
         id: null,
@@ -39,7 +45,8 @@ export const useContact = () => {
                 setContact(res.data.contacts);
                 setTotalPages   (res.data.pagination.total_pages);
                 setCurrentPage  (res.data.pagination.current_page);
-                console.log(res.data.contacts);
+                setPerPage  (res.data.pagination.per_page);
+                setTotalItems (res.data.pagination.total_contacts);
             } catch (err) {
                 setError("Error al obtener laos contactos.");
             } finally {
@@ -48,7 +55,6 @@ export const useContact = () => {
         },
         [token]
     );
-
     useEffect(() => {
         fetchContact(1);
     }, []);
@@ -61,14 +67,22 @@ export const useContact = () => {
     const handleSearch = useCallback((value) => {
         setSearchTerm(value);
         setCurrentPage(1);
+        fetchContact(1, value);
     }, []);
 
-    useEffect(() => {
-        fetchContact(currentPage, searchTerm);
-    }, [currentPage, searchTerm, fetchContact]);
-
     // Manejar la edición de consultas
-    const handleEdit = (contact) => {
+    const handleEdit = (item) => {
+        setFormData({
+            id: item.id, 
+            campaign: item.campaign,
+            payroll_id: item.payroll.id,
+            name: item.name,
+            email: item.email,
+            phone: item.phone,
+            update_phone: item.update_phone,
+            identification_type: item.identification_type,
+            identification_number: item.identification_number,
+        });
         setValidationErrors({});
         setIsOpenADD(true);
     };
@@ -232,8 +246,51 @@ export const useContact = () => {
     fetchPayroll();
     }, [fetchPayroll]);
 
+    // -----------------------------------------------------------
+    // Lista de gestiones
+    const fetchManagement = async (identification_number, page = 1) => {
+    setLoading(true);
+    try {
+        const url = `/api/management?identification_number=${identification_number}&page=${page}`;
+        const { data } = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setManagement(data.managements ?? []);
+        setTotalPagesM(data.last_page ?? 1);
+        setCurrentPageM(data.current_page ?? 1);
+        console.log(data)
+
+    } catch (err) {
+        console.error("Error al obtener gestiones:", err);
+    } finally {
+        setLoading(false);
+    }
+    };
+    
+    //---------------------------------------------------------------
+    const handleOpenManagements = (contact) => {
+        // 1. Limpio gestiones viejas
+        setManagement([]);
+        
+        // 2. Guardo el contacto seleccionado
+        setSelectedContact(contact);
+        
+        // 3. Abro el Dialog
+        setManagements(true);
+        };
+
 
     return {
+        handleOpenManagements,
+        currentPageM,
+        totalPagesM,
+        fetchManagement,
+        management,
+        selectedContact,
+        setSelectedContact,
+        managements,
+        setManagements,
         handleSearch,
         fetchPage,
         setSearchTerm,
@@ -249,6 +306,8 @@ export const useContact = () => {
         setFormData,
         validationErrors,
         handleSubmit,
+        totalItems,
+        perPage,
         currentPage,
         totalPages,
         fetchContact,

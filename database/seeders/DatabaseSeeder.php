@@ -34,14 +34,20 @@ class DatabaseSeeder extends Seeder
         // Crear pagadurías
         $payroll = [
             [
-                'name'       => 'Casur',
-                'type'       => 'Pagaduria',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'name'          => 'Casur',
+                'description'   => 'Le recuerdo que puede encontrar nuestro botón de asesoría en la página web del portal DiBanka.
+                
+                Recuerde que habló con {{agente}}. Muchas gracias por comunicarse con nosotros.',
+                'img_payroll' => "public/img/u19f0v08so2lsps9f8777",
+                'created_at'    => now(),
+                'updated_at'    => now(),
             ],
             [
                 'name'       => 'Educame',
-                'type'       => 'Medellín',
+                'description'   => 'Le recuerdo que puede encontrar nuestro botón de asesoría en la página web del portal DiBanka.
+                
+                Recuerde que habló con {{agente}}. Muchas gracias por comunicarse con nosotros.',
+                'img_payroll' => "public/img/u19f0v08so2lsps9f8777",
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -90,36 +96,6 @@ class DatabaseSeeder extends Seeder
             'updated_at'            => now(),
         ]);
 
-        // Insertar gestiones de ejemplo
-        DB::table('management')->insert([
-            [
-                'user_id'        => 1,
-                'payroll_id'       => $payrollIds[0],
-                'contact_id'        => $contactId,
-                'solution'          => 'Si',
-                'consultation_id'   => $consultationId,
-                'specific_id'       => $specificId,
-                'comments'          => 'Afiliado se comunica para conocer por qué aún su crédito se encuentra en estado de en revisión, esperando una autorización de Dibanka, se validan datos y se informa que es la entidad Financiera ',
-                'sms'               => 'Si',
-                'wsp'               => 'No',
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
-            [
-                'user_id'        => 2,
-                'payroll_id'       => $payrollIds[1],
-                'contact_id'        => $contactId,
-                'solution'          => 'Si',
-                'consultation_id'   => $consultationId,
-                'specific_id'       => $specificId,
-                'comments'          => 'Aliado se comunica informa que necesita firmar la libranza pero no le llega el codigo otp, se validan datos se le indica que no tiene numero actualizado pero que valide todas las bandejas de entrada confirma que no hay nada se le solicita esperar un lapso de tiempo por si es un error de conexión',
-                'sms'               => 'Si',
-                'wsp'               => 'No',
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
-        ]);
-
         DB::table('type_management')->insert([
             [
                 'name' => 'LLAMADA ENTRANTE',
@@ -145,5 +121,49 @@ class DatabaseSeeder extends Seeder
                 'updated_at'        => now()
             ]
             ]);
+
+        DB::table('monitoring')->insert([
+            'name'          => 'Solucion sin contacto',
+            'created_at'    => now(),
+            'updated_at'    => now()
+        ]);
+
+        // Insertar gestiones de ejemplo
+        DB::table('management')->insert([
+            [
+                'user_id'           => 1,
+                'wolkvox_id'        => '68d44d8b6f25ca6591073f43a33', 
+                'payroll_id'        => $payrollIds[0],
+                'contact_id'        => $contactId,
+                'solution'          => 2,
+                'consultation_id'   => $consultationId,
+                'specific_id'       => $specificId,
+                'type_management_id'=> 1,
+                'comments'          => 'Afiliado se comunica para conocer por qué aún su crédito se encuentra en estado de en revisión, esperando una autorización de Dibanka, se validan datos y se informa que es la entidad Financiera ',
+                'sms'               => 1,
+                'wsp'               => 1,
+                'solution_date' => '2025-09-23',
+                'monitoring_id'     => 1,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ],
+            [
+                'user_id'        => 2,
+                'wolkvox_id'        => '68d44d8b6f25ca6591073f43as',
+                'payroll_id'        => $payrollIds[1],
+                'contact_id'        => $contactId,
+                'solution'          => 1,
+                'consultation_id'   => $consultationId,
+                'specific_id'       => $specificId,
+                'type_management_id'=> 1,
+                'comments'          => 'Aliado se comunica informa que necesita firmar la libranza pero no le llega el codigo otp, se validan datos se le indica que no tiene numero actualizado pero que valide todas las bandejas de entrada confirma que no hay nada se le solicita esperar un lapso de tiempo por si es un error de conexión',
+                'sms'               => 1,
+                'wsp'               => 1,
+                'solution_date' => '2026-09-23',
+                'monitoring_id'     => 1,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ],
+        ]);
     }
 }

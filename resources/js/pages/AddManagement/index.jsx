@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import casur from "../../../assets/casur.png"
+import React, { useState, useContext, useEffect } from "react";
+import { AuthContext } from "@context/AuthContext";
+import seleccione_imagen from "../../../assets/seleccione_imagen.png"
 import { useAddManagement } from "./useAddManagement.js";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   FormControl,
   InputLabel,
@@ -13,7 +15,10 @@ import {
 } from "@mui/material";
 import { TiContacts } from "react-icons/ti";
 
+
 const AddManagement = () => {
+
+  const navigate = useNavigate();
   const {
     payroll,
     contact,
@@ -23,31 +28,45 @@ const AddManagement = () => {
     handleSubmit,
   } = useAddManagement();
 
+  const { user } = useContext(AuthContext);
+  const location = useLocation();
+  const [formData, setFormData] = useState({
+    campaign: "",
+    payroll: "",
+  });
+
   // Estados locales para controlar inputs
   const [campaign, setCampaign] = useState("");
+  const [ sms, setSms ] = useState(false);
+  const [ wsp, setWsp ] = useState(false);
   const [selectedPayroll, setSelectedPayroll] = useState(null);
   const [selectedTypeManagement, setSelectedTypeManagement] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedSolution, setSelectedSolution] = useState("");
   const [selectedConsultation, setSelectedConsultation] = useState(null);
+  const [wolkvox_id, setWolkvox_id] = useState("");
   const [selectedSpecificConsultation, setSelectedSpecificConsultation] =
     useState(null);
-  const [observations, setObservations] = useState("");
+  const [comments, setObservations] = useState("");
 
   // Guardar gestión
-  const handleSave = () => {
-    const payload = {
-      payroll_id: selectedPayroll?.id || "",
-      contact_id: selectedContact?.id || "",
-      consultation_id: selectedConsultation?.id || "",
-      type_management_id: selectedTypeManagement?.id || "",
-      specific_consultation_id: selectedSpecificConsultation?.id || "",
-      solution: selectedSolution,
-      observations,
-      campaign,
-    };
-    handleSubmit(payload);
+const buildPayload = () => {
+  return {
+    user_id: user?.id,
+    payroll_id: selectedPayroll?.id ?? null,
+    type_management_id: selectedTypeManagement?.id ?? null,
+    contact_id: selectedContact?.id ?? null,
+    solution: selectedSolution,
+    consultation_id: selectedConsultation?.id ?? null,
+    specific_id: selectedSpecificConsultation?.id ?? null,
+    wolkvox_id: wolkvox_id ?? null,
+    comments,
+    monitoring_id: null,
+    solution_date: null,
+    wsp: wsp ? 1 : 0,
+    sms: sms ? 1 : 0,
   };
+};
 
   // Listas dependiente a la pagaduria
   const filteredTypeManagement = selectedPayroll
@@ -55,12 +74,6 @@ const AddManagement = () => {
       (item) => item?.payrolls?.id === selectedPayroll?.id
     )
   : typeManagement;
-  
-  const filteredconsultation = selectedPayroll
-  ? consultation.filter(
-      (item) => item?.payrolls?.id === selectedPayroll?.id
-    )
-  : consultation;
 
   // Lista de consultas específicas dependiente de la consulta seleccionada
   const filteredSpecific = selectedConsultation
@@ -71,21 +84,75 @@ const AddManagement = () => {
 
 
   // Lista de contactos dependiente de la campaña
-  const filteredContact = campaign
-    ? contact.filter((item) => item?.campaign === campaign)
-    : contact;
+  const filteredContact = contact.filter((item) => {
+    const matchesCampaign = !campaign || item?.campaign === campaign;
+    const matchesPayroll = !selectedPayroll || item?.payroll?.id === selectedPayroll.id;
+    return matchesCampaign && matchesPayroll;
+  });
 
   const handleClear = () => {
     setCampaign("");
     setSelectedPayroll(null);
-    setSelectedTypeManagement(null);
+    setSelectedTypeManagement("");
     setSelectedContact(null);
     setSelectedSolution("");
     setSelectedConsultation(null);
     setSelectedSpecificConsultation(null);
     setObservations("");
+    setWolkvox_id("");
+    setSms(false);
+    setWsp(false);
+    setFormData({
+      campaign: "",
+      payroll: "",
+      typemanagement: "",
+      solution: "",
+    });
   };
 
+  const onSave = () => {
+    const payload = buildPayload();
+    console.log("Payload que se manda:", payload);
+    handleSubmit(payload); // ahora sí mandas la data
+    handleClear();
+    navigate("/gestiones/añadir")
+  };
+
+  const capitalizeWords = (str) =>
+    str
+      ? str
+          .split(" ")
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(" ")
+      : "";
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    // Campaña
+    setCampaign(capitalizeWords(params.get("campaign")));
+
+    // Pagaduría
+    const foundPayroll = payroll.find(
+      (p) => p.name === capitalizeWords(params.get("payroll"))
+    ) || null;
+    setSelectedPayroll(foundPayroll);
+
+    // Numero de identificacion del cliente
+    const idNumberParam = params.get("identification_number");
+    if (idNumberParam) {
+      const foundContact = contact.find(
+        (c) => c.identification_number === idNumberParam
+      ) || null;
+      setSelectedContact(foundContact);
+    }
+    
+    setWolkvox_id(capitalizeWords(params.get("wolkvox_id")));
+
+  }, [location.search, payroll, typeManagement, contact]);
+
+ // http://localhost:8000/gestiones/a%C3%B1adir?campaign=afiliados&payroll=educame&typemanagement=LLAMADA%20ENTRANTE&solution=true&identification_number=1025530310
+ // http://localhost:8000/gestiones/a%C3%B1adir?campaign=aliados&payroll=educame&identification_number=12345678&wolkvox_id=8465416524132355456
 
   return (
     <div className="flex flex-col gap-4 text-secondary-dark px-40 pb-40 ">
@@ -109,26 +176,26 @@ const AddManagement = () => {
         {/* Selector de campaña */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Campaña</h2>
-          <FormControl fullWidth>
-            <InputLabel id="campania-label">Campaña</InputLabel>
-            <Select
-              labelId="campania-label"
-              id="campania"
-              value={campaign}
-              label="Campaña"
-              onChange={(event) => setCampaign(event.target.value)}
-            >
-              <MenuItem value={"Aliados"}>Aliados</MenuItem>
-              <MenuItem value={"Afiliados"}>Afiliados</MenuItem>
-            </Select>
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="campania-label">Campaña</InputLabel>
+          <Select
+            labelId="campania-label"
+            id="campania"
+            value={campaign}
+            label="Campaña"
+            onChange={(event) => setCampaign(event.target.value)}
+          >
+            <MenuItem value="Aliados">Aliados</MenuItem>
+            <MenuItem value="Afiliados">Afiliados</MenuItem>
+          </Select>
+        </FormControl>
         </div>
 
         {/* Autocompletado de Pagaduría */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Pagaduría</h2>
           <Autocomplete
-            options={payroll}
+            options={payroll || formData.payroll}
             getOptionLabel={(option) => option?.name || ""}
             value={selectedPayroll}
             onChange={(event, value) => setSelectedPayroll(value)}
@@ -137,44 +204,23 @@ const AddManagement = () => {
         </div>
       </div>
       {/* Imagen */}
-      <div className="flex items-center justify-end">
-            <img src={casur} alt="" className="w-11/12 bg-white shadow-xl rounded-xl p-8" />
+      <div className="flex items-center justify-end ml-5">
+        {selectedPayroll?.img_payroll ? (
+          <img
+            src={selectedPayroll.img_payroll}
+            alt={selectedPayroll.name}
+            className="w-[390px] bg-white shadow-xl rounded-xl p-8"
+          />
+        ) : (
+          <img
+            src={seleccione_imagen}
+            alt="Sin imagen"
+            className="w-[390px] bg-white shadow-xl rounded-xl p-8"
+          />
+        )}
       </div>
     </div>
 
-    <div className="grid grid-cols-2 gap-4">
-      {/* Autocompletado de Tipo de gestión */}
-      <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-        <h2 className="text-xl font-semibold">Tipo de gestión</h2>
-        <Autocomplete
-          options={filteredTypeManagement}
-          getOptionLabel={(option) => option?.name || ""}
-          value={selectedTypeManagement}
-          onChange={(event, value) => setSelectedTypeManagement(value)}
-          renderInput={(params) => (
-            <TextField {...params} label="Tipo de gestión" />
-          )}
-        />
-      </div>
-
-      {/* Selector de solución en primer contacto */}
-      <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-        <h2 className="text-xl font-semibold">Solución en el primer contacto</h2>
-        <FormControl fullWidth>
-          <InputLabel id="solucion-label">Solución</InputLabel>
-          <Select
-            labelId="solucion-label"
-            id="solucion"
-            value={selectedSolution}
-            label="Solución"
-            onChange={(event) => setSelectedSolution(event.target.value)}
-          >
-            <MenuItem value={true}>Sí</MenuItem>
-            <MenuItem value={false}>No</MenuItem>
-          </Select>
-        </FormControl>
-      </div>
-    </div>
       {/* Autocompletado de Cliente/Contacto */}
       <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
         <h2 className="text-xl font-semibold">Información del cliente</h2>
@@ -219,6 +265,40 @@ const AddManagement = () => {
           </div>
         </div>
       </div>
+        
+      <div className="grid grid-cols-2 gap-4">
+        {/* Autocompletado de Tipo de gestión */}
+        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
+          <h2 className="text-xl font-semibold">Tipo de gestión</h2>
+          <Autocomplete
+            options={filteredTypeManagement}
+            getOptionLabel={(option) => option?.name || ""}
+            value={selectedTypeManagement}
+            onChange={(event, value) => setSelectedTypeManagement(value)}
+            renderInput={(params) => (
+              <TextField {...params} label="Tipo de gestión" />
+            )}
+          />
+        </div>
+
+        {/* Selector de solución en primer contacto */}
+        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
+          <h2 className="text-xl font-semibold">Solución en el primer contacto</h2>
+          <FormControl fullWidth>
+            <InputLabel id="solucion-label">Solución</InputLabel>
+            <Select
+              labelId="solucion-label"
+              id="solucion"
+              value={selectedSolution}
+              label="Solución"
+              onChange={(event) => setSelectedSolution(event.target.value)}
+            >
+              <MenuItem value={true}>Sí</MenuItem>
+              <MenuItem value={false}>No</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+      </div>
       
     <div className="grid grid-cols-2 gap-4">
       {/* Autocompletado de motivo de consulta */}
@@ -249,15 +329,42 @@ const AddManagement = () => {
         />
       </div>
     </div>
-    <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <h2 className="text-xl font-semibold">Enviar SMS de canal de WhatsApp</h2>
-            <Switch  inputProps={{ 'aria-label': 'Checkbox demo' }}/>
-          </div>
-          <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <h2 className="text-xl font-semibold">Enviar WhatsApp de recuperar contraseña</h2>
-            <Switch  inputProps={{ 'aria-label': 'Checkbox demo' }}/>
-          </div>
+    {/* Swichs para enviar sms y wsp */}
+    <div className="grid grid-cols-3 gap-4">
+      {/* SMS */}
+        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
+          <h2 className="text-xl font-semibold">Enviar SMS de canal de WhatsApp</h2>
+          <Switch
+            checked={sms}                            
+            onChange={(e) => setSms(e.target.checked)} 
+            inputProps={{ 'aria-label': 'Checkbox demo' }}
+            />
+        </div>
+          
+      {/* Wolkvox id de la gestión */}
+      <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
+        <div className="flex flex-col">
+          <p className="text-xl font-semibold pb-3">Wolkvox_id de la gestión:</p>
+            <TextField
+              fullWidth
+              id="standard-multiline-static"
+              disabled
+              value={wolkvox_id}
+              onChange={(e) => setWolkvox_id(e.target.value)}
+              multiline
+            />
+        </div>
+      </div>
+
+      {/* WHATSAPP */}
+        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
+          <h2 className="text-xl font-semibold">Enviar WhatsApp de recuperar contraseña</h2>
+          <Switch
+            checked={wsp}                            
+            onChange={(e) => setWsp(e.target.checked)} 
+            inputProps={{ 'aria-label': 'Checkbox demo' }}
+          />
+        </div>
     </div>
 
 
@@ -267,7 +374,7 @@ const AddManagement = () => {
         <TextField
           id="standard-multiline-static"
           label="Escriba aquí"
-          value={observations}
+          value={comments}
           onChange={(e) => setObservations(e.target.value)}
           multiline
           rows={4}
@@ -276,7 +383,7 @@ const AddManagement = () => {
 
       {/* Botón Guardar */}
       <div className="flex items-center justify-center mt-10">
-        <Button variant="contained" onClick={handleSave}>
+        <Button variant="contained" onClick={onSave}>
           Guardar
         </Button>
       </div>

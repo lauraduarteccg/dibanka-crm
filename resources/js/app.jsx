@@ -14,9 +14,13 @@ import Management from "@pages/Management";
 import AddManagement from "@pages/AddManagement";
 import TypeManagement from "@pages/TypeManagement";
 import SpecialCases from "@pages/SpecialCases";
+import Monitoring from "@pages/Monitoring";
+import Loader from "./components/Loader";
 
 const App = () => {
-    const { user } = useContext(AuthContext);
+    const { user, loading  } = useContext(AuthContext);
+
+    if (loading) return <Loader/>;
 
     return (
         <Routes>
@@ -61,6 +65,10 @@ const App = () => {
             <Route
                 path="/casos_especiales"
                 element={user ? <Layout><SpecialCases /></Layout> : <Navigate to="/" />}
+            />
+            <Route
+                path="/seguimientos"
+                element={user ? <Layout><Monitoring /></Layout> : <Navigate to="/" />}
             />
         </Routes>
     );

@@ -2,7 +2,7 @@ import { FaRegAddressBook } from "react-icons/fa";
 
 const ButtonAdd = ({ onClickButtonAdd, text }) => {
     return (
-        <div className="flex justify-center md:justify-start ml-36">
+        <div className="flex justify-center md:justify-start ml-[7%]">
             <button
                 className="flex items-center bg-gradient-primary w-full md:w-72 px-6 py-2 gap-3 rounded-2xl 
                            transition-all duration-300 ease-in-out text-white font-semibold shadow-md 

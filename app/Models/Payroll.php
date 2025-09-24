@@ -12,7 +12,8 @@ class Payroll extends Model
 
     protected $fillable = [
         'name',
-        'type',
+        'description',
+        'img_payroll',
         'is_active'
     ];
 

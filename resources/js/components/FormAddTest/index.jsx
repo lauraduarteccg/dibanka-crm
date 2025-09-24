@@ -1,5 +1,6 @@
 import React, { useState, forwardRef, useEffect } from "react";
 import Button from "../Button";
+import PrettyFileInput from "../PrettyFileInput";
 import Alert from "@mui/material/Alert";
 import { Dialog, Slide } from "@mui/material";
 import { Autocomplete, TextField, Select, MenuItem, InputLabel, FormControl } from "@mui/material";
@@ -19,6 +20,7 @@ const FormAdd = ({
   validationErrors,
   fields,
   schema,
+  selectDisabled = false,
 }) => {
   const [errors, setErrors] = useState({});
   
@@ -95,8 +97,11 @@ const FormAdd = ({
         </h2>
 
         <form onSubmit={handleSubmit}>
-          {fields.map((field) => {
-            if (formData?.id && field.name === "is_active") return null;
+        {fields.map((field) => {
+          // Ocultar campo si está en edición y el campo tiene hideOnEdit
+          if (formData?.id && field.hideOnEdit) return null;
+
+          if (formData?.id && field.name === "is_active") return null;
 
             return (
               <div key={field.name} className="mb-4">
@@ -131,35 +136,33 @@ const FormAdd = ({
                     <option value="true">Activo</option>
                     <option value="false">Inactivo</option>
                   </select>
-                ) : field.type === "checklist" ? (
-                  <Autocomplete
-                    multiple
-                    id={`autocomplete-${field.name}`}
-                    options={field.options || []} 
-                    value={
-                      formData[field.name]
-                        ? field.options.filter((opt) =>
-                            formData[field.name].includes(opt.id)
-                          )
-                        : []
-                    }
-                    getOptionLabel={(option) =>
-                      option?.name ?? option?.label ?? String(option ?? "")
-                    }
-                    isOptionEqualToValue={(option, value) =>
-                      String(option.id) === String(value.id)
-                    }
-                    onChange={(e, newValue) => {
-                      const ids = newValue.map((v) => v.id);
-                      setFormData({ ...formData, [field.name]: ids });
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} variant="outlined" label="Seleccione aquí" />
-                    )}
-                  />
+                ) : field.type === "autocomplete" ? (
+                    <Autocomplete
+                      multiple
+                      id={`autocomplete-${field.name}`}
+                      options={field.options || []}
+                      value={
+                        formData[field.name]
+                          ? field.options.filter((opt) =>
+                              formData[field.name].includes(opt.value) // usar value, no id
+                            )
+                          : []
+                      }
+                      getOptionLabel={(option) => option.label || ""}
+                      isOptionEqualToValue={(option, value) =>
+                        String(option.value) === String(value.value) // comparar value
+                      }
+                      onChange={(e, newValue) => {
+                        const ids = newValue.map((v) => v.value); // guardar value
+                        setFormData({ ...formData, [field.name]: ids });
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} variant="outlined" label="Seleccione aquí" />
+                      )}
+                    />
                 ) : field.type === "select" ? (
                     <>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth disabled={field.disabled || false}>
                       <InputLabel id="demo-simple-select-standard-label">{field.label}</InputLabel>
                       <Select
                         labelId="demo-simple-select-standard-label"
@@ -179,13 +182,23 @@ const FormAdd = ({
                       </Select>
                     </FormControl>
                     </>
+                  ) : field.type === "file" ? (
+                    <PrettyFileInput
+                      name={field.name}
+                      label={field.label}
+                      accept="image/*"
+                      onChange={(file) => {
+                        setFormData({ ...formData, [field.name]: file });
+                      }}
+                    />
                   ) : ( 
                   <TextField
                     fullWidth
                     id={`input-${field.name}`}
                     variant="outlined"
                     type={field.type}
-                    label={field.label}
+                    {...(field.withLabel ?? true ? { label: field.label } : {})}
+                    {...(field.type === "longtext" ? { multiline: true, rows: 4 } : {})}
                     value={formData[field.name] ?? ""}
                     onChange={(e) => {
                       setFormData({ ...formData, [field.name]: e.target.value });

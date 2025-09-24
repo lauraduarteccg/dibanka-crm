@@ -3,30 +3,24 @@ import Table from "@components/Table";
 import ButtonAdd from "@components/ButtonAdd";
 import FormAdd from "@components/FormAddTest";
 import Loader from "@components/Loader";
-import { useTypeManagement } from "./useTypeManagement.js";
+import { useMonitoring } from "./useMonitoring.js";
 import * as yup from "yup";
 import Search from "@components/Search";
 
 const fields = [
-  { name: "payroll_id", label: "Pagaduría", type: "select", options: [] },
-  { name: "name", label: "Tipo de gestión", type: "text" },
+  { name: "name", label: "Seguimiento", type: "text" },
 ];
 
 const userSchema = yup.object().shape({
-  payroll_id: yup
-    .number()
-    .required("La pagaduría es obligatoria")
-    .typeError("Debes seleccionar una pagaduría"),
-  name: yup.string().required("El nombre es obligatorio").min(6, "Mínimo 6 caracteres"),
+  name: yup.string().required("El seguimiento es obligatorio").min(6, "Mínimo 6 caracteres"),
 });
 
 
 const TypeManagement = () => {
   const {
     fetchPage,
-    payroll,
     handleSearch,
-    typeManagement,
+    monitoring,
     loading,
     isOpenADD,
     setIsOpenADD,
@@ -34,53 +28,41 @@ const TypeManagement = () => {
     setFormData,
     validationErrors,
     handleSubmit,
-    totalItems,
-    perPage,
     currentPage,
     totalPages,
+    perPage,
+    totalItems,
     handleDelete,
     handleEdit,
-  } = useTypeManagement();
+  } = useMonitoring();
 
 const columns = [
   { header: "ID", key: "id" },
-  { header: "Pagaduría", key: "payrolls.name" },
-  { header: "Tipo de gestión", key: "name" },
+  { header: "Seguimiento", key: "name" },
 ];
 
   return (
     <>
-      <ButtonAdd onClickButtonAdd={() => setIsOpenADD(true)} text="Agregar tipo de gestión" />
+      <ButtonAdd onClickButtonAdd={() => setIsOpenADD(true)} text="Agregar seguimientos" />
 
         <div className="flex justify-end px-12 -mt-10 ">
-          <Search onSearch={handleSearch} placeholder="Buscar tipo de gestion..." />
+          <Search onSearch={handleSearch} placeholder="Buscar tipo de seguimiento..." />
         </div>
 
       <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
-        Lista de Tipos de gestiones
+        Lista de tipos de seguimientos
       </h1>
 
       <FormAdd
         isOpen={isOpenADD}
         setIsOpen={setIsOpenADD}
-        title="Tipos de gestiónes"
+        title="seguimiento"
         formData={formData}
         setFormData={setFormData}
         handleSubmit={handleSubmit}
         loading={loading}
         validationErrors={validationErrors}
-        fields={fields.map(field => {
-          if (field.name === "payroll_id") {
-              return {
-                  ...field,
-                  options: payroll.map(p => ({ 
-                      value: p.id,
-                      label: p.name 
-                  }))
-              };
-          }
-          return field;
-        })}
+        fields={fields}
         schema={userSchema}
       />
 
@@ -89,7 +71,7 @@ const columns = [
       ) : (
         <Table
           columns={columns}
-          data={typeManagement}
+          data={monitoring}
           currentPage={currentPage}
           totalPages={totalPages}
           rowsPerPage={perPage}

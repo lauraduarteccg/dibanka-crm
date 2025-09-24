@@ -38,6 +38,8 @@ const ConsultationSpecific = () => {
         setFormData,
         validationErrors,
         handleSubmit,
+        perPage,
+        totalItems,
         currentPage,
         totalPages,
         fetchConsultation,
@@ -52,7 +54,7 @@ const ConsultationSpecific = () => {
                 text="Agregar Consulta"
             />
 
-            <div className="flex justify-end px-36 -mt-10 ">
+            <div className="flex justify-end px-12 -mt-10 ">
                 <Search onSearch={handleSearch} placeholder="Buscar consulta..." />
             </div>
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
@@ -90,9 +92,11 @@ const ConsultationSpecific = () => {
                     columns={columns}
                     data={consultation}
                     currentPage={currentPage}
+                    totalPages={totalPages}
+                    rowsPerPage={perPage}
+                    totalItems={totalItems}
                     fetch={(page) => fetchPage(page)}
                     onDelete={handleDelete}
-                    totalPages={totalPages}
                     actions={true}
                     onEdit={handleEdit}
                 />

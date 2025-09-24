@@ -67,40 +67,59 @@ export const useAddManagement = () => {
     setLoading(true);
     setValidationErrors({});
 
+    // 🔹 Convertir campos vacíos a null
+    const preparedPayload = { ...payload };
+
     try {
       let response;
-
-      if (payload.id) {
-        response = await axios.put(`/api/management/${payload.id}`, payload, {
+      if (preparedPayload.id) {
+        // Actualizar
+        response = await axios.put(`/api/management/${preparedPayload.id}`, preparedPayload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        response = await axios.post("/api/management", payload, {
+        // Crear nueva gestión
+        response = await axios.post("/api/management", preparedPayload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
 
       if (response.status === 200 || response.status === 201) {
-        Swal.fire({
-          title: payload.id ? "Gestión actualizada" : "Gestión creada",
-          text: "Los cambios han sido guardados correctamente.",
+        // 🔹 Mostrar popup de éxito
+        await Swal.fire({
+          title: "Gestión guardada",
+          text: "La gestión ha sido creada correctamente.",
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
         });
+
+        // 🔹 Limpiar el formulario y cerrar modal (si corresponde)
         setIsOpenADD(false);
+        // Opcional: refrescar la lista de gestiones
         fetchManagement(currentPage, searchTerm);
       }
     } catch (error) {
       if (error.response?.status === 422) {
         setValidationErrors(error.response.data.errors);
+      } else {
+        console.error("Error al guardar gestión:", error);
+        Swal.fire({
+          title: "Error",
+          text: "Ocurrió un error al guardar la gestión.",
+          icon: "error",
+          timer: 2000,
+          showConfirmButton: false,
+        });
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Payrolls
+
+
+  // 🔹 Pagadurias
   const fetchPayroll = useCallback(async () => {
     try {
       const res = await axios.get(`/api/payrolls/active`, {

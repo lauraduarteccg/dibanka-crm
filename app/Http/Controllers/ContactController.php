@@ -15,10 +15,15 @@ class ContactController extends Controller
     public function index(Request $request)
     {
         $query = Contact::query();
+        // 🔎 Buscar directamente por identification_number si viene en el request
+        if ($request->has('identification_number') && !empty($request->identification_number)) {
+            $query->where('identification_number', $request->identification_number);
+        }
 
+        // 🔎 Búsqueda general con search
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
-            
+
             $query->where(function($q) use ($searchTerm) {
                 $q->where('campaign', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('name', 'LIKE', "%{$searchTerm}%")
@@ -26,13 +31,12 @@ class ContactController extends Controller
                     ->orWhere('update_phone', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('email', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('identification_type', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%");
+                    // 👇 exacto para identification_number dentro del search
+                    ->orWhere('identification_number', $searchTerm);
 
                 // Para buscar en relaciones
                 $q->orWhereHas('payroll', function($payrollQuery) use ($searchTerm) {
-                    $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%")
-                                    ->orWhere('type', 'LIKE', "%{$searchTerm}%")
-                                    ->orWhere('is_active', 'LIKE', "%{$searchTerm}%");
+                    $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%");
                 });
             });
         }

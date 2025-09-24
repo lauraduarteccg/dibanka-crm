@@ -19,6 +19,8 @@ class ManagementResource extends JsonResource
                     'is_active' => $this->user->is_active
                 ];
             }),
+            
+            'wolkvox_id' => $this->wolkvox_id,
 
             // Campaña relacionada
             'payroll' => $this->whenLoaded('payroll', function () {
@@ -41,6 +43,7 @@ class ManagementResource extends JsonResource
                     'phone'                 => $this->contact->phone,
                     'update_phone'          => $this->contact->update_phone,
                     'email'                 => $this->contact->email,
+                    'campaign'              => $this->contact->campaign,
                     'is_active'             => $this->contact->is_active
                 ];
             }),
@@ -49,7 +52,7 @@ class ManagementResource extends JsonResource
             'consultation' => $this->whenLoaded('consultation', function () {
                 return [
                     'id'                    => $this->consultation->id,
-                    'reason_consultation'   => $this->consultation->reason_consultation,
+                    'name'   => $this->consultation->name,
                     'is_active'             => $this->consultation->is_active
                 ];
             }),
@@ -58,11 +61,32 @@ class ManagementResource extends JsonResource
             'specific' => $this->whenLoaded('specific', function () {
                 return[
                     'id'                => $this->specific->id,
-                    'specific_reason'   => $this->specific->specific_reason,
+                    'name'              => $this->specific->name,
                     'is_active'         => $this->specific->is_active
                 ];
             }),
+            
+            // tipo de gestion relacionada
+            'type_management' => $this->whenLoaded('type_management', function () {
+                return[
+                    'id'                => $this->specific->id,
+                    'name'              => $this->specific->name,
+                    'is_active'         => $this->specific->is_active
+                ];
+            }),            
             'comments'  => $this->comments,
+            'solution_date' => $this->solution_date,
+
+            // Seguimiento relacionada
+            'monitoring' => $this->whenLoaded('monitoring', function () {
+                return [
+                    'id'            => $this->monitoring->id,
+                    'name'          => $this->monitoring->name,
+                    'solution_date' => $this->monitoring->solution_date,
+                    'is_active'     => $this->monitoring->is_active
+                ];
+            }),
+            
             'sms'       => $this->sms,
             'wsp'       => $this->wsp,
 

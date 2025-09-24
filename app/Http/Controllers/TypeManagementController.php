@@ -38,7 +38,7 @@ class TypeManagementController extends Controller
                 'current_page' => $typeManagement->currentPage(),
                 'total_pages' => $typeManagement->lastPage(),
                 'per_page' => $typeManagement->perPage(),
-                'total_payroll' => $typeManagement->total(),
+                'total_managements' => $typeManagement->total(),
             ]
         ], Response::HTTP_OK);
     }

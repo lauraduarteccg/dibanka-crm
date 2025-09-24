@@ -27,11 +27,14 @@ class ManagementRequest extends FormRequest
             'contact_id'        => 'required|integer|exists:contacts,id',
             'consultation_id'   => 'required|integer|exists:consultations,id',
             'specific_id'       => 'required|integer|exists:consultation_specifics,id',
+            'monitoring_id'     => 'nullable|integer|exists:monitoring,id',
+            'type_management_id'=> 'required|integer|exists:type_management,id',
 
-            'solution'          => 'required|string',
+            'solution_date'     => 'nullable|date',
             'comments'          => 'required|string',
-            'sms'               => 'required|string',
-            'wsp'               => 'required|string'
+            'sms'               => 'required|boolean',
+            'solution'          => 'required|boolean',
+            'wsp'               => 'required|boolean'
         ];
     }
 
@@ -61,20 +64,28 @@ class ManagementRequest extends FormRequest
             // Validaciones para consultas especificas
             'specific_id.required'  => 'La consulta especifica es requerida',
             'specific_id.exists'    => 'La consulta especifica seleccionada no existe',
-            'specific_id_.integer'  => 'La consulta especifica debe ser un numero',
+            'specific_id.integer'  => 'La consulta especifica debe ser un numero',
+
+            //Validaciones para los tipos de gestiones
+            'type_management_id.required' => 'El tipo de gestión es obligatorio',
+            'type_management_id.exists' => 'El tipo de gestión seleccionado no existe',
+            'type_management_id.integer' => 'El tipo de gestión debe ser un numero',
+
+            // Validaciones para el seguimiento
+            'monitoring_id.exists' => 'El seguimiento seleccionado no existe',
 
             // Validaciones para el resto de las columnas
             'solution.required'     => 'La solucion es requerida',
-            'solution.string'       => 'La solucion debe ser una cadena de texto',
+            'solution.boolean'       => 'La solucion debe ser verdadero o falso',
 
             'comments.required'     => 'La solucion es requerida',
             'comments.string'       => 'La solucion debe ser una cadena de texto',
             
             'sms.required'     => 'El campo SMS es requerido',
-            'sms.string'       => 'El campo SMS debe ser una cadena de texto',
+            'sms.boolean'       => 'El campo SMS debe ser verdadero o falso',
             
             'wsp.required'     => 'El campo Whatsap es requerido',
-            'wsp.string'       => 'El campo Whatsap debe ser una cadena de texto',
+            'wsp.boolean'       => 'El campo Whatsap debe ser verdadero o falso',
 
         ];
     }

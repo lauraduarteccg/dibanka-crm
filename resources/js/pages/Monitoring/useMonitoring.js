@@ -3,11 +3,10 @@ import axios from "axios";
 import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
 
-export const useTypeManagement = () => {
+export const useMonitoring = () => {
   const { token } = useContext(AuthContext);
 
-  const [typeManagement, setTypeManagement] = useState([]);
-  const [payroll, setPayroll] = useState([]);
+  const [monitoring, ssetMonitoring] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
@@ -20,24 +19,23 @@ export const useTypeManagement = () => {
   const [formData, setFormData] = useState({
     id: null,
     name: "",
-    payroll_id: [],
     is_active: true,
   });
 
   // ---------------------------------------------------------
   // Traer lista de tipos de gestion
-  const fetchTypeManagement = useCallback(
+  const fetchMonitoring = useCallback(
     async (page = 1, search = "") => {
       setLoading(true);
       try {
-        const res = await axios.get(`/api/typemanagements?page=${page}&search=${encodeURIComponent(search)}`, {
+        const res = await axios.get(`/api/monitorings?page=${page}&search=${encodeURIComponent(search)}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTypeManagement(res.data.typeManagement);
+        ssetMonitoring(res.data.monitorings);
         setTotalPages(res.data.pagination?.total_pages || res.data.meta?.last_page || 1);
         setCurrentPage(res.data.pagination?.current_page || page);
         setPerPage(res.data.pagination.per_page);
-        setTotalItems(res.data.pagination.total_managements)
+        setTotalItems(res.data.pagination.total_monitorings)
       } catch (err) {
         console.error(err);
         setError("Error al obtener los tipos de gestiones.");
@@ -49,8 +47,8 @@ export const useTypeManagement = () => {
   );
 
     const fetchPage = useCallback(
-        (page) => fetchTypeManagement(page, searchTerm),
-        [fetchTypeManagement, searchTerm]
+        (page) => fetchMonitoring(page, searchTerm),
+        [fetchMonitoring, searchTerm]
     );
     
     console.log(formData)
@@ -61,8 +59,8 @@ export const useTypeManagement = () => {
     }, []);
 
     useEffect(() => {
-        fetchTypeManagement(currentPage, searchTerm);
-    }, [currentPage, searchTerm, fetchTypeManagement]);
+        fetchMonitoring(currentPage, searchTerm);
+    }, [currentPage, searchTerm, fetchMonitoring]);
   
   // ---------------------------------------------------------
 // ---------------------------------------------------------
@@ -70,8 +68,7 @@ export const useTypeManagement = () => {
 const handleEdit = (row) => {
   setFormData({
     id: row.id ?? null,
-    name: row.name ?? "",
-    payroll_id: row.payrolls?.id ?? [], 
+    name: row.name ?? "", 
     is_active: row.is_active ?? true,
   });
   setValidationErrors({});
@@ -89,16 +86,15 @@ const handleSubmit = async (e) => {
     // Normalizar payload
     const payload = {
       name: formData.name,
-      payroll_id: formData.payroll_id,
     };
 
     let response;
     if (formData.id) {
-      response = await axios.put(`/api/typemanagements/${formData.id}`, payload, {
+      response = await axios.put(`/api/monitorings/${formData.id}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
     } else {
-      response = await axios.post("/api/typemanagements", payload, {
+      response = await axios.post("/api/monitorings", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
     }
@@ -116,7 +112,7 @@ const handleSubmit = async (e) => {
       setFormData({ name: "",  payroll_id: [], is_active: true });
 
       // refrescar tablas
-      fetchTypeManagement(currentPage || 1);
+      fetchMonitoring(currentPage || 1);
     }
   } catch (error) {
     console.error(error);
@@ -158,7 +154,7 @@ useEffect(() => {
     if (!result.isConfirmed) return;
 
     try {
-      const response = await axios.delete(`/api/typemanagements/${id}`, {
+      const response = await axios.delete(`/api/monitorings/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -173,7 +169,7 @@ useEffect(() => {
           width: "350px",
           padding: "0.8em",
         });
-        fetchTypeManagement(currentPage || 1);
+        fetchMonitoring(currentPage || 1);
       } else {
         Swal.fire({
           position: "top-end",
@@ -195,39 +191,12 @@ useEffect(() => {
   // ---------------------------------------------------------
   useEffect(() => {
     // cargamos ambas listas al montar (la específica la puedes usar en selects/autocomplete)
-    fetchTypeManagement(1);
-  }, [fetchTypeManagement]);
-
-      // ------------------------------------------------------------
-    // Selector de pagadurias
-    const fetchPayroll = useCallback(
-        async (page) => {
-            setLoading(true);
-            try {
-                const res = await axios.get(`/api/payrolls?page=${page}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setPayroll(res.data.payrolls);
-                setTotalPages(res.data.pagination.total_pages);
-                setCurrentPage(res.data.pagination.current_page);
-                //console.log("Consultations =>", res.data.payrolls);
-            } catch (err) {
-                setError("Error al obtener las pagadurias.");
-            } finally {
-                setLoading(false);
-            }
-        },
-        [token]
-    );
-
-    useEffect(() => {
-        fetchPayroll(1);
-    }, [fetchPayroll]);
+    fetchMonitoring(1);
+  }, [fetchMonitoring]);
 
   return {
     // datos para tablas
-    typeManagement,
-    payroll,
+    monitoring,
 
     // estados y control
     loading,
@@ -238,12 +207,12 @@ useEffect(() => {
     setFormData,
     validationErrors,
     currentPage,
+    totalPages,
     totalItems,
     perPage,
-    totalPages,
 
     // acciones
-    fetchTypeManagement,
+    fetchMonitoring,
     handleEdit,
     handleSubmit,
     handleDelete,

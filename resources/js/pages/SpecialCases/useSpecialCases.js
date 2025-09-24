@@ -6,17 +6,19 @@ import Swal from "sweetalert2";
 export const useSpecialCases = () => {
     const { token } = useContext(AuthContext);
     const [specialCases, setSpecialCases] = useState([]);
+    const [payroll ,setPayroll] = useState([]);
+    const [users ,setUsers] = useState([]);
+    const [contact ,setContact] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [perPage, setPerPage] = useState(1);
+    const [totalItems, setTotalItems] =useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [isOpenADD, setIsOpenADD] = useState(false);
     const [formData, setFormData] = useState({
-        id: null,
-        pagaduria: "",
-        tipo: "",
     });
 
     // 🔹 Obtener lista de casos especiales
@@ -30,6 +32,8 @@ export const useSpecialCases = () => {
                 setSpecialCases(res.data.specialcases);
                 setTotalPages(res.data.pagination.total_pages);
                 setCurrentPage(res.data.pagination.current_page);
+                setPerPage(res.data.pagination.per_page);
+                setTotalItems(res.data.pagination.total_special_cases)
             } catch (err) {
                 setError("Error al obtener las casos especiales.");
             } finally {
@@ -42,8 +46,6 @@ export const useSpecialCases = () => {
     useEffect(() => {
         fetchSpecialCases(1);
     }, []);
-
-    console.log(specialCases)
 
     const fetchPage = useCallback(
         (page) => fetchSpecialCases(page, searchTerm),
@@ -193,8 +195,88 @@ export const useSpecialCases = () => {
             }
         });
     };
+    // ------------------------------------------------------------
+    // Selector de pagadurias
+    const fetchPayroll = useCallback(
+        async (page) => {
+            setLoading(true);
+            try {
+                const res = await axios.get(`/api/payrolls/active?page=${page}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setPayroll(res.data.payrolls);
+                setTotalPages(res.data.pagination.total_pages);
+                setCurrentPage(res.data.pagination.current_page);
+                //console.log("Consultations =>", res.data.payrolls);
+            } catch (err) {
+                setError("Error al obtener las pagadurias.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [token]
+    );
+
+    useEffect(() => {
+        fetchPayroll(1);
+    }, [fetchPayroll]);
+
+    // ------------------------------------------------------------
+    // Selector de contactos
+    const fetchContact = useCallback(
+        async () => {
+            setLoading(true);
+            try {
+                const res = await axios.get(`/api/contacts`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setContact(res.data.contacts);
+                //console.log("contactos =>", res.data);
+            } catch (err) {
+                setError("Error al obtener las contactos.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [token]
+    );
+
+    useEffect(() => {
+        fetchContact(1);
+    }, [fetchContact]);
+
+        // ------------------------------------------------------------
+    // Selector de agentes
+    const fetchUser = useCallback(
+        async (page) => {
+            setLoading(true);
+            try {
+                const res = await axios.get(`/api/users?page=${page}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setUsers(res.data.users);
+                setTotalPages(res.data.pagination.total_pages);
+                setCurrentPage(res.data.pagination.current_page);
+                console.log("Users =>", res.data.users);
+            } catch (err) {
+                setError("Error al obtener los usuarios.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [token]
+    );
+
+    useEffect(() => {
+        fetchUser(1);
+    }, [fetchUser]);
+
+
 
     return {
+        users,
+        contact,
+        payroll,
         fetchPage,
         handleSearch,
         specialCases,
@@ -208,6 +290,9 @@ export const useSpecialCases = () => {
         handleSubmit,
         currentPage,
         totalPages,
+        perPage,
+        totalItems,
+        fetchUser,
         fetchSpecialCases,
         handleEdit,
         handleDelete,

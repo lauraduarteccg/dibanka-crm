@@ -14,7 +14,7 @@ import { MdOutlineFolderSpecial } from "react-icons/md";
 import { HiOutlineIdentification } from "react-icons/hi2";
 import { LuMegaphone } from "react-icons/lu";
 import { FiUsers } from "react-icons/fi";
-
+import { IoFootstepsOutline } from "react-icons/io5";
 import logo from "@assets/logo.png";
 
 const NavBar = () => {
@@ -161,6 +161,21 @@ const NavBar = () => {
                                 </ListItemIcon>
                             </Tooltip>
                             {isOpenMenu && <ListItemText primary="Casos especiales" />}
+                        </ListItemButton>
+                    </ListItem>
+
+                    {/* seguimientos */}
+                    <ListItem disablePadding>
+                        <ListItemButton 
+                            onClick={() => navigate("/seguimientos")}
+                            selected={location.pathname === "/seguimientos"}
+                        >
+                            <Tooltip title="Seguimientos">
+                                <ListItemIcon>
+                                    <IoFootstepsOutline className="text-white w-6 h-auto" />
+                                </ListItemIcon>
+                            </Tooltip>
+                            {isOpenMenu && <ListItemText primary="Seguimientos" />}
                         </ListItemButton>
                     </ListItem>
                 </List>

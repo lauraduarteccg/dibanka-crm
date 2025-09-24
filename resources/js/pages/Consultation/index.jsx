@@ -25,6 +25,8 @@ const columns = [
 
 const Consults = () => {
   const {
+    totalItems,
+    perPage,
     payroll,
     fetchPage,
     handleSearch,
@@ -47,7 +49,7 @@ const Consults = () => {
   return (
     <>
       <ButtonAdd onClickButtonAdd={() => setIsOpenADD(true)} text="Agregar Consulta" />
-        <div className="flex justify-end px-36 -mt-10 ">
+        <div className="flex justify-end px-12 -mt-10 ">
           <Search onSearch={handleSearch} placeholder="Buscar consulta..." />
         </div>
 
@@ -84,9 +86,11 @@ const Consults = () => {
           columns={columns}
           data={consultations}
           currentPage={currentPage}
+          totalPages={totalPages}
+          rowsPerPage={perPage}
+          totalItems={totalItems}
           fetch={(page) => fetchPage(page)}
           onDelete={handleDelete}
-          totalPages={totalPages}
           actions={true}
           onEdit={handleEdit}
         />
