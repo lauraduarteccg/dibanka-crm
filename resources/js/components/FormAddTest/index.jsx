@@ -138,28 +138,31 @@ const FormAdd = ({
                   </select>
                 ) : field.type === "autocomplete" ? (
                     <Autocomplete
-                      multiple
                       id={`autocomplete-${field.name}`}
                       options={field.options || []}
                       value={
-                        formData[field.name]
-                          ? field.options.filter((opt) =>
-                              formData[field.name].includes(opt.value) // usar value, no id
-                            )
-                          : []
+                        field.options?.find(
+                          (opt) => String(opt.value) === String(formData[field.name])
+                        ) || null
                       }
                       getOptionLabel={(option) => option.label || ""}
                       isOptionEqualToValue={(option, value) =>
-                        String(option.value) === String(value.value) // comparar value
+                        String(option.value) === String(value.value)
                       }
-                      onChange={(e, newValue) => {
-                        const ids = newValue.map((v) => v.value); // guardar value
-                        setFormData({ ...formData, [field.name]: ids });
+                      onChange={(_, newValue) => {
+                        // Guardamos solo el 'value' seleccionado o null si no hay selección
+                        setFormData({ ...formData, [field.name]: newValue ? newValue.value : null });
                       }}
                       renderInput={(params) => (
-                        <TextField {...params} variant="outlined" label="Seleccione aquí" />
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          label="Seleccione aquí"
+                          placeholder="Seleccione..."
+                        />
                       )}
                     />
+
                 ) : field.type === "select" ? (
                     <>
                     <FormControl fullWidth disabled={field.disabled || false}>
@@ -198,7 +201,7 @@ const FormAdd = ({
                     variant="outlined"
                     type={field.type}
                     {...(field.withLabel ?? true ? { label: field.label } : {})}
-                    {...(field.type === "longtext" ? { multiline: true, rows: 4 } : {})}
+                    {...(field.type === "longtext" ? { multiline: true, rows: 7 } : {})}
                     value={formData[field.name] ?? ""}
                     onChange={(e) => {
                       setFormData({ ...formData, [field.name]: e.target.value });

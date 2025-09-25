@@ -20,6 +20,7 @@ export const useAddManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [IsOpenADD, setIsOpenADD] = useState(false);
   const [view, setView] = useState(false);
+  const [modal, setModal] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
   // 🔹 Obtener gestiones
@@ -201,9 +202,24 @@ export const useAddManagement = () => {
   useEffect(() => {
     fetchSpecific();
   }, [fetchSpecific]);
+  
+  // Limpia el input de error cuando se genera un cambio
+  const clearValidationError = (field) => {
+    setValidationErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  };
 
+  // Limpia el snakbar luego del error en el formulario
+  const clearAllValidationErrors = () => {
+    setValidationErrors({});
+  };
 
   return {
+    modal,
+    setModal,
     view,
     setView,
     specific,
@@ -225,5 +241,8 @@ export const useAddManagement = () => {
     setCurrentPage,
     handleSubmit,
     setIsOpenADD,
+    validationErrors,
+    clearValidationError,
+    clearAllValidationErrors,
   };
 };

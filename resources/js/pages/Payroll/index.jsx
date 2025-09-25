@@ -44,6 +44,7 @@ const Payrolls = () => {
     handleDelete,
     handleEdit,
     totalItems,
+    handleCloseModal,
     perPage,
   } = usePayrolls();
 
@@ -61,7 +62,7 @@ const Payrolls = () => {
 
       <FormAdd
         isOpen={isOpenADD}
-        setIsOpen={setIsOpenADD}
+        setIsOpen={handleCloseModal}
         title="Pagaduría"
         formData={formData}
         setFormData={setFormData}

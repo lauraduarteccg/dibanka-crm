@@ -241,12 +241,18 @@ export const useConsults = () => {
         fetchPayroll(1);
     }, [fetchPayroll]);
 
+    const handleCloseModal = () => {
+        setIsOpenADD(false);
+        setValidationErrors({});
+    };
+    
     return {
         // datos para tablas
         consultations,
         payroll,
 
         // estados y control
+        handleCloseModal,
         loading,
         error,
         isOpenADD,

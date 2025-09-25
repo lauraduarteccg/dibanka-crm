@@ -16,6 +16,8 @@ export const useContact = () => {
     const [totalPagesM,       setTotalPagesM]          = useState(1);
     const [perPage, setPerPage] = useState(1);
     const [totalItems, setTotalItems] =useState(1);
+    const [perPageM, setPerPageM] = useState(1);
+    const [totalItemsM, setTotalItemsM] =useState(1);
     const [managements,      setManagements]         = useState(false);
     const [management,       setManagement]          = useState([]);
     const [selectedContact,  setSelectedContact]     = useState(null);
@@ -133,6 +135,7 @@ export const useContact = () => {
 
                 setIsOpenADD(false);
                 fetchContact(currentPage);
+                setValidationErrors({});
             }
         } catch (error) {
             if (error.response?.status === 422) {
@@ -143,6 +146,10 @@ export const useContact = () => {
         }
     };
 
+    const handleCloseModal = () => {
+    setIsOpenADD(false);
+    setValidationErrors({});
+};
 
     //Desactivar consulta
     const handleDelete = async (id, status) => {
@@ -259,6 +266,8 @@ export const useContact = () => {
         setManagement(data.managements ?? []);
         setTotalPagesM(data.last_page ?? 1);
         setCurrentPageM(data.current_page ?? 1);
+        setPerPageM(data.pagination.per_page);
+        setTotalItemsM(data.pagination.total_management);
         console.log(data)
 
     } catch (err) {
@@ -282,7 +291,10 @@ export const useContact = () => {
 
 
     return {
+        handleCloseModal,
         handleOpenManagements,
+        totalItemsM,
+        perPageM,
         currentPageM,
         totalPagesM,
         fetchManagement,

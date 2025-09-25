@@ -13,7 +13,7 @@ const fields = [
   { name: "user_id",    label: "Agente", type: "select", options: [] },
   { name: "payroll_id", label: "Pagaduría", type: "select", options: [] },
   { name: "contact_id", label: "Contacto", type: "autocomplete", options: [] },
-  { name: "management_messi", label: "Gestión de messi", type: "text" },
+  { name: "management_messi", label: "Gestión de messi", type: "select", options: [{ value: "Nota creada", label: "Nota Creada" }]},
   { name: "id_call", label: "ID Llamada", type: "text" },
   { name: "id_messi", label: "ID Messi", type: "text" }
 ];
@@ -49,6 +49,7 @@ const SpecialCases = () => {
     perPage, 
     handleDelete,
     handleEdit,
+    handleCloseModal,
   } = useSpecialCases();
 
   // 🟢 Cuando se abre el modal, asigna el user actual como predeterminado
@@ -90,7 +91,7 @@ const SpecialCases = () => {
 
       <FormAdd
         isOpen={isOpenADD}
-        setIsOpen={setIsOpenADD}
+        setIsOpen={handleCloseModal}
         title="Caso especial"
         formData={formData}
         setFormData={setFormData}

@@ -265,8 +265,14 @@ export const useConsultSpecifics = () => {
     useEffect(() => {
         fetchPayrolls(1);
     }, [fetchPayrolls]);
+    
+    const handleCloseModal = () => {
+        setIsOpenADD(false);
+        setValidationErrors({});
+    };
 
     return {
+        handleCloseModal,
         fetchPage,
         handleSearch,
         handleOpenForm,

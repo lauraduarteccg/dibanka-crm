@@ -45,12 +45,10 @@ function stableSort(array, comparator) {
   return stabilized.map((el) => el[0]);
 }
 
-const MuiTable = ({ columns, data }) => {
+const MuiTableExpandable = ({ columns, data, totalItems, rowsPerPage, currentPage, fetchPage }) => {
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState(columns[0].key);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [expandedRow, setExpandedRow] = useState(null); // fila expandida
+  const [expandedRow, setExpandedRow] = useState(null);
 
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -58,17 +56,11 @@ const MuiTable = ({ columns, data }) => {
     setOrderBy(property);
   };
 
-  const handleChangePage = (_, newPage) => setPage(newPage);
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handleChangePage = (_, newPage) => {
+    fetchPage(newPage + 1); // MUI base 0
   };
 
   const sortedData = stableSort(data, getComparator(order, orderBy));
-  const paginatedData = sortedData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
 
   return (
     <Paper sx={{ width: "100%", overflow: "hidden", borderRadius: 3 }}>
@@ -91,9 +83,8 @@ const MuiTable = ({ columns, data }) => {
           </TableHead>
 
           <TableBody>
-            {paginatedData.map((row, rowIndex) => (
+            {sortedData.map((row, rowIndex) => (
               <React.Fragment key={rowIndex}>
-                {/* 👉 Fila principal */}
                 <TableRow
                   hover
                   onClick={() =>
@@ -108,7 +99,6 @@ const MuiTable = ({ columns, data }) => {
                   ))}
                 </TableRow>
 
-                {/* 👉 Fila expandible */}
                 <TableRow>
                   <TableCell colSpan={columns.length} sx={{ p: 0, border: 0 }}>
                     <Collapse
@@ -116,41 +106,9 @@ const MuiTable = ({ columns, data }) => {
                       timeout="auto"
                       unmountOnExit
                     >
+                      {/* Aquí tu detalle expandible */}
                       <Box sx={{ p: 2, bgcolor: "#f9f9f9" }}>
-                        <h4 className="font-semibold text-gray-700 pb-3">
-                          Detalle de gestiones
-                        </h4>
-                        <div className="grid grid-cols-3 gap-10">
-                          <div>
-                            <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-                              <P text1="Agente: " text2={row.user?.name ?? "Agente sin nombre"} />
-                              <P text1="Campaña: " text2={row.contact?.campaign ?? "Sin campaña"} />
-                              <P text1="Pagaduría: " text2={row.payroll?.name ?? "Sin pagaduría"} />
-                              <P text1="Consulta: " text2={row.consultation?.name ?? "Sin consulta"} />
-                              <P text1="Consulta especifica: " text2={row.specific?.name ?? "Sin consulta especifica"} />
-                              <P text1="Fecha de creación: " text2={row.created_at ?? "Sin fecha de creación"} />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-                              <P text1="Nombre del cliente: " text2={row.contact?.name ?? "Cliente sin nombre"} />
-                              <P text1="Teléfono: " text2={row.contact?.phone ?? "Sin teléfono"} />
-                              <P text1="Tipo de identifiación: " text2={row.contact?.identification_type ?? "Sin tipo de identificación"} />
-                              <P text1="Número de identificación: " text2={row.contact?.identification_number ?? "Sin número de identifiación"} />
-                              <P text1="Celular actualizado: " text2={row.contact?.update_phone ?? "Sin celular actualizado"} />
-                              <P text1="Correo: " text2={row.contact?.email ?? "Usuario sin nombre"} />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-                              <P text1="Solución en primer contacto: " text2={row.solution ? "Sí" : "No" ?? "Sin solución en primer contacto"} />
-                              <P text1="Observaciones: " text2={row.comments ?? "Sin observaciones"} />
-                              <P text1="Fecha de solución: " text2={row.solution_date ?? "Sin fecha de solución"} />
-                              <P text1="Seguimiento: " text2={row.monitoring?.name ?? "Sin seguimiento"} />
-                            </div>
-                          </div>
-                        </div>
-                        {console.log(row)}
+                        {/* Contenido expandido */}
                       </Box>
                     </Collapse>
                   </TableCell>
@@ -158,7 +116,7 @@ const MuiTable = ({ columns, data }) => {
               </React.Fragment>
             ))}
 
-            {paginatedData.length === 0 && (
+            {sortedData.length === 0 && (
               <TableRow>
                 <TableCell colSpan={columns.length} align="center">
                   No hay registros disponibles
@@ -169,19 +127,18 @@ const MuiTable = ({ columns, data }) => {
         </Table>
       </TableContainer>
 
-      {/* 📌 Paginación */}
+      {/* Paginación backend */}
       <TablePagination
-        rowsPerPageOptions={[5, 10, 20]}
+        rowsPerPageOptions={[]}
         component="div"
-        count={data.length}
+        count={totalItems}
         rowsPerPage={rowsPerPage}
-        page={page}
+        page={currentPage - 1}
         onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        labelRowsPerPage="Filas por página"
       />
     </Paper>
   );
 };
 
-export default MuiTable;
+
+export default MuiTableExpandable;

@@ -44,6 +44,7 @@ const Consults = () => {
     fetchConsultation,
     handleDelete,
     handleEdit,
+    handleCloseModal,
   } = useConsults();
 
   return (
@@ -57,7 +58,7 @@ const Consults = () => {
 
       <FormAdd
         isOpen={isOpenADD}
-        setIsOpen={setIsOpenADD}
+        setIsOpen={handleCloseModal}
         title="Consultas"
         formData={formData}
         setFormData={setFormData}

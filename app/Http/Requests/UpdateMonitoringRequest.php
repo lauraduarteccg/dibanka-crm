@@ -18,4 +18,15 @@ class UpdateMonitoringRequest extends FormRequest
             'monitoring_id' => 'required|integer|exists:monitoring,id',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'solution_date.required' => 'El campo es requerido',
+            'solution_date.date' => 'El campo debe ser una fecha',
+
+            'monitoring_id.required' => 'Debe seleccionar un tipo de seguimiento',
+            'monitoring.integer' => 'El seguimiento debe ser un campo seleccionable'
+        ];
+    }
 }

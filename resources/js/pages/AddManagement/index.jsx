@@ -3,6 +3,7 @@ import { AuthContext } from "@context/AuthContext";
 import seleccione_imagen from "../../../assets/seleccione_imagen.png"
 import { useAddManagement } from "./useAddManagement.js";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Snackbar, Alert } from "@mui/material";
 import {
   FormControl,
   InputLabel,
@@ -11,21 +12,32 @@ import {
   Autocomplete,
   TextField,
   Button,
-  Switch  ,
+  Switch,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Box,
 } from "@mui/material";
+
 import { TiContacts } from "react-icons/ti";
 
 
 const AddManagement = () => {
 
   const navigate = useNavigate();
+
   const {
+    modal,
+    setModal,
     payroll,
     contact,
     consultation,
     typeManagement,
     specific,
     handleSubmit,
+    validationErrors,
+    clearValidationError,
+    clearAllValidationErrors,
   } = useAddManagement();
 
   const { user } = useContext(AuthContext);
@@ -35,6 +47,32 @@ const AddManagement = () => {
     payroll: "",
   });
 
+  // Estados para los errores
+  const [errors, setErrors] = useState({});
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "error",
+  });
+
+  // Reemplaza {{agente}} por el nombre del agente y detecta los saltos delinea
+  const renderDescription = (text, agente) => {
+  if (!text) return null;
+
+  // 1️⃣ Reemplazar {{agente}} por el nombre del agente
+  const replacedText = text.replaceAll("{{agente}}", user.name ?? "");
+
+  // 2️⃣ Separar por saltos de línea
+  const lines = replacedText.split("\n");
+
+  // 3️⃣ Renderizar cada línea con <br />
+  return lines.map((line, index) => (
+    <React.Fragment key={index}>
+      {line}
+      <br />
+    </React.Fragment>
+  ));
+};
   // Estados locales para controlar inputs
   const [campaign, setCampaign] = useState("");
   const [ sms, setSms ] = useState(false);
@@ -49,24 +87,24 @@ const AddManagement = () => {
     useState(null);
   const [comments, setObservations] = useState("");
 
-  // Guardar gestión
-const buildPayload = () => {
-  return {
-    user_id: user?.id,
-    payroll_id: selectedPayroll?.id ?? null,
-    type_management_id: selectedTypeManagement?.id ?? null,
-    contact_id: selectedContact?.id ?? null,
-    solution: selectedSolution,
-    consultation_id: selectedConsultation?.id ?? null,
-    specific_id: selectedSpecificConsultation?.id ?? null,
-    wolkvox_id: wolkvox_id ?? null,
-    comments,
-    monitoring_id: null,
-    solution_date: null,
-    wsp: wsp ? 1 : 0,
-    sms: sms ? 1 : 0,
+  // JSON de la gestion creada
+  const buildPayload = () => {
+    return {
+      user_id: user?.id,
+      payroll_id: selectedPayroll?.id ?? null,
+      type_management_id: selectedTypeManagement?.id ?? null,
+      contact_id: selectedContact?.id ?? null,
+      solution: selectedSolution,
+      consultation_id: selectedConsultation?.id ?? null,
+      specific_id: selectedSpecificConsultation?.id ?? null,
+      wolkvox_id: wolkvox_id ?? null,
+      comments,
+      monitoring_id: null,
+      solution_date: null,
+      wsp: wsp ? 1 : 0,
+      sms: sms ? 1 : 0,
+    };
   };
-};
 
   // Listas dependiente a la pagaduria
   const filteredTypeManagement = selectedPayroll
@@ -90,6 +128,7 @@ const buildPayload = () => {
     return matchesCampaign && matchesPayroll;
   });
 
+  //Limpia el formulario
   const handleClear = () => {
     setCampaign("");
     setSelectedPayroll(null);
@@ -110,6 +149,7 @@ const buildPayload = () => {
     });
   };
 
+  // Guarda la nueva gestion y limpia el formulario
   const onSave = () => {
     const payload = buildPayload();
     console.log("Payload que se manda:", payload);
@@ -118,6 +158,7 @@ const buildPayload = () => {
     navigate("/gestiones/añadir")
   };
 
+  // Detecta espacios y convierte a minuscula todo para hacer la busqueda del campo
   const capitalizeWords = (str) =>
     str
       ? str
@@ -126,6 +167,7 @@ const buildPayload = () => {
           .join(" ")
       : "";
 
+  // UseEffect para detectar la campaña, pagaduria, cliente y wolkvox_id de los parametros del enlace
   useEffect(() => {
     const params = new URLSearchParams(location.search);
 
@@ -151,7 +193,7 @@ const buildPayload = () => {
 
   }, [location.search, payroll, typeManagement, contact]);
 
- // http://localhost:8000/gestiones/a%C3%B1adir?campaign=afiliados&payroll=educame&typemanagement=LLAMADA%20ENTRANTE&solution=true&identification_number=1025530310
+ // Ejemplo de enlace con parametros para autocompletar los campos
  // http://localhost:8000/gestiones/a%C3%B1adir?campaign=aliados&payroll=educame&identification_number=12345678&wolkvox_id=8465416524132355456
 
   return (
@@ -176,35 +218,46 @@ const buildPayload = () => {
         {/* Selector de campaña */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Campaña</h2>
-        <FormControl fullWidth>
-          <InputLabel id="campania-label">Campaña</InputLabel>
-          <Select
-            labelId="campania-label"
-            id="campania"
-            value={campaign}
-            label="Campaña"
-            onChange={(event) => setCampaign(event.target.value)}
-          >
-            <MenuItem value="Aliados">Aliados</MenuItem>
-            <MenuItem value="Afiliados">Afiliados</MenuItem>
-          </Select>
-        </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="campania-label">Campaña</InputLabel>
+            <Select
+              labelId="campania-label"
+              id="campania"
+              value={campaign}
+              label="Campaña"
+              onChange={(event) => setCampaign(event.target.value)}
+            >
+              <MenuItem value="Aliados">Aliados</MenuItem>
+              <MenuItem value="Afiliados">Afiliados</MenuItem>
+            </Select>
+          </FormControl>
         </div>
+        {console.log(validationErrors)}
 
         {/* Autocompletado de Pagaduría */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Pagaduría</h2>
           <Autocomplete
-            options={payroll || formData.payroll}
+            options={payroll || []}
             getOptionLabel={(option) => option?.name || ""}
             value={selectedPayroll}
-            onChange={(event, value) => setSelectedPayroll(value)}
-            renderInput={(params) => <TextField {...params} label="Pagaduría" />}
+            onChange={(event, value) => {
+                setSelectedPayroll(value);
+                clearValidationError("payroll_id");
+              }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Pagaduría"
+                error={!!validationErrors.payroll_id}
+                helperText={validationErrors.payroll_id ? validationErrors.payroll_id[0] : ""}
+          />
+            )}
           />
         </div>
       </div>
       {/* Imagen */}
-      <div className="flex items-center justify-end ml-5">
+      <button className="flex items-center justify-end ml-5" onClick={() => setModal(true)}>
         {selectedPayroll?.img_payroll ? (
           <img
             src={selectedPayroll.img_payroll}
@@ -218,7 +271,7 @@ const buildPayload = () => {
             className="w-[390px] bg-white shadow-xl rounded-xl p-8"
           />
         )}
-      </div>
+      </button>
     </div>
 
       {/* Autocompletado de Cliente/Contacto */}
@@ -230,9 +283,20 @@ const buildPayload = () => {
             `${option?.identification_number || ""} | ${option?.name || ""}`
           }
           value={selectedContact}
-          onChange={(event, value) => setSelectedContact(value)}
-          renderInput={(params) => <TextField {...params} label="Contacto" />}
+          onChange={(value) => {
+            setSelectedContact(value)
+            clearValidationError("contact_id");
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Cliente"
+              error={!!validationErrors.contact_id}
+              helperText={validationErrors.contact_id ? validationErrors.contact_id[0] : ""}
+            />
+          )}
         />
+        {/* Información del cliente */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
           <div className="flex flex-col">
             <p className="text-sm font-medium text-gray-500">Nombre:</p>
@@ -274,9 +338,17 @@ const buildPayload = () => {
             options={filteredTypeManagement}
             getOptionLabel={(option) => option?.name || ""}
             value={selectedTypeManagement}
-            onChange={(event, value) => setSelectedTypeManagement(value)}
+            onChange={(value) => {
+              setSelectedContact(value)
+              clearValidationError("type_management_id");
+            }}
             renderInput={(params) => (
-              <TextField {...params} label="Tipo de gestión" />
+              <TextField
+                {...params}
+                label="Cliente"
+                error={!!validationErrors.type_management_id}
+                helperText={validationErrors.type_management_id ? validationErrors.type_management_id[0] : ""}
+              />
             )}
           />
         </div>
@@ -387,6 +459,36 @@ const buildPayload = () => {
           Guardar
         </Button>
       </div>
+
+      {/* Popup para mostrar la descripcion de la pagaduria */}
+        <Dialog onClose={() => setModal(false)} open={modal}  >
+          <DialogTitle><p className="mr-12">Descripcion de la pagaduría</p></DialogTitle>
+          <button onClick={() => setModal(false)} className="absolute right-10 top-5"> X </button>
+          <DialogContent dividers>
+            {selectedPayroll?.name ? (
+              <h1>{renderDescription(selectedPayroll.description)}</h1>
+            ) : (
+              <>Seleccione una pagaduria</>
+            )}
+          </DialogContent>
+        </Dialog>
+
+      {/* Snackbar para alertar al agente que hay errores en el formulario */}
+        <Snackbar
+          open={Object.keys(validationErrors).length > 0}
+          autoHideDuration={40000}
+          onClose={Object.keys(validationErrors).length < 0}
+
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert 
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity="error" 
+            variant="filled"
+          >
+            Corrige los errores del formulario
+          </Alert>
+        </Snackbar>
     </div>
   );
 };

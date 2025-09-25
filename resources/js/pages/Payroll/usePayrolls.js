@@ -212,7 +212,13 @@ export const usePayrolls = () => {
     });
   };
 
+  const handleCloseModal = () => {
+    setIsOpenADD(false);
+    setValidationErrors({});
+  };
+
   return {
+    handleCloseModal,
     fetchPage,
     handleSearch,
     payrolls,

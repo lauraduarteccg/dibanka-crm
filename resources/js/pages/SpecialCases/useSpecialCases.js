@@ -271,9 +271,14 @@ export const useSpecialCases = () => {
         fetchUser(1);
     }, [fetchUser]);
 
-
+    const handleCloseModal = () => {
+        setIsOpenADD(false);
+        setValidationErrors({});
+    };
+    
 
     return {
+        handleCloseModal,
         users,
         contact,
         payroll,

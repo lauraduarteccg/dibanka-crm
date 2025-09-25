@@ -13,7 +13,6 @@ import {
   DialogContent,
   CircularProgress,
   Box,
-  Button,
 } from "@mui/material";
 
 const fields = [
@@ -72,6 +71,8 @@ const columnsManagement = [
 const Contact = () => {
   const {
     handleOpenManagements,
+    totalItemsM,
+    perPageM,
     currentPageM,
     totalPagesM,
     fetchManagement,
@@ -97,6 +98,7 @@ const Contact = () => {
     perPage,
     handleDelete,
     handleEdit,
+    handleCloseModal,
   } = useContact();
 
   // Efecto para cambiar automáticamente el tipo de identificación
@@ -128,7 +130,7 @@ const Contact = () => {
 
       <FormAdd
         isOpen={isOpenADD}
-        setIsOpen={setIsOpenADD}
+        setIsOpen={handleCloseModal}
         title="Contactos"
         formData={formData}
         setFormData={setFormData}
@@ -196,8 +198,10 @@ const Contact = () => {
               columns={columnsManagement}
               data={management ?? []}
               currentPage={currentPageM}
-              fetch={(page) => fetchManagement(selectedContact?.id, page)}
               totalPages={totalPagesM}
+              rowsPerPage={perPageM}
+              totalItems={totalItemsM}
+              fetch={(page) => fetchManagement(selectedContact?.id, page)}
               actions={false}
               view={false}
               edit={false}

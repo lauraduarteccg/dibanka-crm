@@ -87,7 +87,7 @@ class ContactController extends Controller
     }
 
     //Actualizar contacto
-    public function update(Request $request, $id)
+    public function update(ContactRequest $request, $id)
     {
         $contacts = Contact::findOrFail($id);
         $contacts->update($request->only(

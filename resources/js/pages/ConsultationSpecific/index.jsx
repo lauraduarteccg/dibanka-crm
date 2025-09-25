@@ -45,6 +45,7 @@ const ConsultationSpecific = () => {
         fetchConsultation,
         handleDelete,
         handleEdit,
+        handleCloseModal,
     } = useConsultSpecifics();
 
     return (
@@ -63,8 +64,8 @@ const ConsultationSpecific = () => {
 
             <FormAdd
                 isOpen={isOpenADD}
-                setIsOpen={setIsOpenADD}
-                title="Consultas especificas"
+                setIsOpen={handleCloseModal}
+                title="consultas especificas"
                 formData={formData}
                 setFormData={setFormData}
                 handleSubmit={handleSubmit}

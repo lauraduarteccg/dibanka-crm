@@ -31,7 +31,7 @@ class ContactRequest extends FormRequest
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|max:255',
             'phone'         => 'nullable|digits:10', 
-            'update_phone'  => 'nullable|digits:10', 
+            'update_phone'  => 'required|digits:10', 
             'identification_type'   => 'required|string',
             'identification_number' => ['required','numeric', Rule::unique(Contact::class)->ignore($contactID)], 
         ];
@@ -59,6 +59,7 @@ class ContactRequest extends FormRequest
             'phone.digits'          => 'El campo teléfono debe tener exactamente 10 dígitos.', 
 
             'update_phone.digits'   => 'El campo celular actualizado debe tener exactamente 10 dígitos.', 
+            'update_phone.required' => 'El campo celular actualizado es obligatorio',
 
             'identification_type.required'  => 'El campo tipo de identificación es obligatorio.',
 
