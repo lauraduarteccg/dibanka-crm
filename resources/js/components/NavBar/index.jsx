@@ -15,6 +15,7 @@ import { HiOutlineIdentification } from "react-icons/hi2";
 import { LuMegaphone } from "react-icons/lu";
 import { FiUsers } from "react-icons/fi";
 import { IoFootstepsOutline } from "react-icons/io5";
+import { VscTools } from "react-icons/vsc";
 import logo from "@assets/logo.png";
 
 const NavBar = () => {
@@ -43,139 +44,156 @@ const NavBar = () => {
                 </button>
 
                 {/* Lista de opciones del menú */}
-                <List>
-                    {/* Usuarios */}
-                    <ListItem disablePadding>
-                        <ListItemButton
-                            onClick={() => navigate("/usuarios")}
-                            selected={location.pathname === "/usuarios"}
-                        >
-                            <Tooltip title="Usuarios">
-                                <ListItemIcon>
-                                    <FiUsers className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Usuarios" />}
-                        </ListItemButton>
-                    </ListItem>
+                <List className="flex flex-col justify-between h-full">
+                    <div>
+                        {/* Usuarios */}
+                        <ListItem disablePadding>
+                            <ListItemButton
+                                onClick={() => navigate("/usuarios")}
+                                selected={location.pathname === "/usuarios"}
+                            >
+                                <Tooltip title="Usuarios">
+                                    <ListItemIcon>
+                                        <FiUsers className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Usuarios" />}
+                            </ListItemButton>
+                        </ListItem>
 
-                    {/* Contactos */}
+                        {/* Contactos */}
+                        <ListItem disablePadding>
+                            <ListItemButton 
+                                onClick={() => navigate("/contactos")}
+                                selected={location.pathname === "/contactos"}
+                            >
+                                <Tooltip title="Contactos">
+                                    <ListItemIcon>
+                                        <HiOutlineIdentification className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Contactos" />}
+                            </ListItemButton>
+                        </ListItem>
+
+                        {/* Campañas */}
+                        <ListItem disablePadding>
+                            <ListItemButton 
+                                onClick={() => navigate("/pagadurias")}
+                                selected={location.pathname === "/pagadurias"}
+                            >
+                                <Tooltip title="pagadurías">
+                                    <ListItemIcon>
+                                        <LuMegaphone className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Pagadurías" />}
+                            </ListItemButton>
+                        </ListItem>
+
+                        {/* Consultas */}
+                        <ListItem disablePadding>
+                            <ListItemButton 
+                                onClick={() => navigate("/consultas")}
+                                selected={location.pathname === "/consultas"}
+                            >
+                                <Tooltip title="Consultas">
+                                    <ListItemIcon>
+                                        <IoDocumentTextOutline className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Tipo Consultas" />}
+                            </ListItemButton>
+                        </ListItem>
+
+                        {/* Consultas especificas */}
+                        <ListItem disablePadding>
+                            <ListItemButton 
+                                onClick={() => navigate("/consultas_especificas")}
+                                selected={location.pathname === "/consultas_especificas"}
+                            >
+                                <Tooltip title="Consultas especificas">
+                                    <ListItemIcon>
+                                        <AiOutlineFileSearch className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Consultas especificas" />}
+                            </ListItemButton>
+                        </ListItem>
+
+                        {/* Gestiones */}
+                        <ListItem disablePadding>
+                            <ListItemButton 
+                                onClick={() => navigate("/gestiones")}
+                                selected={location.pathname === "/gestiones"}
+                            >
+                                <Tooltip title="Gestiones">
+                                    <ListItemIcon>
+                                        <HiOutlineRectangleGroup className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Gestiones" />}
+                            </ListItemButton>
+                        </ListItem>
+
+                        {/* Tipo de Gestiones */}
+                        <ListItem disablePadding>
+                            <ListItemButton 
+                                onClick={() => navigate("/tipo_de_gestiones")}
+                                selected={location.pathname === "/tipo_de_gestiones"}    
+                            >
+                                <Tooltip title="Tipo de gestiones">
+                                    <ListItemIcon>
+                                        <HiOutlineCollection className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Tipo de gestiones" />}
+                            </ListItemButton>
+                        </ListItem>
+
+                        {/* casos especiales */}
+                        <ListItem disablePadding>
+                            <ListItemButton 
+                                onClick={() => navigate("/casos_especiales")}
+                                selected={location.pathname === "/casos_especiales"}
+                            >
+                                <Tooltip title="Casos especiales">
+                                    <ListItemIcon>
+                                        <MdOutlineFolderSpecial className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Casos especiales" />}
+                            </ListItemButton>
+                        </ListItem>
+
+                        {/* seguimientos */}
+                        <ListItem disablePadding>
+                            <ListItemButton 
+                                onClick={() => navigate("/seguimientos")}
+                                selected={location.pathname === "/seguimientos"}
+                            >
+                                <Tooltip title="Seguimientos">
+                                    <ListItemIcon>
+                                        <IoFootstepsOutline className="text-white w-6 h-auto" />
+                                    </ListItemIcon>
+                                </Tooltip>
+                                {isOpenMenu && <ListItemText primary="Seguimientos" />}
+                            </ListItemButton>
+                        </ListItem>
+                    </div>
+                    
+                    {/* Configuracion de roles */}
                     <ListItem disablePadding>
                         <ListItemButton 
-                            onClick={() => navigate("/contactos")}
-                            selected={location.pathname === "/contactos"}
+                            onClick={() => navigate("/configuraciones")}
+                            selected={location.pathname === "/configuraciones"}
                         >
-                            <Tooltip title="Contactos">
+                            <Tooltip title="Configuración">
                                 <ListItemIcon>
-                                    <HiOutlineIdentification className="text-white w-6 h-auto" />
+                                    <VscTools className="text-white w-6 h-auto" />
                                 </ListItemIcon>
                             </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Contactos" />}
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* Campañas */}
-                    <ListItem disablePadding>
-                        <ListItemButton 
-                            onClick={() => navigate("/pagadurias")}
-                            selected={location.pathname === "/pagadurias"}
-                        >
-                            <Tooltip title="pagadurías">
-                                <ListItemIcon>
-                                    <LuMegaphone className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Pagadurías" />}
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* Consultas */}
-                    <ListItem disablePadding>
-                        <ListItemButton 
-                            onClick={() => navigate("/consultas")}
-                            selected={location.pathname === "/consultas"}
-                        >
-                            <Tooltip title="Consultas">
-                                <ListItemIcon>
-                                    <IoDocumentTextOutline className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Tipo Consultas" />}
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* Consultas especificas */}
-                    <ListItem disablePadding>
-                        <ListItemButton 
-                            onClick={() => navigate("/consultas_especificas")}
-                            selected={location.pathname === "/consultas_especificas"}
-                        >
-                            <Tooltip title="Consultas especificas">
-                                <ListItemIcon>
-                                    <AiOutlineFileSearch className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Consultas especificas" />}
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* Gestiones */}
-                    <ListItem disablePadding>
-                        <ListItemButton 
-                            onClick={() => navigate("/gestiones")}
-                            selected={location.pathname === "/gestiones"}
-                        >
-                            <Tooltip title="Gestiones">
-                                <ListItemIcon>
-                                    <HiOutlineRectangleGroup className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Gestiones" />}
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* Tipo de Gestiones */}
-                    <ListItem disablePadding>
-                        <ListItemButton 
-                            onClick={() => navigate("/tipo_de_gestiones")}
-                            selected={location.pathname === "/tipo_de_gestiones"}    
-                        >
-                            <Tooltip title="Tipo de gestiones">
-                                <ListItemIcon>
-                                    <HiOutlineCollection className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Tipo de gestiones" />}
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* casos especiales */}
-                    <ListItem disablePadding>
-                        <ListItemButton 
-                            onClick={() => navigate("/casos_especiales")}
-                            selected={location.pathname === "/casos_especiales"}
-                        >
-                            <Tooltip title="Casos especiales">
-                                <ListItemIcon>
-                                    <MdOutlineFolderSpecial className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Casos especiales" />}
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* seguimientos */}
-                    <ListItem disablePadding>
-                        <ListItemButton 
-                            onClick={() => navigate("/seguimientos")}
-                            selected={location.pathname === "/seguimientos"}
-                        >
-                            <Tooltip title="Seguimientos">
-                                <ListItemIcon>
-                                    <IoFootstepsOutline className="text-white w-6 h-auto" />
-                                </ListItemIcon>
-                            </Tooltip>
-                            {isOpenMenu && <ListItemText primary="Seguimientos" />}
+                            {isOpenMenu && <ListItemText primary="Configuración" />}
                         </ListItemButton>
                     </ListItem>
                 </List>

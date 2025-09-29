@@ -28,7 +28,7 @@ class StoreUserRequest extends FormRequest
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            // 'role'     => 'required|integer|exists:roles,id',
+            'role'     => 'required|integer|exists:roles,id',
             'is_active'=> 'sometimes|boolean',
         ];
     }
@@ -50,9 +50,9 @@ class StoreUserRequest extends FormRequest
             'password.required' => 'La contraseña es obligatoria.',
             'password.string'   => 'La contraseña debe ser una cadena de caracteres.',
             'password.min'      => 'La contraseña debe tener al menos 8 caracteres.',
-            // 'role.required'     => 'El rol es obligatorio.',
-            // 'role.integer'      => 'El rol debe ser un número entero.',
-            // 'role.exists'       => 'El rol seleccionado no existe.',
+            'role.required'     => 'El rol es obligatorio.',
+            'role.integer'      => 'El rol debe ser un número entero.',
+            'role.exists'       => 'El rol seleccionado no existe.',
         ];
     }
 }

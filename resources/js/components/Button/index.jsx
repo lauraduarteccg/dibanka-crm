@@ -1,8 +1,9 @@
 import React from "react";
 
-const Button = ({ text, onClick, color, colorText, padding }) => {
+const Button = ({ text, onClick, color, colorText, padding, disabled }) => {
     return (
         <button
+            disabled={disabled}
             className={`rounded-md hover:scale-110
                         transition-all duration-500 ease-in-out
                         ${color ? color : "bg-primary-accent"}

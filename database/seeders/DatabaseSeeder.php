@@ -2,10 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use App\Models\TypeManagement;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,22 +15,47 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear usuarios
-        $users = [];
 
-        for ($i = 1; $i <= 10; $i++) {
-            $users[] = [
-                'name'          => 'User ' . $i,
-                'email'         => 'user' . $i . '@example.com',
-                'password'      => Hash::make('password'),
-                'created_at'    => now(),
-                'updated_at'    => now(),
-            ];
-        }
+    // Crear roles y obtener sus IDs
+    $adminRole = Role::firstOrCreate(['name' => 'Administrador']);
+    $liderRole = Role::firstOrCreate(['name' => 'Lider de Campaña']);
+    $agenteRole = Role::firstOrCreate(['name' => 'Agente']);
 
-        DB::table('users')->insert($users);
+    $users = [
+        [
+            'name' => 'Administrador',
+            'email' => 'administrator@example.com',
+            'password' => Hash::make('password'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'name' => 'Lider de campaña',
+            'email' => 'campaing_manager@example.com',
+            'password' => Hash::make('password'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'name' => 'Agente',
+            'email' => 'agent@example.com',
+            'password' => Hash::make('password'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+    ];
 
-        $usersIds = DB::table('users')->pluck('id')->toArray();
+    // Insertar usuarios
+    $userIds = [];
+    foreach ($users as $userData) {
+        $user = User::create($userData);
+        $userIds[] = $user->id;
+    }
+
+// Asignar roles usando syncRoles o assignRole
+User::find($userIds[0])->syncRoles([$adminRole->id]);
+User::find($userIds[1])->syncRoles([$liderRole->id]);
+User::find($userIds[2])->syncRoles([$agenteRole->id]);
 
         // Crear pagadurías
         $payroll = [
@@ -112,7 +138,7 @@ class DatabaseSeeder extends Seeder
         
         DB::table('special_cases')->insert([
             [
-                'user_id'           => $usersIds[0],
+                'user_id'           => 1,
                 'contact_id'        => $contactId,
                 'management_messi'  => 'Nota Creada',
                 'id_call'           => '68b871ae742f0866f0010a1d',

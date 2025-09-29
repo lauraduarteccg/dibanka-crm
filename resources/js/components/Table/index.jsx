@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState,useContext } from "react";
+import { AuthContext } from "@context/AuthContext";
 import {
   Table,
   TableHead,
@@ -62,6 +63,9 @@ const MuiTable = ({
   currentPage,
   fetchPage,
 }) => {
+  
+  const { user } = useContext(AuthContext);
+
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState(columns[0].key);
 
@@ -75,14 +79,14 @@ const MuiTable = ({
     fetchPage(newPage + 1); // 👈 porque MUI usa base 0 y tu API base 1
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    const newSize = parseInt(event.target.value, 10);
-    fetchPage(1, newSize); // 👈 opcional: que tu hook acepte también tamaño
-  };
-
-  // 📌 Ordenamos SOLO lo que llega del back
+  // 📌 Primero ordenamos
   const sortedData = stableSort(data, getComparator(order, orderBy));
 
+  // 📌 Si el usuario actual NO es Administrador → filtramos los que tengan role_id === 1
+  const filteredData = !user.roles?.includes("Administrador")
+    ? sortedData.filter((item) => item.roles !== 1)
+    : sortedData;
+    
   return (
     <Paper
       sx={{ width: "90%", overflow: "hidden", borderRadius: 3, mx: "auto", marginRight: 6 }}
@@ -122,7 +126,7 @@ const MuiTable = ({
           </TableHead>
 
           <TableBody>
-            {sortedData.map((row, rowIndex) => (
+            {filteredData.map((row, rowIndex) => (
               <TableRow key={rowIndex} hover>
                 {columns.map((col) => (
                   <TableCell key={col.key} align="center">
@@ -141,7 +145,6 @@ const MuiTable = ({
                     )}
                   </TableCell>
                 ))}
-
                 {actions && (
                   <TableCell align="center">
                     <div className="flex justify-center gap-4">

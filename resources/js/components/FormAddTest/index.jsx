@@ -1,9 +1,9 @@
-import React, { useState, forwardRef, useEffect } from "react";
+import React, { useState, forwardRef, useEffect, useContext } from "react";
+import { AuthContext } from "@context/AuthContext";
 import Button from "../Button";
 import PrettyFileInput from "../PrettyFileInput";
-import Alert from "@mui/material/Alert";
 import { Dialog, Slide } from "@mui/material";
-import { Autocomplete, TextField, Select, MenuItem, InputLabel, FormControl } from "@mui/material";
+import { Autocomplete, TextField, Select, MenuItem, InputLabel, FormControl, Snackbar, Alert } from "@mui/material";
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="left" ref={ref} {...props} />;
@@ -20,9 +20,10 @@ const FormAdd = ({
   validationErrors,
   fields,
   schema,
-  selectDisabled = false,
+  admin,
 }) => {
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({}); 
+  const { user } = useContext(AuthContext);
   
   // Crear estado inicial basado en la estructura de formData
   const getInitialFormData = () => {
@@ -176,6 +177,7 @@ const FormAdd = ({
                           validateField(field.name, e.target.value);
                         }}
                         label={field.name}
+                        disabled={loading || admin}
                       >
                         {(field.options || []).map((option) => (
                           <MenuItem key={option.value} value={option.value}>
@@ -207,7 +209,7 @@ const FormAdd = ({
                       setFormData({ ...formData, [field.name]: e.target.value });
                       validateField(field.name, e.target.value);
                     }}
-                    disabled={loading}
+                    disabled={loading || admin} 
                   />
                 )}
 
@@ -231,7 +233,24 @@ const FormAdd = ({
             );
           })}
 
-          <Button type="submit" text="Guardar" disabled={loading} />
+          <Button type="submit" text="Guardar" disabled={loading || admin} />
+
+          {
+            formData.role == 1 && !user.roles?.includes("Administrador") && (
+              <Snackbar
+                open={formData.role == 1}
+                autoHideDuration={5000}
+                anchorOrigin={{ vertical: "button", horizontal: "left" }}
+              >
+                <Alert
+                  severity="error"
+                  variant="filled"
+                >
+                  Este registro no se puede editar porque es del administrador
+                </Alert>
+              </Snackbar>
+            )
+          }
         </form>
       </div>
     </Dialog>

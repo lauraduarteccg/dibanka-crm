@@ -3,7 +3,6 @@ import { AuthContext } from "@context/AuthContext";
 import seleccione_imagen from "../../../assets/seleccione_imagen.png"
 import { useAddManagement } from "./useAddManagement.js";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Snackbar, Alert } from "@mui/material";
 import {
   FormControl,
   InputLabel,
@@ -16,7 +15,10 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  Box,
+  FormControlLabel,
+  FormHelperText,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 
 import { TiContacts } from "react-icons/ti";
@@ -37,7 +39,7 @@ const AddManagement = () => {
     handleSubmit,
     validationErrors,
     clearValidationError,
-    clearAllValidationErrors,
+    setValidationErrors,
   } = useAddManagement();
 
   const { user } = useContext(AuthContext);
@@ -45,14 +47,6 @@ const AddManagement = () => {
   const [formData, setFormData] = useState({
     campaign: "",
     payroll: "",
-  });
-
-  // Estados para los errores
-  const [errors, setErrors] = useState({});
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "error",
   });
 
   // Reemplaza {{agente}} por el nombre del agente y detecta los saltos delinea
@@ -147,15 +141,19 @@ const AddManagement = () => {
       typemanagement: "",
       solution: "",
     });
+    setValidationErrors({})
   };
 
   // Guarda la nueva gestion y limpia el formulario
-  const onSave = () => {
+  const onSave = async  () => {
     const payload = buildPayload();
     console.log("Payload que se manda:", payload);
-    handleSubmit(payload); // ahora sí mandas la data
-    handleClear();
-    navigate("/gestiones/añadir")
+    
+    const success = await handleSubmit(payload);
+    if (success) {
+      handleClear();
+      navigate("/gestiones/añadir");
+    }
   };
 
   // Detecta espacios y convierte a minuscula todo para hacer la busqueda del campo
@@ -197,7 +195,7 @@ const AddManagement = () => {
  // http://localhost:8000/gestiones/a%C3%B1adir?campaign=aliados&payroll=educame&identification_number=12345678&wolkvox_id=8465416524132355456
 
   return (
-    <div className="flex flex-col gap-4 text-secondary-dark px-40 pb-40 ">
+    <div className="flex flex-col gap-4 text-secondary-dark px-[10%] pb-40 ">
       {/* Título */}
       <div className="flex justify-between items-center">
         <h1 className="flex justify-center items-center gap-3 text-2xl font-semibold">
@@ -283,7 +281,7 @@ const AddManagement = () => {
             `${option?.identification_number || ""} | ${option?.name || ""}`
           }
           value={selectedContact}
-          onChange={(value) => {
+          onChange={(event, value) => {
             setSelectedContact(value)
             clearValidationError("contact_id");
           }}
@@ -338,14 +336,14 @@ const AddManagement = () => {
             options={filteredTypeManagement}
             getOptionLabel={(option) => option?.name || ""}
             value={selectedTypeManagement}
-            onChange={(value) => {
-              setSelectedContact(value)
+            onChange={(event, value) => {
+              setSelectedTypeManagement(value)
               clearValidationError("type_management_id");
             }}
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Cliente"
+                label="Tipo de gesiton"
                 error={!!validationErrors.type_management_id}
                 helperText={validationErrors.type_management_id ? validationErrors.type_management_id[0] : ""}
               />
@@ -356,18 +354,24 @@ const AddManagement = () => {
         {/* Selector de solución en primer contacto */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Solución en el primer contacto</h2>
-          <FormControl fullWidth>
+          <FormControl fullWidth error={!!validationErrors.solution}>
             <InputLabel id="solucion-label">Solución</InputLabel>
             <Select
               labelId="solucion-label"
               id="solucion"
               value={selectedSolution}
               label="Solución"
-              onChange={(event) => setSelectedSolution(event.target.value)}
+              onChange={(event) => {
+                setSelectedSolution(event.target.value);
+                clearValidationError("solution");
+              }}
             >
               <MenuItem value={true}>Sí</MenuItem>
               <MenuItem value={false}>No</MenuItem>
             </Select>
+            {validationErrors.solution && (
+              <FormHelperText>{validationErrors.solution[0]}</FormHelperText>
+            )}
           </FormControl>
         </div>
       </div>
@@ -382,8 +386,18 @@ const AddManagement = () => {
             `${option?.id || ""} | ${option?.name || ""}`
           }
           value={selectedConsultation}
-          onChange={(event, value) => setSelectedConsultation(value)}
-          renderInput={(params) => <TextField {...params} label="Consulta" />}
+            onChange={(event, value) => {
+              setSelectedConsultation(value)
+              clearValidationError("consultation_id");
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Consulta"
+                error={!!validationErrors.consultation_id}
+                helperText={validationErrors.consultation_id ? validationErrors.consultation_id[0] : ""}
+              />
+            )}
         />
       </div>
 
@@ -394,10 +408,18 @@ const AddManagement = () => {
           options={filteredSpecific}
           getOptionLabel={(option) => `${option?.consultation.id || ""} | ${option?.name || ""}`}
           value={selectedSpecificConsultation}
-          onChange={(event, value) => setSelectedSpecificConsultation(value)}
-          renderInput={(params) => (
-            <TextField {...params} label="Consulta específica" />
-          )}
+            onChange={(event, value) => {
+              setSelectedSpecificConsultation(value)
+              clearValidationError("specific_id");
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Consulta especifica"
+                error={!!validationErrors.specific_id}
+                helperText={validationErrors.specific_id ? validationErrors.specific_id[0] : ""}
+              />
+            )}
         />
       </div>
     </div>
@@ -406,26 +428,29 @@ const AddManagement = () => {
       {/* SMS */}
         <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Enviar SMS de canal de WhatsApp</h2>
-          <Switch
-            checked={sms}                            
+          <Switch 
+            checked={sms} 
             onChange={(e) => setSms(e.target.checked)} 
-            inputProps={{ 'aria-label': 'Checkbox demo' }}
-            />
+            inputProps={{ 'aria-label': 'Checkbox demo' }} 
+          />
         </div>
           
       {/* Wolkvox id de la gestión */}
       <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-        <div className="flex flex-col">
-          <p className="text-xl font-semibold pb-3">Wolkvox_id de la gestión:</p>
-            <TextField
-              fullWidth
-              id="standard-multiline-static"
-              disabled
-              value={wolkvox_id}
-              onChange={(e) => setWolkvox_id(e.target.value)}
-              multiline
-            />
-        </div>
+        <p className="text-xl font-semibold pb-3">Wolkvox_id de la gestión:</p>
+        <TextField
+          fullWidth
+          id="wolkvox_id"
+          label="Wolkvox ID"
+          value={wolkvox_id}
+          onChange={(e) => {
+            setWolkvox_id(e.target.value);
+            clearValidationError("wolkvox_id");
+          }}
+          multiline
+          error={!!validationErrors.wolkvox_id} // 👈 muestra el borde rojo
+          helperText={validationErrors.wolkvox_id ? validationErrors.wolkvox_id[0] : ""} // 👈 muestra el mensaje
+        />
       </div>
 
       {/* WHATSAPP */}
@@ -474,21 +499,18 @@ const AddManagement = () => {
         </Dialog>
 
       {/* Snackbar para alertar al agente que hay errores en el formulario */}
-        <Snackbar
-          open={Object.keys(validationErrors).length > 0}
-          autoHideDuration={40000}
-          onClose={Object.keys(validationErrors).length < 0}
-
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      <Snackbar
+        open={Object.keys(validationErrors).length > 0}
+        autoHideDuration={9000}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          severity="error"
+          variant="filled"
         >
-          <Alert 
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            severity="error" 
-            variant="filled"
-          >
-            Corrige los errores del formulario
-          </Alert>
-        </Snackbar>
+          Corrige los errores del formulario
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

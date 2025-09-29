@@ -99,6 +99,7 @@ export const useAddManagement = () => {
         setIsOpenADD(false);
         // Opcional: refrescar la lista de gestiones
         fetchManagement(currentPage, searchTerm);
+        return true;
       }
     } catch (error) {
       if (error.response?.status === 422) {
@@ -113,6 +114,7 @@ export const useAddManagement = () => {
           showConfirmButton: false,
         });
       }
+      return false;
     } finally {
       setLoading(false);
     }
@@ -212,10 +214,6 @@ export const useAddManagement = () => {
     });
   };
 
-  // Limpia el snakbar luego del error en el formulario
-  const clearAllValidationErrors = () => {
-    setValidationErrors({});
-  };
 
   return {
     modal,
@@ -241,8 +239,7 @@ export const useAddManagement = () => {
     setCurrentPage,
     handleSubmit,
     setIsOpenADD,
-    validationErrors,
+    setValidationErrors,
     clearValidationError,
-    clearAllValidationErrors,
   };
 };

@@ -11,12 +11,27 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TypeManagementController;
 use App\Http\Controllers\SpecialCasesController;
 use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\RolesController;
+use App\Http\Controllers\RolePermissionController;
 
-// Ruta de autenticación
+// 🔹 Ruta de autenticación
 Route::post('/login', [AuthController::class, 'login']);
+
+// 🔹 Gesiton de roles
+Route::get('/roles', [RolesController::class, 'index']);
 
 // Rutas protegidas con autenticación
 Route::middleware('auth:sanctum')->group(function () {
+
+    // 🔹 Obtener la lista de permisos
+    Route::get('/permissions', [RolePermissionController::class, 'index']);
+
+    // 🔹 Obtener todos los roles con sus permisos
+    Route::get('/roles-permissions', [RolePermissionController::class, 'roles']);
+
+    // 🔹 Asignar o quitar un permiso a un rol
+    Route::put('/roles-permissions/toggle', [RolePermissionController::class, 'togglePermission']);
+
     // 🔹 Rutas de conteo de registros
     Route::get('/management/count', [ManagementController::class, 'count']);
     Route::get('/payrolls/count', [PayrollController::class, 'count']);

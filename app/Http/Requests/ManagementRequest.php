@@ -30,6 +30,7 @@ class ManagementRequest extends FormRequest
             'monitoring_id'     => 'nullable|integer|exists:monitoring,id',
             'type_management_id'=> 'required|integer|exists:type_management,id',
 
+            'wolkvox_id'        => 'required|string',
             'solution_date'     => 'nullable|date',
             'comments'          => 'required|string',
             'sms'               => 'required|boolean',
@@ -87,6 +88,8 @@ class ManagementRequest extends FormRequest
             'wsp.required'     => 'El campo Whatsap es requerido',
             'wsp.boolean'       => 'El campo Whatsap debe ser verdadero o falso',
 
+            'wolkvox_id.required' => 'El wolkvox_id es obligatorio',
+            'wolkvox_id. string' => 'El wolkvox_id tiene que ser una cadena de texto'
         ];
     }
 }

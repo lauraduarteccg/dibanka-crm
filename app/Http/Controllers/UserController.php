@@ -16,7 +16,7 @@ class UserController extends Controller
     // Obtener todos los usuarios
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::with('roles'); 
 
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
@@ -46,26 +46,25 @@ class UserController extends Controller
     // Crear un nuevo usuario
     public function store(StoreUserRequest $request)
     {
-        $request->validate([
-            'name'      => 'required|string',
-            'email'     => 'required|email|unique:users',
-            'password'  => 'required|min:6',
-            // 'role' => 'string'
-        ]);
-
+        // Crear un nuevo usuario
         $user = User::create([
             'name'      => $request->name,
             'email'     => $request->email,
             'password'  => Hash::make($request->password),
-            // 'role' => $request->role ?? 'user',
+            'is_active' => $request->is_active ?? true,
         ]);
 
+        // Asignar rol si viene en la request
+        if ($request->has('role')) {
+            $user->assignRole($request->role);
+        }
+
         return response()->json([
-            'message'   => 'Usuario creado con éxito',
-            'users'     => new UserResource($user)
+            'message' => 'Usuario creado correctamente',
+            'user'    => new UserResource($user),
+            'role'    => $request->role ?? null
         ], Response::HTTP_CREATED);
     }
-
     // Obtener un usuario por ID
     public function show($id)
     {
@@ -80,13 +79,25 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, $id)
     {
         $user = User::findOrFail($id);
-        $user->update($request->all());
+
+        // Actualizar los campos básicos (nombre, email, password si viene)
+        $data = $request->only(['name', 'email', 'is_active']);
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+        $user->update($data);
+
+        // Actualizar rol si viene en la request
+        if ($request->filled('role')) {
+            $user->syncRoles($request->role); // Reemplaza los roles actuales con el nuevo
+        }
+
         return response()->json([
-            'message'   => 'Usuario actualizado con éxito',
-            'users'     => new UserResource($user)
+            'message' => 'Usuario actualizado con éxito',
+            'user'    => new UserResource($user),
+            'role'    => $request->role ?? null
         ], Response::HTTP_OK);
     }
-
     // Eliminar un usuario
     public function destroy($id)
     {

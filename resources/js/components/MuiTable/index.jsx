@@ -10,15 +10,7 @@ import {
   TableSortLabel,
   Paper,
   Collapse,
-  Box,
 } from "@mui/material";
-
-const P = ({ text1, text2 }) => (
-  <p className="text-gray-600 leading-relaxed">
-    <strong className="text-gray-700">{text1}</strong>
-    <span className="text-gray-900 ml-1">{text2}</span>
-  </p>
-);
 
 // 🔎 Función para obtener valores anidados
 export const getNestedValue = (obj, path) =>
@@ -45,7 +37,16 @@ function stableSort(array, comparator) {
   return stabilized.map((el) => el[0]);
 }
 
-const MuiTableExpandable = ({ columns, data, totalItems, rowsPerPage, currentPage, fetchPage }) => {
+const MuiTableExpandable = ({
+  columns,
+  data,
+  totalItems,
+  rowsPerPage,
+  currentPage,
+  fetchPage,
+  collapse = <></>,
+  onRowClick, // ✅ nueva prop
+}) => {
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState(columns[0].key);
   const [expandedRow, setExpandedRow] = useState(null);
@@ -87,9 +88,10 @@ const MuiTableExpandable = ({ columns, data, totalItems, rowsPerPage, currentPag
               <React.Fragment key={rowIndex}>
                 <TableRow
                   hover
-                  onClick={() =>
-                    setExpandedRow(expandedRow === rowIndex ? null : rowIndex)
-                  }
+                  onClick={() => {
+                    setExpandedRow(expandedRow === rowIndex ? null : rowIndex);
+                    onRowClick?.(row); // ✅ dispara el callback con la fila
+                  }}
                   sx={{ cursor: "pointer" }}
                 >
                   {columns.map((col) => (
@@ -106,10 +108,7 @@ const MuiTableExpandable = ({ columns, data, totalItems, rowsPerPage, currentPag
                       timeout="auto"
                       unmountOnExit
                     >
-                      {/* Aquí tu detalle expandible */}
-                      <Box sx={{ p: 2, bgcolor: "#f9f9f9" }}>
-                        {/* Contenido expandido */}
-                      </Box>
+                      {collapse}
                     </Collapse>
                   </TableCell>
                 </TableRow>
@@ -139,6 +138,5 @@ const MuiTableExpandable = ({ columns, data, totalItems, rowsPerPage, currentPag
     </Paper>
   );
 };
-
 
 export default MuiTableExpandable;

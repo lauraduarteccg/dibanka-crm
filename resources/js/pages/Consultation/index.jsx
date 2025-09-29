@@ -5,6 +5,7 @@ import Loader from "@components/Loader";
 import { useConsults } from "./useConsults.js";
 import * as yup from "yup";
 import Search from "@components/Search";
+import DinamicTitle from "@components/DinamicTitle"
 
 const fields = [
   { name: "payroll_id", label: "Pagaduría", type: "select", options: [] },
@@ -46,57 +47,63 @@ const Consults = () => {
     handleEdit,
     handleCloseModal,
   } = useConsults();
-
+const text = "fe"
   return (
-    <>
-      <ButtonAdd onClickButtonAdd={() => setIsOpenADD(true)} text="Agregar Consulta" />
-        <div className="flex justify-end px-12 -mt-10 ">
-          <Search onSearch={handleSearch} placeholder="Buscar consulta..." />
-        </div>
+      <>
+          <ButtonAdd
+              onClickButtonAdd={() => setIsOpenADD(true)}
+              text="Agregar Consulta"
+          />
+          <div className="flex justify-end px-12 -mt-10 ">
+              <Search
+                  onSearch={handleSearch}
+                  placeholder="Buscar consulta..."
+              />
+          </div>
 
-      <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">Lista de Consultas</h1>
+          <DinamicTitle text="Lista de Consultas" />
 
-      <FormAdd
-        isOpen={isOpenADD}
-        setIsOpen={handleCloseModal}
-        title="Consultas"
-        formData={formData}
-        setFormData={setFormData}
-        handleSubmit={handleSubmit}
-        loading={loading}
-        validationErrors={validationErrors}
-        fields={fields.map(field => {
-          if (field.name === "payroll_id") {
-              return {
-                  ...field,
-                  options: payroll.map(p => ({ 
-                      value: p.id,
-                      label: p.name 
-                  }))
-              };
-          }
-          return field;
-        })}
-        schema={userSchema}
-      />
+          <FormAdd
+              isOpen={isOpenADD}
+              setIsOpen={handleCloseModal}
+              title="Consultas"
+              formData={formData}
+              setFormData={setFormData}
+              handleSubmit={handleSubmit}
+              loading={loading}
+              validationErrors={validationErrors}
+              fields={fields.map((field) => {
+                  if (field.name === "payroll_id") {
+                      return {
+                          ...field,
+                          options: payroll.map((p) => ({
+                              value: p.id,
+                              label: p.name,
+                          })),
+                      };
+                  }
+                  return field;
+              })}
+              schema={userSchema}
+          />
 
-      {loading ? (
-        <Loader />
-      ) : (
-        <Table
-          columns={columns}
-          data={consultations}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          rowsPerPage={perPage}
-          totalItems={totalItems}
-          fetch={(page) => fetchPage(page)}
-          onDelete={handleDelete}
-          actions={true}
-          onEdit={handleEdit}
-        />
-      )}
-    </>
+          {loading ? (
+              <Loader />
+          ) : (
+              <Table
+                  columns={columns}
+                  data={consultations}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  rowsPerPage={perPage}
+                  totalItems={totalItems}
+                  fetch={(page) => fetchPage(page)}
+                  onDelete={handleDelete}
+                  actions={true}
+                  onEdit={handleEdit}
+              />
+          )}
+      </>
   );
 };
 

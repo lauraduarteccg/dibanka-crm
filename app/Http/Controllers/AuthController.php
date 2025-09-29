@@ -54,7 +54,8 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
-                'email' => $user->email
+                'email' => $user->email,
+                'role' => $user->role ? $user->role->name : null
             ]
         ], status: Response::HTTP_OK);
     }
@@ -83,7 +84,8 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
-                'email' => $user->email
+                'email' => $user->email,
+                'roles' => $user->getRoleNames(),
             ]
         ], Response::HTTP_OK);
     }

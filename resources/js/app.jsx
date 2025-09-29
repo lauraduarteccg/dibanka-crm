@@ -16,6 +16,7 @@ import TypeManagement from "@pages/TypeManagement";
 import SpecialCases from "@pages/SpecialCases";
 import Monitoring from "@pages/Monitoring";
 import Loader from "./components/Loader";
+import Config from "@pages/Config"
 
 const App = () => {
     const { user, loading  } = useContext(AuthContext);
@@ -69,6 +70,10 @@ const App = () => {
             <Route
                 path="/seguimientos"
                 element={user ? <Layout><Monitoring /></Layout> : <Navigate to="/" />}
+            />
+            <Route
+                path="/configuraciones"
+                element={user ? <Layout><Config /></Layout> : <Navigate to="/" />}
             />
         </Routes>
     );

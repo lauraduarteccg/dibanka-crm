@@ -4,7 +4,7 @@ import { AuthContext } from "@context/AuthContext";
 import Swal from "sweetalert2";
 
 export const useUsers = () => {
-       const { token } = useContext(AuthContext);
+       const { token, user } = useContext(AuthContext);
        const [users, setUsers] = useState([]);
        const [loading, setLoading] = useState(true);
        const [error, setError] = useState(null);
@@ -15,10 +15,12 @@ export const useUsers = () => {
        const [per_page, setPer_page] = useState(1);
        const [total_users, setTotal_users] = useState(1);
        const [isOpenADD, setIsOpenADD] = useState(false);
+       const [roles, setRoles] = useState([]);
        const [formData, setFormData] = useState({
            id: null,
            name: "",
            email: "",
+           role: null,
            password: "",
        });
    
@@ -70,6 +72,7 @@ export const useUsers = () => {
                id: user.id,
                name: user.name,
                email: user.email,
+               role: user.roles || null,
                password: "",
            });
    
@@ -250,9 +253,41 @@ export const useUsers = () => {
                setLoading(false);
            }
        };
-       console.log(total_users)
+
+        
+    // -----------------------------------------------------------
+    // Lista de roles
+    // Selector de pagadurias
+    const fetchRoles = useCallback(
+        async () => {
+            setLoading(true);
+            try {
+                const res = await axios.get(`/api/roles`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setRoles(res.data.roles);
+                //console.log("Roles =>", res.data.roles);
+            } catch (err) {
+                setError("Error al obtener las pagadurias.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [token]
+    );
+
+    useEffect(() => {
+        fetchRoles(1);
+    }, [fetchRoles]);
+    
+    const filteredRoles = user.roles?.includes("Administrador")
+        ? roles
+        : roles.filter((item) => item.id !== 1);
    
        return{
+        filteredRoles,
+        roles,
+        fetchRoles,
         users,
         loading,
         error,

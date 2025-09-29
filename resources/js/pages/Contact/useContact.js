@@ -18,6 +18,7 @@ export const useContact = () => {
     const [totalItems, setTotalItems] =useState(1);
     const [perPageM, setPerPageM] = useState(1);
     const [totalItemsM, setTotalItemsM] =useState(1);
+    const [selectedManagement, setSelectedManagement] = useState(null);
     const [managements,      setManagements]         = useState(false);
     const [management,       setManagement]          = useState([]);
     const [selectedContact,  setSelectedContact]     = useState(null);
@@ -268,7 +269,7 @@ export const useContact = () => {
         setCurrentPageM(data.current_page ?? 1);
         setPerPageM(data.pagination.per_page);
         setTotalItemsM(data.pagination.total_management);
-        console.log(data)
+        // console.log(data.managements)
 
     } catch (err) {
         console.error("Error al obtener gestiones:", err);
@@ -291,6 +292,8 @@ export const useContact = () => {
 
 
     return {
+        selectedManagement,
+        setSelectedManagement,
         handleCloseModal,
         handleOpenManagements,
         totalItemsM,
