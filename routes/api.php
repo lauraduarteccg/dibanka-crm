@@ -13,6 +13,7 @@ use App\Http\Controllers\SpecialCasesController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\RolePermissionController;
+use App\Http\Controllers\PasswordResetController;
 
 // 🔹 Ruta de autenticación
 Route::post('/login', [AuthController::class, 'login']);
@@ -20,11 +21,14 @@ Route::post('/login', [AuthController::class, 'login']);
 // 🔹 Gesiton de roles
 Route::get('/roles', [RolesController::class, 'index']);
 
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.request');;
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 // Rutas protegidas con autenticación
 Route::middleware('auth:sanctum')->group(function () {
 
     // 🔹 Obtener la lista de permisos
     Route::get('/permissions', [RolePermissionController::class, 'index']);
+    Route::get('/role/{id}/permissions', [RolePermissionController::class, 'show']);
 
     // 🔹 Obtener todos los roles con sus permisos
     Route::get('/roles-permissions', [RolePermissionController::class, 'roles']);
@@ -60,7 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/management/{id}', [ManagementController::class, 'update']); // Actualizar gestion
     Route::put('/managementmonitoring/{id}', [ManagementController::class, 'updateMonitoring']); // Actualizar gestion
     Route::delete('/management/{id}', [ManagementController::class, 'destroy']); // Eliminar gestion
- 
+
     // 🔹 CRUD para Consultas
     Route::get('/consultations', [ConsultationController::class, 'index']); // Listar consultas
     Route::get('/consultations/active', [ConsultationController::class, 'active']); // Listar unicamente consultas activas
@@ -68,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/consultations/{consultation}', [ConsultationController::class, 'show']); // Mostrar una consulta específica
     Route::put('/consultations/{consultation}', [ConsultationController::class, 'update']); // Actualizar consulta
     Route::delete('/consultations/{consultation}', [ConsultationController::class, 'destroy']); // Eliminar consulta
-    
+
     // 🔹 CRUD para Consultas Especificas
     Route::get('/consultationspecifics', [ConsultationSpecificController::class, 'index']); // Listar consultas especificas
     Route::get('/consultationspecifics/active', [ConsultationSpecificController::class, 'active']); // Listar unicamente consultas especificas activas
@@ -76,7 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'show']); // Mostrar una consulta específica especifica
     Route::put('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'update']); // Actualizar consulta especifica
     Route::delete('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'destroy']); // Eliminar consulta especifica
-    
+
     // 🔹 CRUD para Seguimientos
     Route::get('/monitorings', [MonitoringController::class, 'index']); // Listar seguimiento
     Route::get('/monitorings/active', [MonitoringController::class, 'active']); // Listar unicamente seguimiento activas
@@ -100,14 +104,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/typemanagements/{typemanagement}', [TypeManagementController::class, 'update']); // Actualizar tipo de gestion
     Route::delete('/typemanagements/{typemanagement}', [TypeManagementController::class, 'destroy']); // Eliminar tipo de gestion
 
-    
+
     // 🔹 CRUD para los casos especiales
     Route::get('/specialcases', [SpecialCasesController::class, 'index']); // Listar casos especiales
     Route::post('/specialcases', [SpecialCasesController::class, 'store']); // Crear caso especial
     Route::get('/specialcases/{id}', [SpecialCasesController::class, 'show']); // Mostrar una caso especial
     Route::put('/specialcases/{id}', [SpecialCasesController::class, 'update']); // Actualizar caso especial
     Route::delete('/specialcases/{id}', [SpecialCasesController::class, 'destroy']); // Eliminar caso especial    
-    
+
     // Rutas de autenticación protegidas
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);

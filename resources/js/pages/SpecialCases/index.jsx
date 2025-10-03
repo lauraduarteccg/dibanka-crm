@@ -1,11 +1,12 @@
 import React, { useContext, useEffect } from "react";
 import { useSpecialCases } from "./useSpecialCases";
-import Table from "@components/Table";
-import ButtonAdd from "@components/ButtonAdd";
-import FormAdd from "@components/FormAddTest";
-import Loader from "@components/Loader";
+
+import Table from "@components/tables/Table";
+import ButtonAdd from "@components/ui/ButtonAdd";
+import FormAdd from "@components/forms/FormAdd";
+import Loader from "@components/ui/Loader";
 import * as yup from "yup";
-import Search from "@components/Search";
+import Search from "@components/forms/Search";
 
 import { AuthContext } from "@context/AuthContext";
 

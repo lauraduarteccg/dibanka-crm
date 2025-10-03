@@ -35,5 +35,34 @@ class RolePermissionController extends Controller
 
         return response()->json(['success' => true]);
     }
+     public function show($id)
+    {
+        $role = Role::with('permissions')->findOrFail($id);
+
+        // Agrupamos los permisos por módulo
+        $modules = $role->permissions->groupBy(function ($perm) {
+            return explode('.', $perm->name)[0]; // prefijo = módulo
+        })->map(function ($perms, $module) {
+            return [
+                'module' => ucfirst($module),
+                'permissions' => $perms->map(function ($perm) {
+                    $action = explode('.', $perm->name)[1] ?? $perm->name;
+                    return [
+                        'id' => $perm->id,
+                        'name' => $perm->name,
+                        'action' => $action,
+                    ];
+                })->values()
+            ];
+        })->values();
+
+        return response()->json([
+            'role' => [
+                'id' => $role->id,
+                'name' => $role->name,
+                'modules' => $modules
+            ]
+        ]);
+    }
 
 }

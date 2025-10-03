@@ -1,12 +1,17 @@
-import Table from "@components/Table";
-import { useManagement } from "./useManagement.js";
-import Drawer from '@mui/material/Drawer';
-import ButtonAdd from "@components/ButtonAdd";
-import Loader from "@components/Loader";
-import SearchBar from "@components/Search";
 import { useNavigate } from "react-router-dom";
+
+import Drawer from '@mui/material/Drawer';
 import { TextField, FormControl, Autocomplete } from "@mui/material";
-import Button from "@components/Button";
+
+import { useManagement } from "./useManagement.js";
+
+import Table from "@components/tables/Table";
+import ButtonAdd from "@components/ui/ButtonAdd";
+import Loader from "@components/ui/Loader";
+import Button from "@components/ui/Button"
+import SearchBar from "@components/forms/Search";
+
+
 
 const columns = [
   { header: "ID", key: "id" },

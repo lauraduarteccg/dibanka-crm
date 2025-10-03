@@ -269,7 +269,7 @@ export const useContact = () => {
         setCurrentPageM(data.current_page ?? 1);
         setPerPageM(data.pagination.per_page);
         setTotalItemsM(data.pagination.total_management);
-        // console.log(data.managements)
+      //   console.log(data.managements)
 
     } catch (err) {
         console.error("Error al obtener gestiones:", err);

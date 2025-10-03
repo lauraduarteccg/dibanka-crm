@@ -6,17 +6,28 @@ use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Response;
 use Exception;
+use Carbon\Carbon;
 
 class RolesController extends Controller
 {
     public function index()
     {
         try {
-            $roles = Role::select('id', 'name')->paginate(5);
+            $roles = Role::select('id', 'name', 'created_at')->paginate(5);
+
+
+            $rolesFormatted = $roles->getCollection()->map(function ($role) {
+                return [
+                    'id'         => $role->id,
+                    'name'       => $role->name,
+
+                    'created_at' => $role->created_at->format('d/m/Y H:i:s'),
+                ];
+            });
 
             return response()->json([
                 'message'    => 'Roles obtenidos correctamente.',
-                'roles'      => $roles->items(), // registros de la página actual
+                'roles'      => $rolesFormatted,
                 'pagination' => [
                     'current_page'  => $roles->currentPage(),
                     'total_pages'   => $roles->lastPage(),
@@ -26,7 +37,6 @@ class RolesController extends Controller
                     'prev_page_url' => $roles->previousPageUrl(),
                 ]
             ], Response::HTTP_OK);
-
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener los roles.',
@@ -34,5 +44,5 @@ class RolesController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+   
 }

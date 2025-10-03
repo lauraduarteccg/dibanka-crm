@@ -1,6 +1,6 @@
-import Card from "@components/Card";
-import Counter from "@components/Counter";
-import Loader from "@components/Loader";
+import Card from "@components/ui/Card";
+import Counter from "@components/ui/Counter";
+import Loader from "@components/ui/Loader";
 import useDashboard from "./useDashboard";
 
 function Dashboard() {
