@@ -1,4 +1,6 @@
 import React, { useState, forwardRef, useEffect, useContext } from "react";
+import { useCan } from "@hooks/useCan";
+
 import { AuthContext } from "@context/AuthContext";
 import Button from "@components/ui/Button";
 import PrettyFileInput from "@components/forms/PrettyFileInput";
@@ -22,9 +24,10 @@ const FormAdd = ({
   schema,
   admin,
 }) => {
-  const [errors, setErrors] = useState({}); 
+  const [errors, setErrors] = useState({});
   const { user } = useContext(AuthContext);
-  
+  const { can, canAny } = useCan();
+
   // Crear estado inicial basado en la estructura de formData
   const getInitialFormData = () => {
     const initialState = {};
@@ -58,7 +61,7 @@ const FormAdd = ({
     setIsOpen(false);
     setErrors({});
     // Resetear a los valores iniciales correctos
-    setFormData({...initialFormState});
+    setFormData({ ...initialFormState });
   };
 
   // Efecto para resetear el formulario cuando se abre/cierra el modal
@@ -98,11 +101,11 @@ const FormAdd = ({
         </h2>
 
         <form onSubmit={handleSubmit} >
-        {fields.map((field) => {
-          // Ocultar campo si está en edición y el campo tiene hideOnEdit
-          if (formData?.id && field.hideOnEdit) return null;
+          {fields.map((field) => {
+            // Ocultar campo si está en edición y el campo tiene hideOnEdit
+            if (formData?.id && field.hideOnEdit) return null;
 
-          if (formData?.id && field.name === "is_active") return null;
+            if (formData?.id && field.name === "is_active") return null;
 
             return (
               <div key={field.name} className="mb-4 ">
@@ -138,34 +141,34 @@ const FormAdd = ({
                     <option value="false">Inactivo</option>
                   </select>
                 ) : field.type === "autocomplete" ? (
-                    <Autocomplete
-                      id={`autocomplete-${field.name}`}
-                      options={field.options || []}
-                      value={
-                        field.options?.find(
-                          (opt) => String(opt.value) === String(formData[field.name])
-                        ) || null
-                      }
-                      getOptionLabel={(option) => option.label || ""}
-                      isOptionEqualToValue={(option, value) =>
-                        String(option.value) === String(value.value)
-                      }
-                      onChange={(_, newValue) => {
-                        // Guardamos solo el 'value' seleccionado o null si no hay selección
-                        setFormData({ ...formData, [field.name]: newValue ? newValue.value : null });
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          variant="outlined"
-                          label="Seleccione aquí"
-                          placeholder="Seleccione..."
-                        />
-                      )}
-                    />
+                  <Autocomplete
+                    id={`autocomplete-${field.name}`}
+                    options={field.options || []}
+                    value={
+                      field.options?.find(
+                        (opt) => String(opt.value) === String(formData[field.name])
+                      ) || null
+                    }
+                    getOptionLabel={(option) => option.label || ""}
+                    isOptionEqualToValue={(option, value) =>
+                      String(option.value) === String(value.value)
+                    }
+                    onChange={(_, newValue) => {
+                      // Guardamos solo el 'value' seleccionado o null si no hay selección
+                      setFormData({ ...formData, [field.name]: newValue ? newValue.value : null });
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="outlined"
+                        label="Seleccione aquí"
+                        placeholder="Seleccione..."
+                      />
+                    )}
+                  />
 
                 ) : field.type === "select" ? (
-                    <>
+                  <>
                     <FormControl fullWidth disabled={field.disabled || false}>
                       <InputLabel id="demo-simple-select-standard-label">{field.label}</InputLabel>
                       <Select
@@ -186,17 +189,17 @@ const FormAdd = ({
                         ))}
                       </Select>
                     </FormControl>
-                    </>
-                  ) : field.type === "file" ? (
-                    <PrettyFileInput
-                      name={field.name}
-                      label={field.label}
-                      accept="image/*"
-                      onChange={(file) => {
-                        setFormData({ ...formData, [field.name]: file });
-                      }}
-                    />
-                  ) : ( 
+                  </>
+                ) : field.type === "file" ? (
+                  <PrettyFileInput
+                    name={field.name}
+                    label={field.label}
+                    accept="image/*"
+                    onChange={(file) => {
+                      setFormData({ ...formData, [field.name]: file });
+                    }}
+                  />
+                ) : (
                   <TextField
                     fullWidth
                     id={`input-${field.name}`}
@@ -209,9 +212,10 @@ const FormAdd = ({
                       setFormData({ ...formData, [field.name]: e.target.value });
                       validateField(field.name, e.target.value);
                     }}
-                    disabled={loading || admin} 
+                    disabled={loading || admin}
                   />
                 )}
+
 
                 {/* Errores */}
                 {errors[field.name] && (
@@ -219,16 +223,16 @@ const FormAdd = ({
                     {errors[field.name]}
                   </Alert>
                 )}
-              {validationErrors[field.name] && (
-                <Alert severity="error" className="mt-2">
-                  {Array.isArray(validationErrors[field.name]) 
-                    ? validationErrors[field.name].map((error, index) => (
+                {validationErrors[field.name] && (
+                  <Alert severity="error" className="mt-2">
+                    {Array.isArray(validationErrors[field.name])
+                      ? validationErrors[field.name].map((error, index) => (
                         <div key={index}>{error}</div>
                       ))
-                    : validationErrors[field.name]
-                  }
-                </Alert>
-              )}
+                      : validationErrors[field.name]
+                    }
+                  </Alert>
+                )}
               </div>
             );
           })}

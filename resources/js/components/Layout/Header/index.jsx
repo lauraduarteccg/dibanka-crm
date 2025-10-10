@@ -1,17 +1,14 @@
-import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@context/AuthContext";
+
 import { IoIosLogOut } from "react-icons/io";
-import { FaUserCircle } from "react-icons/fa"; 
+import { FaUserCircle } from "react-icons/fa";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import logo from "@assets/logo.png";
 
-const Header = () => {
-    const { user, logout } = useContext(AuthContext);
+const Header = ({ userName }) => {
+
     const navigate = useNavigate();
-
-
 
     const goHome = () => {
         navigate("/home");
@@ -35,7 +32,7 @@ const Header = () => {
                 >
                     <FaUserCircle className="w-6 h-6 text-white" />
                     <h2 className="text-lg font-semibold">
-                        {user?.name ?? "Usuario indefinido"}
+                        {userName ?? "Usuario indefinido"}
                     </h2>
                 </button>
 
@@ -45,7 +42,7 @@ const Header = () => {
                         <IconButton
                             onClick={() => {
                                 logout();
-                                navigate("/login");
+                                navigate("/");
                             }}
                             size="small"
                             aria-controls={

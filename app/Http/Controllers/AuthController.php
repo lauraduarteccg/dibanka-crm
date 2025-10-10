@@ -51,11 +51,12 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Iniciaste sesión con éxito.',
             'token' => $token,
-            'user' => [
+            'data' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role ? $user->role->name : null
+                'roles' => $user->roles->pluck('name'),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
         ], status: Response::HTTP_OK);
     }
@@ -71,7 +72,7 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        $user = Auth::user();
+        $user = Auth::user()->load('roles', 'permissions');
 
         if (!$user) {
             return response()->json([
@@ -81,13 +82,13 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Sesión activa.',
-            'user' => [
+            'data' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'roles' => $user->getRoleNames(),
+                'roles' => $user->roles->pluck('name'),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
         ], Response::HTTP_OK);
     }
-
 }

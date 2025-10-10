@@ -23,17 +23,17 @@ class ContactRequest extends FormRequest
      */
     public function rules(): array
     {
-        $contactID = $this->route('contacts') ?->id;
+        $contactID = $this->route('contacts')?->id;
         return [
             'campaign'      => 'required|string|max:255',
-            'payroll_id'    => 'required|numeric',        
+            'payroll_id'    => 'required|numeric',
             'payroll_id.*'  => 'integer|exists:payrolls,id',
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|max:255',
-            'phone'         => 'nullable|digits:10', 
-            'update_phone'  => 'required|digits:10', 
-            'identification_type'   => 'required|string',
-            'identification_number' => ['required','numeric', Rule::unique(Contact::class)->ignore($contactID)], 
+            'phone'         => 'nullable|digits:10',
+            'update_phone'  => 'required|digits:10'
+            // 'identification_type'   => 'required|string',
+            //'identification_number' => ['required','numeric', Rule::unique(Contact::class)->ignore($contactID)], 
         ];
     }
 
@@ -56,16 +56,16 @@ class ContactRequest extends FormRequest
             'email.email'           => 'El campo correo electrónico debe ser una dirección de correo válida.',
             'email.max'             => 'El campo correo electrónico no debe exceder los 255 caracteres.',
 
-            'phone.digits'          => 'El campo teléfono debe tener exactamente 10 dígitos.', 
+            'phone.digits'          => 'El campo teléfono debe tener exactamente 10 dígitos.',
 
-            'update_phone.digits'   => 'El campo celular actualizado debe tener exactamente 10 dígitos.', 
+            'update_phone.digits'   => 'El campo celular actualizado debe tener exactamente 10 dígitos.',
             'update_phone.required' => 'El campo celular actualizado es obligatorio',
 
             'identification_type.required'  => 'El campo tipo de identificación es obligatorio.',
 
-            'identification_number.required'=> 'El campo número de identificación es obligatorio.',
-            'identification_number.numeric'  => 'El campo número de identificación debe ser numérico.',
-            'identification_number.unique'  => 'El número de identificación ya está en uso. Por favor, elige otro.',
+            //    'identification_number.required'=> 'El campo número de identificación es obligatorio.',
+            //  'identification_number.numeric'  => 'El campo número de identificación debe ser numérico.',
+            //'identification_number.unique'  => 'El número de identificación ya está en uso. Por favor, elige otro.',
         ];
-    }    
+    }
 }

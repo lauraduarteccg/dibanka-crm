@@ -56,8 +56,6 @@ const MuiTable = ({
   management = false,
   monitoring = false,
   onActiveOrInactive = true,
-
-  // 🔥 Props nuevas para paginación de backend
   totalItems,
   rowsPerPage,
   currentPage,
@@ -76,13 +74,11 @@ const MuiTable = ({
   };
 
   const handleChangePage = (_, newPage) => {
-    fetchPage(newPage + 1); // 👈 porque MUI usa base 0 y tu API base 1
+    fetchPage(newPage + 1); 
   };
 
-  // 📌 Primero ordenamos
   const sortedData = stableSort(data, getComparator(order, orderBy));
 
-  // 📌 Si el usuario actual NO es Administrador → filtramos los que tengan role_id === 1
   const filteredData = !user.roles?.includes("Administrador")
     ? sortedData.filter((item) => item.roles !== 1)
     : sortedData;
@@ -211,7 +207,6 @@ const MuiTable = ({
         </Table>
       </TableContainer>
 
-      {/* 📌 Paginación estilo MUI con datos del backend */}
       <TablePagination
         rowsPerPageOptions={[]}
         component="div"
