@@ -64,7 +64,7 @@ User::find($userIds[2])->syncRoles([$agenteRole->id]);
                 'description'   => 'Le recuerdo que puede encontrar nuestro botón de asesoría en la página web del portal DiBanka.
                 
                 Recuerde que habló con {{agente}}. Muchas gracias por comunicarse con nosotros.',
-                'img_payroll' => "public/img/u19f0v08so2lsps9f8777",
+                'img_payroll' => "public/img_payroll/MmIbQ8rzt4sxchuDc2AMvjzc3sN2KHEJSR2WcrAu",
                 'created_at'    => now(),
                 'updated_at'    => now(),
             ],
@@ -73,7 +73,7 @@ User::find($userIds[2])->syncRoles([$agenteRole->id]);
                 'description'   => 'Le recuerdo que puede encontrar nuestro botón de asesoría en la página web del portal DiBanka.
                 
                 Recuerde que habló con {{agente}}. Muchas gracias por comunicarse con nosotros.',
-                'img_payroll' => "public/img/u19f0v08so2lsps9f8777",
+                'img_payroll' => "public/img_payroll/jUyva4LMaUwe7sEzDrxVrDqHSgL4bekNTuWSzKGY",
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

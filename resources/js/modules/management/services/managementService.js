@@ -41,7 +41,7 @@ export const saveManagement = async (payload) => {
  * Tipos de gestión activos.
  */
 export const getActiveTypeManagements = async () => {
-  const { data } = await api.get("/typemanagements/active");
+  const { data } = await api.get("/config/typemanagements/active");
   return data.typeManagement || [];
 };
 
@@ -57,16 +57,16 @@ export const updateManagementMonitoring = async (id, payload) => {
  * Consultas específicas activas.
  */
 export const getActiveSpecificConsultations = async () => {
-  const { data } = await api.get("/consultationspecifics/active");
+  const { data } = await api.get("/config/consultationspecifics/active");
   return data.consultationspecific || [];
 };
 
 /* ===========================================================
- *  MONITOREOS
+ *  SEGUIMIENTOS
  * =========================================================== */
 
 /**
- * Obtiene todos los monitoreos activos.
+ * Obtiene todos los seguimientos activos.
  */
 export const getActiveMonitorings = async () => {
   const { data } = await api.get("/monitorings/active");
@@ -83,7 +83,7 @@ export const getActiveMonitorings = async () => {
  */
 export const getActivePayrolls = async () => {
   const { data } = await api.get("/payrolls/active");
-  return data.payrolls || [];
+  return data.data || [];
 };
 
 /**
@@ -100,6 +100,6 @@ export const getContacts = async () => {
  * Consultas activas.
  */
 export const getActiveConsultations = async () => {
-  const { data } = await api.get("/consultations/active");
+  const { data } = await api.get("/config/consultations/active");
   return data.consultation || [];
 };

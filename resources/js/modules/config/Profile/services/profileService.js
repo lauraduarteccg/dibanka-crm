@@ -11,7 +11,7 @@ export const getRoles = async (page = 1, search = "") => {
   const { data } = await api.get(
     `/config/roles?page=${page}&search=${encodeURIComponent(search)}`
   );
-  console.log(data);
+  // console.log(data);
 
   return {
     roles: data.roles || [],

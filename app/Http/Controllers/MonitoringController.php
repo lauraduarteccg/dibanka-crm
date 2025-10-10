@@ -40,7 +40,7 @@ class MonitoringController extends Controller
         ], Response::HTTP_OK);
     }
     // Trae solo consultas
-    public function active(Request $request)
+    public function active()
     {
         $monitoring = Monitoring::active()->paginate(10);
 

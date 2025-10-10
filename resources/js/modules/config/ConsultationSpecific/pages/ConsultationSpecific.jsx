@@ -59,7 +59,7 @@ const ConsultationSpecific = () => {
     handleEdit,
     handleCloseModal,
   } = useConsultSpecifics();
-
+  //console.log(consultation)
   const activeCount = consultation.filter((c) => c.is_active === 1).length;
   const inactiveCount = totalItems - activeCount;
 

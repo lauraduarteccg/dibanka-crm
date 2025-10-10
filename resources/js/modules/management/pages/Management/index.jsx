@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useCan } from "@hooks/useCan";
 import Drawer from '@mui/material/Drawer';
 import { TextField, FormControl, Autocomplete } from "@mui/material";
-
 import { useManagement } from "@modules/management/hooks/useManagement.js";
 
 import Table from "@components/tables/Table";
@@ -52,12 +51,11 @@ const Management = () => {
     handleSearch,
   } = useManagement();
   const { can, canAny } = useCan();
-
   const handleView = (item) => {
     setFormData(item);
     setView(true);
   };
-
+  
   const handleMonitoring = (item) => {
     // Establecer los valores predeterminados desde la gestión
     setFormData({
@@ -97,7 +95,7 @@ const Management = () => {
           totalPages={totalPages}
           rowsPerPage={perPage}
           totalItems={totalItems}
-          fetch={(page) => fetchPage(page)}
+          fetchPage={fetchPage} 
           actions={true}
           view={true}
           onView={(item) => handleView(item)}

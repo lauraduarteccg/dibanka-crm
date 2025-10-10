@@ -72,7 +72,8 @@ export const useConsultSpecifics = () => {
     setLoading(true);
     try {
       const data = await getConsultationsForSelect();
-      setConsultationNoSpecific(data);
+      setConsultationNoSpecific(data.consultation);
+      //console.log(data.consultation);
     } catch (err) {
       console.error("Error al obtener las consultas generales:", err);
     } finally {

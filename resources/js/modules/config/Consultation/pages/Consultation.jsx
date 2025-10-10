@@ -58,7 +58,6 @@ const Consultation = () => {
 
   const activeConsults = consultations.filter((u) => u.is_active === 1).length;
   const inactiveConsults = totalItems - activeConsults;
-
   return (
     <>
       {/* Cards */}

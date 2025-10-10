@@ -32,7 +32,7 @@ class ContactController extends Controller
                     ->orWhere('email', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('identification_type', 'LIKE', "%{$searchTerm}%")
                     // 👇 exacto para identification_number dentro del search
-                    ->orWhere('identification_number', $searchTerm);
+                    ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%");
 
                 // Para buscar en relaciones
                 $q->orWhereHas('payroll', function($payrollQuery) use ($searchTerm) {
@@ -87,9 +87,9 @@ class ContactController extends Controller
     }
 
     //Actualizar contacto
-    public function update(ContactRequest $request, $id)
+    public function update(ContactRequest $request, $contact)
     {
-        $contacts = Contact::findOrFail($id);
+        $contacts = Contact::findOrFail($contact);
         $contacts->update($request->only(
             'campaign',
             'payroll_id',

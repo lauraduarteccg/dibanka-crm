@@ -9,7 +9,7 @@ import api from "@api/axios";
  */
 export const getConsultationSpecifics = async (page = 1, search = "") => {
   const { data } = await api.get(
-    `/consultationspecifics?page=${page}&search=${encodeURIComponent(search)}`
+    `/config/consultationspecifics?page=${page}&search=${encodeURIComponent(search)}`
   );
 
   const specifics = data.specifics?.map((s) => ({
@@ -33,7 +33,7 @@ export const getConsultationSpecifics = async (page = 1, search = "") => {
  * Crea una nueva consulta específica.
  */
 export const createConsultationSpecific = async (payload) => {
-  const { data } = await api.post("/consultationspecifics", payload);
+  const { data } = await api.post("/config/consultationspecifics", payload);
   return data;
 };
 
@@ -41,7 +41,7 @@ export const createConsultationSpecific = async (payload) => {
  * Actualiza una consulta específica.
  */
 export const updateConsultationSpecific = async (id, payload) => {
-  const { data } = await api.put(`/consultationspecifics/${id}`, payload);
+  const { data } = await api.put(`/config/consultationspecifics/${id}`, payload);
   return data;
 };
 
@@ -49,7 +49,7 @@ export const updateConsultationSpecific = async (id, payload) => {
  * Elimina o desactiva una consulta específica.
  */
 export const deleteConsultationSpecific = async (id) => {
-  const { data } = await api.delete(`/consultationspecifics/${id}`);
+  const { data } = await api.delete(`/config/consultationspecifics/${id}`);
   return data;
 };
 
@@ -57,6 +57,6 @@ export const deleteConsultationSpecific = async (id) => {
  * Obtiene todas las consultas generales activas (para el selector).
  */
 export const getConsultationsForSelect = async () => {
-  const { data } = await api.get("/consultations");
-  return data.consultations || [];
+  const { data } = await api.get("/config/consultations/active");
+  return data || [];
 };

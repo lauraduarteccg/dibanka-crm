@@ -10,14 +10,13 @@ import {
   TablePagination,
   TableSortLabel,
   Paper,
+  Tooltip,
 } from "@mui/material";
-
-import { FiEdit } from "react-icons/fi";
+import { CiBoxList } from "react-icons/ci";
 import { FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import { GoEye } from "react-icons/go";
-import { MdManageAccounts } from "react-icons/md";
 import { IoFootstepsOutline } from "react-icons/io5";
-
+import { CiEdit } from "react-icons/ci";
 // 🔎 Función para obtener valores anidados
 export const getNestedValue = (obj, path) =>
   path.split(".").reduce((acc, key) => acc?.[key], obj) ?? "—";
@@ -147,48 +146,58 @@ const MuiTable = ({
                   <TableCell align="center">
                     <div className="flex justify-center gap-4">
                       {management && (
-                        <button
-                          onClick={() => onManagement(row)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <MdManageAccounts size={20} />
-                        </button>
+                        <Tooltip title="Ver gestión" arrow>
+                          <button
+                            onClick={() => onManagement(row)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <CiBoxList size={25} />
+                          </button>
+                        </Tooltip>
                       )}
                       {edit && (
-                        <button
-                          onClick={() => onEdit(row)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <FiEdit size={20} />
-                        </button>
+                        <Tooltip title="Editar" arrow>
+                          <button
+                            onClick={() => onEdit(row)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <CiEdit size={25} />
+                          </button>
+                        </Tooltip>
                       )}
                       {view && (
-                        <button
-                          onClick={() => onView(row)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <GoEye size={20} />
-                        </button>
+                        <Tooltip title="Ver" arrow>
+                          <button
+                            onClick={() => onView(row)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <GoEye size={20} />
+                          </button>
+                        </Tooltip>
                       )}
                       {monitoring && (
-                        <button
-                          onClick={() => onMonitoring(row)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <IoFootstepsOutline size={20} />
-                        </button>
+                        <Tooltip title="Seguimiento" arrow>
+                          <button
+                            onClick={() => onMonitoring(row)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <IoFootstepsOutline size={20} />
+                          </button>
+                        </Tooltip>
                       )}
                       {onActiveOrInactive && (
-                        <button
-                          onClick={() => onDelete(row.id, row.is_active)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          {row.is_active === 1 ? (
-                            <FaToggleOn size={20} color="green" />
-                          ) : (
-                            <FaToggleOff size={20} color="red" />
-                          )}
-                        </button>
+                        <Tooltip title="Activar o desactivar" arrow>
+                          <button
+                            onClick={() => onDelete(row.id, row.is_active)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            {row.is_active === 1 ? (
+                              <FaToggleOn size={20} color="green" />
+                            ) : (
+                              <FaToggleOff size={20} color="red" />
+                            )}
+                          </button>
+                        </Tooltip>
                       )}
                     </div>
                   </TableCell>

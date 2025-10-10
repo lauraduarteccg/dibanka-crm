@@ -32,7 +32,7 @@ class ManagementRequest extends FormRequest
 
             'wolkvox_id'        => 'required|string',
             'solution_date'     => 'nullable|date',
-            'comments'          => 'required|string',
+            'comments'          => 'nullable|string',
             'sms'               => 'required|boolean',
             'solution'          => 'required|boolean',
             'wsp'               => 'required|boolean'
@@ -79,7 +79,6 @@ class ManagementRequest extends FormRequest
             'solution.required'     => 'La solucion es requerida',
             'solution.boolean'       => 'La solucion debe ser verdadero o falso',
 
-            'comments.required'     => 'La solucion es requerida',
             'comments.string'       => 'La solucion debe ser una cadena de texto',
             
             'sms.required'     => 'El campo SMS es requerido',

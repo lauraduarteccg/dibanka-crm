@@ -18,14 +18,18 @@ class UserController extends Controller
     {
         $query = User::with('roles'); 
 
-        if ($request->has('search') && !empty($request->search)) {
-            $searchTerm = $request->search;
-            
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('name', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('email', 'LIKE', "%{$searchTerm}%");
-            });
-        } 
+    if ($request->has('search') && !empty($request->search)) {
+        $searchTerm = $request->search;
+
+        $query->where(function ($q) use ($searchTerm) {
+            $q->where('name', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+                // 🔍 Búsqueda por nombre del rol asociado
+                ->orWhereHas('roles', function ($roleQuery) use ($searchTerm) {
+                    $roleQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+        });
+    }
 
         $users = $query->paginate(10);
         

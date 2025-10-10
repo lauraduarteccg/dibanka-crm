@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import { AuthContext } from "@context/AuthContext";
 import {
@@ -180,6 +181,30 @@ export const useManagement = () => {
     }
   }, [monitoring]);
 
+
+  /* ===========================================================
+   *  Extraer parámetros de la URL
+   * =========================================================== */
+  
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchParam = params.get("search");
+
+    if (searchParam) {
+      // Actualiza el término de búsqueda
+      setSearchTerm(searchParam);
+      // Reinicia la paginación
+      setCurrentPage(1);
+      // Ejecuta la búsqueda en la API
+      fetchManagement(1, searchParam);
+    } else {
+      // Si no hay parámetro, carga normalmente sin filtro
+      fetchManagement(currentPage, "");
+    }
+  }, [location.search, fetchManagement]);
+
   /* ===========================================================
    *  Return
    * =========================================================== */
@@ -202,6 +227,7 @@ export const useManagement = () => {
     totalPages,
     totalItems,
     perPage,
+    fetchPage,
 
     // Acciones
     fetchManagement,

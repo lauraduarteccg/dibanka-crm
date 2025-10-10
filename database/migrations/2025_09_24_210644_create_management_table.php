@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
             $table->foreignId('specific_id')->constrained('consultation_specifics')->onDelete('cascade');
             $table->foreignId('type_management_id')->constrained('type_management')->onDelete('cascade');
-            $table->text('comments');
+            $table->text('comments')->nullable();
             $table->date('solution_date')->nullable();
             $table->foreignId('monitoring_id')->nullable()->constrained('monitoring')->onDelete('cascade');
             $table->boolean('sms')->default(1);

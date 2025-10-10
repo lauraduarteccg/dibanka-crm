@@ -19,10 +19,10 @@ class PayrollController extends Controller
         // Si hay término de búsqueda, aplicar filtro
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
-            
-            $query->where(function($q) use ($searchTerm) {
+
+            $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('description', 'LIKE', "%{$searchTerm}%");
+                    ->orWhere('description', 'LIKE', "%{$searchTerm}%");
             });
         }
 
@@ -40,8 +40,8 @@ class PayrollController extends Controller
         ], Response::HTTP_OK);
     }
 
-    // Trae solo pagadurias
-    public function active(Request $request)
+    // Trae solo pagadurias activas
+    public function active()
     {
         $payrolls = Payroll::active()->paginate(10);
 
@@ -55,7 +55,6 @@ class PayrollController extends Controller
                 'total_payrolls'        => $payrolls->total(),
             ],
         ], Response::HTTP_OK);
-
     }
 
     // Crear una nueva pagaduría
@@ -88,33 +87,33 @@ class PayrollController extends Controller
     }
 
     // Actualizar una pagaduría
-public function update(Request $request, $id)
-{
-    $payroll = Payroll::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $payroll = Payroll::findOrFail($id);
 
-    $payroll->name = $request->name;
-    $payroll->description = $request->description;
+        $payroll->name = $request->name;
+        $payroll->description = $request->description;
 
-    // 🔹 Si viene un archivo nuevo, lo guardamos
-    if ($request->hasFile('img_payroll')) {
-        // Borrar imagen anterior si existe
-        if ($payroll->img_payroll && \Storage::disk('public')->exists($payroll->img_payroll)) {
-            \Storage::disk('public')->delete($payroll->img_payroll);
+        // 🔹 Si viene un archivo nuevo, lo guardamos
+        if ($request->hasFile('img_payroll')) {
+            // Borrar imagen anterior si existe
+            if ($payroll->img_payroll && \Storage::disk('public')->exists($payroll->img_payroll)) {
+                \Storage::disk('public')->delete($payroll->img_payroll);
+            }
+
+            $path = $request->file('img_payroll')->store('img_payroll', 'public');
+            $payroll->img_payroll = $path;
         }
 
-        $path = $request->file('img_payroll')->store('img_payrolls', 'public');
-        $payroll->img_payroll = $path;
+        // 🔹 Si NO viene archivo, conservamos el string actual (no hacemos nada)
+
+        $payroll->save();
+
+        return response()->json([
+            'message' => 'Pagaduría actualizada correctamente',
+            'payroll' => $payroll,
+        ], 200);
     }
-
-    // 🔹 Si NO viene archivo, conservamos el string actual (no hacemos nada)
-
-    $payroll->save();
-
-    return response()->json([
-        'message' => 'Pagaduría actualizada correctamente',
-        'payroll' => $payroll,
-    ], 200);
-}
 
 
     // Activar/Desactivar una pagaduría
@@ -124,9 +123,9 @@ public function update(Request $request, $id)
         $payroll->update(['is_active' => !$payroll->is_active]);
 
         return response()->json([
-            'message' => $payroll->is_active 
-                        ? 'Pagaduría activada correctamente' 
-                        : 'Pagaduría desactivada correctamente',
+            'message' => $payroll->is_active
+                ? 'Pagaduría activada correctamente'
+                : 'Pagaduría desactivada correctamente',
             'payroll' => new PayrollResource($payroll)
         ], Response::HTTP_OK);
     }

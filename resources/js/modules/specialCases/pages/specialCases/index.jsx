@@ -55,6 +55,8 @@ const SpecialCases = () => {
   } = useSpecialCases();
   const { can, canAny } = useCan();
 
+  const selectedPayroll = formData?.payroll_id;
+
   // Cuando se abre el modal, asigna el user actual como predeterminado
   useEffect(() => {
     if (isOpenADD && user) {
@@ -92,7 +94,6 @@ const SpecialCases = () => {
       <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
         Lista de casos especiales
       </h1>
-
       <FormAdd
         isOpen={isOpenADD}
         setIsOpen={handleCloseModal}
@@ -112,12 +113,17 @@ const SpecialCases = () => {
               })) : []
             };
           } else if (field.name === "contact_id") {
+            // Filtrar contactos por pagaduría seleccionada
+            const filteredContacts = contact
+              ? contact.filter(c => c.payroll.id === selectedPayroll)
+              : [];
+
             return {
               ...field,
-              options: contact ? contact.map(p => ({
+              options: filteredContacts.map(p => ({
                 value: p.id,
                 label: `${p.identification_number} | ${p.name}`
-              })) : []
+              }))
             };
           } else if (field.name === "user_id") {
             return {

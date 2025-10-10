@@ -3,6 +3,7 @@ import { AuthContext } from "@context/AuthContext";
 import seleccione_imagen from "@assets/seleccione_imagen.png"
 import { useAddManagement } from "@modules/management/hooks/useAddManagement.js";
 import { useLocation, useNavigate } from "react-router-dom";
+import { BsInfoCircle } from "react-icons/bs";
 import {
   FormControl,
   InputLabel,
@@ -22,6 +23,7 @@ import {
 } from "@mui/material";
 
 import { TiContacts } from "react-icons/ti";
+import { sendData } from "@modules/management/services/sendData";
 
 
 const AddManagement = () => {
@@ -122,6 +124,7 @@ const AddManagement = () => {
     return matchesCampaign && matchesPayroll;
   });
 
+
   //Limpia el formulario
   const handleClear = () => {
     setCampaign("");
@@ -145,16 +148,33 @@ const AddManagement = () => {
   };
 
   // Guarda la nueva gestion y limpia el formulario
-  const onSave = async  () => {
+  const onSave = async () => {
     const payload = buildPayload();
-    
     const success = await handleSubmit(payload);
+
     if (success) {
+      // 🟢 Solo si wsp o sms están activos, enviamos a Google Sheets
+      if (wsp || sms) {
+        const dataToSend = {
+          "Nombre del Cliente": selectedContact?.name ?? "",
+          "Telefono": selectedContact?.phone ?? "",
+          "Pagaduria": selectedPayroll?.name ?? "",
+          "IdWolkvox": wolkvox_id ?? "",
+          "Campaña": campaign ?? "",
+          "Enviar SMS de canal de whastapp": sms ? "SI" : "NO",
+          "Enviar WhatsApp de recuperar contraseña": wsp ? "SI" : "NO",
+        };
+
+        console.log("🔹 Enviando a Google Sheets:", dataToSend);
+        sendData(dataToSend);
+      }
+
       handleClear();
       navigate("/gestiones/añadir");
     }
   };
 
+  console.log(buildPayload());
   // Detecta espacios y convierte a minuscula todo para hacer la busqueda del campo
   const capitalizeWords = (str) =>
     str
@@ -253,7 +273,14 @@ const AddManagement = () => {
         </div>
       </div>
       {/* Imagen */}
-      <button className="flex items-center justify-end ml-5" onClick={() => setModal(true)}>
+      <button
+        className="relative ml-5"
+        onClick={() => setModal(true)}
+      >
+        {/* Ícono en la esquina superior izquierda */}
+        <BsInfoCircle className="absolute top-3 left-3 text-2xl text-primary-strong z-10" />
+
+        {/* Imagen */}
         {selectedPayroll?.img_payroll ? (
           <img
             src={selectedPayroll.img_payroll}
@@ -402,23 +429,29 @@ const AddManagement = () => {
       {/* Autocompletado de motivo de consulta específica */}
       <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
         <h2 className="text-xl font-semibold">Motivo específico de consulta</h2>
-        <Autocomplete
-          options={filteredSpecific}
-          getOptionLabel={(option) => `${option?.consultation.id || ""} | ${option?.name || ""}`}
-          value={selectedSpecificConsultation}
+          <Autocomplete
+            options={filteredSpecific}
+            getOptionLabel={(option, index) => {
+              // Encuentra el índice de la opción dentro del arreglo filtrado
+              const pos = filteredSpecific.findIndex(o => o.id === option.id);
+              const numero = pos + 1; // empieza desde 1
+              return `${option?.consultation?.id || ""}.${numero} | ${option?.name || ""}`;
+            }}
+            value={selectedSpecificConsultation}
             onChange={(event, value) => {
-              setSelectedSpecificConsultation(value)
+              setSelectedSpecificConsultation(value);
               clearValidationError("specific_id");
             }}
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Consulta especifica"
+                label="Consulta específica"
                 error={!!validationErrors.specific_id}
                 helperText={validationErrors.specific_id ? validationErrors.specific_id[0] : ""}
               />
             )}
-        />
+          />
+
       </div>
     </div>
     {/* Swichs para enviar sms y wsp */}

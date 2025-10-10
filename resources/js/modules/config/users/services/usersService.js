@@ -15,7 +15,7 @@ export const getUsers = async (page = 1, search = "", perPage = 10) => {
   const { data } = await api.get(
     `/config/users?page=${page}&per_page=${perPage}&search=${encodeURIComponent(search)}`
   );
-console.log(data);
+  // console.log(data);
 
   return {
     users: data.users || [],

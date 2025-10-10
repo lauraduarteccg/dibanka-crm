@@ -7,12 +7,9 @@ import {
   getActiveTypeManagements,
   getActiveConsultations,
   getActiveSpecificConsultations,
+  getActivePayrolls,
+  getContacts
 } from "@modules/management/services/managementService";
-
-import {
-  getContacts,
-  getActivePayrolls
-} from "@modules/contact/services/contactService";
 
 export const useAddManagement = () => {
   const [management, setManagement] = useState([]);
@@ -67,42 +64,44 @@ export const useAddManagement = () => {
   /* ===========================================================
    *  CREAR / ACTUALIZAR GESTIÓN
    * =========================================================== */
-  const handleSubmit = async (payload) => {
-    setLoading(true);
-    setValidationErrors({});
+const handleSubmit = async (payload) => {
+  setLoading(true);
+  setValidationErrors({});
 
-    try {
-      const response = await saveManagement(payload);
+  try {
+    const response = await saveManagement(payload);
 
+    Swal.fire({
+      title: "Gestión guardada",
+      text: "La gestión ha sido creada correctamente.",
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    setIsOpenADD(false);
+    fetchManagement(currentPage, searchTerm);
+    return true;
+
+  } catch (error) {
+    if (error.response?.status === 422) {
+      setValidationErrors(error.response.data.errors);
+    } else {
+      console.error("Error al guardar gestión:", error);
       Swal.fire({
-        title: "Gestión guardada",
-        text: "La gestión ha sido creada correctamente.",
-        icon: "success",
-        timer: 1500,
+        title: "Error",
+        text: "Ocurrió un error al guardar la gestión.",
+        icon: "error",
+        timer: 2000,
         showConfirmButton: false,
       });
-
-      setIsOpenADD(false);
-      fetchManagement(currentPage, searchTerm);
-      return true;
-    } catch (error) {
-      if (error.response?.status === 422) {
-        setValidationErrors(error.response.data.errors);
-      } else {
-        console.error("Error al guardar gestión:", error);
-        Swal.fire({
-          title: "Error",
-          text: "Ocurrió un error al guardar la gestión.",
-          icon: "error",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      }
-      return false;
-    } finally {
-      setLoading(false);
     }
-  };
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   /* ===========================================================
    *  FETCH LISTAS (Pagadurías, Contactos, Consultas, etc.)
@@ -115,12 +114,11 @@ export const useAddManagement = () => {
       setError("Error al obtener los payrolls.");
     }
   }, []);
-
   const fetchContact = useCallback(async (page = 1, search = "") => {
     setLoading(true);
     try {
       const data = await getContacts(page, search);
-      setContact(data.contacts);
+      setContact(data);
 
     } catch (err) {
       console.error(err);
@@ -176,6 +174,20 @@ export const useAddManagement = () => {
       return newErrors;
     });
   };
+
+   /* ===========================================================
+   *  ENVIO DE SMS
+   * =========================================================== */
+
+  const fetchSMS = useCallback(async () => {
+    try {
+      const data = await getActiveSpecificConsultations();
+      setSpecific(data);
+    } catch {
+      setError("Error al obtener las consultas específicas.");
+    }
+  }, []);
+
 
   /* ===========================================================
    *  RETORNO DEL HOOK

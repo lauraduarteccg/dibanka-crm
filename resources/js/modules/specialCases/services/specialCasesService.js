@@ -54,7 +54,7 @@ export const deleteSpecialCase = async (id) => {
  */
 export const getActivePayrolls = async () => {
   const { data } = await api.get("/payrolls/active");
-  return data.payrolls || [];
+  return data.data || [];
 };
 
 /**
@@ -69,7 +69,7 @@ export const getContacts = async () => {
  * Lista de agentes o usuarios.
  */
 export const getUsers = async (page = 1) => {
-  const { data } = await api.get(`/users?page=${page}`);
+  const { data } = await api.get(`/config/users?page=${page}`);
   return {
     users: data.users || [],
     pagination: {

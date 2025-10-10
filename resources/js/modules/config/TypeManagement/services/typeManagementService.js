@@ -52,5 +52,5 @@ export const deleteTypeManagement = async (id) => {
  */
 export const getActivePayrolls = async () => {
   const { data } = await api.get("/payrolls/active");
-  return data.payrolls || [];
+  return data.data || [];
 };

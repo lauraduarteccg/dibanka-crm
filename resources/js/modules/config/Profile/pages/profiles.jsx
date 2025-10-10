@@ -61,7 +61,8 @@ const Profiles = () => {
           totalItems={totalItems}
           fetch={(page) => fetchPage(page)}
           onDelete={(id) => handleDelete(id)}
-          actions
+          actions={true}
+          onActiveOrInactive={false}
           onEdit={(role) => {
             setSelectedRole(role);
             setShowMatrix(true);

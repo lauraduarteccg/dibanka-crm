@@ -23,6 +23,13 @@ class ContactRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Si la ruta es de actualización (PUT)
+        if ($this->isMethod('put')) {
+            return [
+                'email' => 'required|email|max:255',
+            ];
+        }
+
         $contactID = $this->route('contacts')?->id;
         return [
             'campaign'      => 'required|string|max:255',
@@ -31,9 +38,9 @@ class ContactRequest extends FormRequest
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|max:255',
             'phone'         => 'nullable|digits:10',
-            'update_phone'  => 'required|digits:10'
-            // 'identification_type'   => 'required|string',
-            //'identification_number' => ['required','numeric', Rule::unique(Contact::class)->ignore($contactID)], 
+            'update_phone'  => 'required|digits:10',
+            'identification_type'   => 'required|string',
+            'identification_number' => ['required','numeric', Rule::unique(Contact::class)->ignore($contactID)], 
         ];
     }
 
@@ -63,9 +70,9 @@ class ContactRequest extends FormRequest
 
             'identification_type.required'  => 'El campo tipo de identificación es obligatorio.',
 
-            //    'identification_number.required'=> 'El campo número de identificación es obligatorio.',
-            //  'identification_number.numeric'  => 'El campo número de identificación debe ser numérico.',
-            //'identification_number.unique'  => 'El número de identificación ya está en uso. Por favor, elige otro.',
+            'identification_number.required'=> 'El campo número de identificación es obligatorio.',
+            'identification_number.numeric'  => 'El campo número de identificación debe ser numérico.',
+            'identification_number.unique'  => 'El número de identificación ya está en uso. Por favor, elige otro.',
         ];
     }
 }

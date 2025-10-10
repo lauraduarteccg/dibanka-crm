@@ -79,6 +79,8 @@ export const useConsults = () => {
     }
   }, []);
 
+  console.log(payroll);
+
   useEffect(() => {
     fetchPayroll();
   }, [fetchPayroll]);

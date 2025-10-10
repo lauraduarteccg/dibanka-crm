@@ -131,7 +131,7 @@ class ManagementController extends Controller
     }
 
     // Actualiza unicamente estos dos campos
-    public function updateMonitoring(UpdateMonitoringRequest $request, $id)
+    public function updateMonitoring(Request $request, $id)
     {
         $management = Management::findOrFail($id);
         $management->update($request->only(['solution_date', 'monitoring_id']));

@@ -13,9 +13,10 @@ import TypeManagement from "@modules/config/TypeManagement/pages/TypeManagement"
 import Monitoring from "@modules/config/Monitoring/pages/Monitoring";
 import Profiles from "@modules/config/profile/pages/profiles";
 
+import { MdOutlineContentPasteSearch } from "react-icons/md";
 import {
   FaUsers, FaUserShield, FaBuilding,
-  FaListAlt, FaSearch, FaCogs, FaClipboardCheck
+  FaListAlt,  FaCogs, FaClipboardCheck
 } from "react-icons/fa";
 
 // Mapeo de vistas y permisos (todos bajo config.*)
@@ -54,7 +55,7 @@ const MODULES = [
     label: "Consultas Específicas",
     permission: "config.specific.view",
     component: ConsultationSpecific,
-    icon: FaSearch,
+    icon: MdOutlineContentPasteSearch,
   },
   {
     id: "tipos-gestiones",

@@ -44,7 +44,7 @@ export const deleteContact = async (id) => {
  * Obtiene todas las pagadurías.
  */
 export const getPayrolls = async () => {
-    const { data } = await api.get("/payrolls");
+    const { data } = await api.get("/payrolls/active");
     return data.data;
 };
 
