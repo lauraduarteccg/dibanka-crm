@@ -3,8 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
-
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,8 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->group('api', [
-            EnsureFrontendRequestsAreStateful::class,
+        $middleware->statefulApi()
+            ->validateCsrfTokens(except: [
+                'api/*',
+                'login',
+                'logout',
+                'sanctum/csrf-cookie'
+            ]);
+
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->alias([
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
     })
     ->withExceptions(include 'exceptions.php')

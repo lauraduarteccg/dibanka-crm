@@ -30,7 +30,7 @@ class PayrollController extends Controller
 
         return response()->json([
             'message'    => 'Pagadurías obtenidas con éxito',
-            'payrolls'   => PayrollResource::collection($payrolls),
+            'data'   => PayrollResource::collection($payrolls),
             'pagination' => [
                 'current_page'   => $payrolls->currentPage(),
                 'total_pages'    => $payrolls->lastPage(),
@@ -47,7 +47,7 @@ class PayrollController extends Controller
 
         return response()->json([
             'message'       => 'Pagadurias activas obtenidas con éxito',
-            'payrolls' => PayrollResource::collection($payrolls),
+            'data' => PayrollResource::collection($payrolls),
             'pagination'    => [
                 'current_page'          => $payrolls->currentPage(),
                 'total_pages'           => $payrolls->lastPage(),
@@ -74,7 +74,7 @@ class PayrollController extends Controller
 
         return response()->json([
             'message' => 'Pagaduría creada con éxito',
-            'payroll' => new PayrollResource($payroll)
+            'data' => new PayrollResource($payroll)
         ], Response::HTTP_CREATED);
     }
 
@@ -83,7 +83,7 @@ class PayrollController extends Controller
     {
         return response()->json([
             'message' => 'Pagaduría encontrada',
-            'payroll' => new PayrollResource($payroll)
+            'data' => new PayrollResource($payroll)
         ], Response::HTTP_OK);
     }
 

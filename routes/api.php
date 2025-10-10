@@ -1,114 +1,124 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ContactController;
-use App\Http\Controllers\ManagementController;
-use App\Http\Controllers\PayrollController;
-use App\Http\Controllers\ConsultationController;
-use App\Http\Controllers\ConsultationSpecificController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\TypeManagementController;
-use App\Http\Controllers\SpecialCasesController;
-use App\Http\Controllers\MonitoringController;
-use App\Http\Controllers\RolesController;
-use App\Http\Controllers\RolePermissionController;
+use App\Http\Controllers\{
+    AuthController,
+    ContactController,
+    ManagementController,
+    PayrollController,
+    ConsultationController,
+    ConsultationSpecificController,
+    UserController,
+    TypeManagementController,
+    SpecialCasesController,
+    MonitoringController,
+    RoleController,
+    PasswordResetController
+};
 
-// 🔹 Ruta de autenticación
+// ==========================================================
+//  RUTAS PÚBLICAS
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.request');
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 
-// 🔹 Gesiton de roles
-Route::get('/roles', [RolesController::class, 'index']);
-
-// Rutas protegidas con autenticación
+// ==========================================================
+//  RUTAS PROTEGIDAS (auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
 
-    // 🔹 Obtener la lista de permisos
-    Route::get('/permissions', [RolePermissionController::class, 'index']);
+    //  CONFIGURACIÓN DEL SISTEMA (config.*)
+    Route::prefix('config')->group(function () {
 
-    // 🔹 Obtener todos los roles con sus permisos
-    Route::get('/roles-permissions', [RolePermissionController::class, 'roles']);
+        // Usuarios en configuración
+        Route::prefix('users')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->middleware('permission:config.user.view');
+            Route::post('/', [UserController::class, 'store'])->middleware('permission:config.user.create');
+            Route::get('{id}', [UserController::class, 'show'])->middleware('permission:config.user.view');
+            Route::put('{id}', [UserController::class, 'update'])->middleware('permission:config.user.edit');
+            Route::delete('{id}', [UserController::class, 'destroy'])->middleware('permission:config.user.delete');
+        });
 
-    // 🔹 Asignar o quitar un permiso a un rol
-    Route::put('/roles-permissions/toggle', [RolePermissionController::class, 'togglePermission']);
+        // Pagadurías en configuración
+        Route::prefix('payrolls')->group(function () {
+            Route::get('/', [PayrollController::class, 'index'])->middleware('permission:config.payroll.view');
+            Route::post('/', [PayrollController::class, 'store'])->middleware('permission:config.payroll.create');
+            Route::put('{payroll}', [PayrollController::class, 'update'])->middleware('permission:config.payroll.edit');
+            Route::delete('{payroll}', [PayrollController::class, 'destroy'])->middleware('permission:config.payroll.delete');
+        });
 
-    // 🔹 Rutas de conteo de registros
-    Route::get('/management/count', [ManagementController::class, 'count']);
-    Route::get('/payrolls/count', [PayrollController::class, 'count']);
-    Route::get('/consultations/count', [ConsultationController::class, 'count']);
-    Route::get('/contacts/count', [ContactController::class, 'count']);
+        // Consultas y específicas
+        Route::prefix('consultations')->group(function () {
+            Route::get('/', [ConsultationController::class, 'index'])->middleware('permission:config.consultation.view');
+            Route::post('/', [ConsultationController::class, 'store'])->middleware('permission:config.consultation.create');
+            Route::put('{consultation}', [ConsultationController::class, 'update'])->middleware('permission:config.consultation.edit');
+            Route::delete('{consultation}', [ConsultationController::class, 'destroy'])->middleware('permission:config.consultation.delete');
+        });
 
-    // 🔹 Rutas de usuarios
-    Route::get('/users', [UserController::class, 'index']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::prefix('consultationspecifics')->group(function () {
+            Route::get('/', [ConsultationSpecificController::class, 'index'])->middleware('permission:config.consultation.view');
+            Route::post('/', [ConsultationSpecificController::class, 'store'])->middleware('permission:config.consultation.create');
+            Route::put('{consultationspecific}', [ConsultationSpecificController::class, 'update'])->middleware('permission:config.consultation.edit');
+            Route::delete('{consultationspecific}', [ConsultationSpecificController::class, 'destroy'])->middleware('permission:config.consultation.delete');
+        });
 
-    // 🔹 CRUD para Pagadurías
-    Route::get('/payrolls', [PayrollController::class, 'index']);      // Listar pagadurías
-    Route::get('/payrolls/active', [PayrollController::class, 'active']); // Listar unicamente pagadurias activas
-    Route::post('/payrolls', [PayrollController::class, 'store']);     // Crear pagaduría
-    Route::get('/payrolls/{payroll}', [PayrollController::class, 'show']);   // Mostrar una pagaduría específica
-    Route::put('/payrolls/{payroll}', [PayrollController::class, 'update']); // Actualizar pagaduría
-    Route::delete('/payrolls/{payroll}', [PayrollController::class, 'destroy']); // Activar/Desactivar pagaduría
+        // Tipos de gestiones
+        Route::prefix('typemanagements')->group(function () {
+            Route::get('/', [TypeManagementController::class, 'index'])->middleware('permission:config.typeManagement.view');
+            Route::post('/', [TypeManagementController::class, 'store'])->middleware('permission:config.typeManagement.create');
+            Route::put('{typemanagement}', [TypeManagementController::class, 'update'])->middleware('permission:config.typeManagement.edit');
+            Route::delete('{typemanagement}', [TypeManagementController::class, 'destroy'])->middleware('permission:config.typeManagement.delete');
+        });
 
-    // 🔹 CRUD para Gestiones
-    Route::get('/management', [ManagementController::class, 'index']); // Listar gestiones
-    Route::post('/management', [ManagementController::class, 'store']); // Crear gestion
-    Route::get('/management/{id}', [ManagementController::class, 'show']); // Mostrar una gestion específica
-    Route::put('/management/{id}', [ManagementController::class, 'update']); // Actualizar gestion
-    Route::put('/managementmonitoring/{id}', [ManagementController::class, 'updateMonitoring']); // Actualizar gestion
-    Route::delete('/management/{id}', [ManagementController::class, 'destroy']); // Eliminar gestion
- 
-    // 🔹 CRUD para Consultas
-    Route::get('/consultations', [ConsultationController::class, 'index']); // Listar consultas
-    Route::get('/consultations/active', [ConsultationController::class, 'active']); // Listar unicamente consultas activas
-    Route::post('/consultations', [ConsultationController::class, 'store']); // Crear consulta
-    Route::get('/consultations/{consultation}', [ConsultationController::class, 'show']); // Mostrar una consulta específica
-    Route::put('/consultations/{consultation}', [ConsultationController::class, 'update']); // Actualizar consulta
-    Route::delete('/consultations/{consultation}', [ConsultationController::class, 'destroy']); // Eliminar consulta
-    
-    // 🔹 CRUD para Consultas Especificas
-    Route::get('/consultationspecifics', [ConsultationSpecificController::class, 'index']); // Listar consultas especificas
-    Route::get('/consultationspecifics/active', [ConsultationSpecificController::class, 'active']); // Listar unicamente consultas especificas activas
-    Route::post('/consultationspecifics', [ConsultationSpecificController::class, 'store']); // Crear consulta especifica
-    Route::get('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'show']); // Mostrar una consulta específica especifica
-    Route::put('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'update']); // Actualizar consulta especifica
-    Route::delete('/consultationspecifics/{consultationspecific}', [ConsultationSpecificController::class, 'destroy']); // Eliminar consulta especifica
-    
-    // 🔹 CRUD para Seguimientos
-    Route::get('/monitorings', [MonitoringController::class, 'index']); // Listar seguimiento
-    Route::get('/monitorings/active', [MonitoringController::class, 'active']); // Listar unicamente seguimiento activas
-    Route::post('/monitorings', [MonitoringController::class, 'store']); // Crear seguimiento
-    Route::get('/monitorings/{id}', [MonitoringController::class, 'show']); // Mostrar una seguimiento especifica
-    Route::put('/monitorings/{id}', [MonitoringController::class, 'update']); // Actualizar seguimiento
-    Route::delete('/monitorings/{id}', [MonitoringController::class, 'destroy']); // Eliminar seguimiento
+        // Seguimientos
+        Route::prefix('monitorings')->group(function () {
+            Route::get('/', [MonitoringController::class, 'index'])->middleware('permission:config.monitoring.view');
+            Route::post('/', [MonitoringController::class, 'store'])->middleware('permission:config.monitoring.create');
+            Route::put('{id}', [MonitoringController::class, 'update'])->middleware('permission:config.monitoring.edit');
+            Route::delete('{id}', [MonitoringController::class, 'destroy'])->middleware('permission:config.monitoring.delete');
+        });
 
-    // 🔹 CRUD para Contactos
-    Route::get('/contacts', [ContactController::class, 'index']); // Listar contacto
-    Route::post('/contacts', [ContactController::class, 'store']); // Crear contacto
-    Route::get('/contacts/{contact}', [ContactController::class, 'show']); // Mostrar un contacto específica
-    Route::put('/contacts/{contact}', [ContactController::class, 'update']); // Actualizar contacto
-    Route::delete('/contacts/{contacts}', [ContactController::class, 'destroy']); // Eliminar contacto
+        // Roles y permisos
+        Route::prefix('roles')->group(function () {
+            Route::get('/', [RoleController::class, 'index'])->middleware('permission:config.role.view');
+            Route::get('{id}', [RoleController::class, 'show'])->middleware('permission:config.role.view');
+            Route::post('/', [RoleController::class, 'store'])->middleware('permission:config.role.create');
+            Route::put('{role}', [RoleController::class, 'update'])->middleware('permission:config.role.edit');
+            Route::delete('{role}', [RoleController::class, 'destroy'])->middleware('permission:config.role.delete');
+        });
 
-    // 🔹 CRUD para Tipo de Gestiones
-    Route::get('/typemanagements', [TypeManagementController::class, 'index']); // Listar tipo de gestiones
-    Route::post('/typemanagements', [TypeManagementController::class, 'store']); // Crear tipo de gestion
-    Route::get('/typemanagements/active', [TypeManagementController::class, 'active']); // Listar gestiones
-    Route::get('/typemanagements/{typemanagement}', [TypeManagementController::class, 'show']); // Mostrar un tipo de gestion específica
-    Route::put('/typemanagements/{typemanagement}', [TypeManagementController::class, 'update']); // Actualizar tipo de gestion
-    Route::delete('/typemanagements/{typemanagement}', [TypeManagementController::class, 'destroy']); // Eliminar tipo de gestion
+        // Obtener lista de permisos
+        Route::get('/permissions', [RoleController::class, 'getPermissions'])->middleware('permission:config.role.view');
+    });
 
-    
-    // 🔹 CRUD para los casos especiales
-    Route::get('/specialcases', [SpecialCasesController::class, 'index']); // Listar casos especiales
-    Route::post('/specialcases', [SpecialCasesController::class, 'store']); // Crear caso especial
-    Route::get('/specialcases/{id}', [SpecialCasesController::class, 'show']); // Mostrar una caso especial
-    Route::put('/specialcases/{id}', [SpecialCasesController::class, 'update']); // Actualizar caso especial
-    Route::delete('/specialcases/{id}', [SpecialCasesController::class, 'destroy']); // Eliminar caso especial    
-    
-    // Rutas de autenticación protegidas
+    // MÓDULOS OPERATIVOS
+
+    // Contactos
+    Route::get('/contacts', [ContactController::class, 'index'])->middleware('permission:contact.view');
+    Route::post('/contacts', [ContactController::class, 'store'])->middleware('permission:contact.create');
+    Route::put('/contacts/{contact}', [ContactController::class, 'update'])->middleware('permission:contact.edit');
+    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->middleware('permission:contact.delete');
+    Route::get('/payrolls', [PayrollController::class, 'index'])->middleware('permission:payroll.view');
+
+
+    // Gestiones
+    Route::get('/management', [ManagementController::class, 'index'])->middleware('permission:management.view');
+    Route::post('/management', [ManagementController::class, 'store'])->middleware('permission:management.create');
+    Route::put('/management/{id}', [ManagementController::class, 'update'])->middleware('permission:management.edit');
+    Route::delete('/management/{id}', [ManagementController::class, 'destroy'])->middleware('permission:management.delete');
+
+    // Casos especiales
+    Route::get('/specialcases', [SpecialCasesController::class, 'index'])->middleware('permission:special_cases.view');
+    Route::post('/specialcases', [SpecialCasesController::class, 'store'])->middleware('permission:special_cases.create');
+    Route::put('/specialcases/{id}', [SpecialCasesController::class, 'update'])->middleware('permission:special_cases.edit');
+    Route::delete('/specialcases/{id}', [SpecialCasesController::class, 'destroy'])->middleware('permission:special_cases.delete');
+
+    // Conteos
+    Route::get('/management/count', [ManagementController::class, 'count'])->middleware('permission:management.view');
+    Route::get('/contacts/count', [ContactController::class, 'count'])->middleware('permission:contact.view');
+    Route::get('/payrolls/count', [PayrollController::class, 'count'])->middleware('permission:payroll.view');
+    Route::get('/consultations/count', [ConsultationController::class, 'count'])->middleware('permission:consultation.view');
+    Route::get('/contacts/count', [ContactController::class, 'count'])->middleware('permission:contact.view');
+    //  SESIÓN / PERFIL
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 });

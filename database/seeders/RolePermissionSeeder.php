@@ -16,7 +16,7 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-          
+
             $permissions = [
                 // Gestión de usuarios
                 'user.view',
@@ -39,7 +39,7 @@ class RolePermissionSeeder extends Seeder
                 // Gestion de consultas
                 'consultation.view',
                 'consultation.edit',
-                'consultation.delete', 
+                'consultation.delete',
                 'consultation.create',
 
                 // Gestion de consultas especificas
@@ -51,13 +51,13 @@ class RolePermissionSeeder extends Seeder
                 //Gestion de gestiones
                 'management.view',
                 'management.edit',
-                'management.delete',  
+                'management.delete',
                 'management.create',
 
                 //Gestion de tipos de gestiones
                 'typeManagement.view',
                 'typeManagement.edit',
-                'typeManagement.delete',  
+                'typeManagement.delete',
                 'typeManagement.create',
 
                 // Casos especiales
@@ -71,6 +71,33 @@ class RolePermissionSeeder extends Seeder
                 'monitoring.edit',
                 'monitoring.delete',
                 'monitoring.create',
+                //configuracion 
+                // Permisos de configuración
+                'config.user.view',
+                'config.user.create',
+                'config.user.edit',
+                'config.user.delete',
+                'config.payroll.view',
+                'config.payroll.create',
+                'config.payroll.edit',
+                'config.payroll.delete',
+                'config.consultation.view',
+                'config.consultation.create',
+                'config.consultation.edit',
+                'config.consultation.delete',
+                'config.typeManagement.view',
+                'config.typeManagement.create',
+                'config.typeManagement.edit',
+                'config.typeManagement.delete',
+                'config.monitoring.view',
+                'config.monitoring.create',
+                'config.monitoring.edit',
+                'config.monitoring.delete',
+                'config.role.view',
+                'config.role.create',
+                'config.role.edit',
+                'config.role.delete',
+
             ];
 
             // ✅ Crear permisos si no existen
