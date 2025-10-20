@@ -19,7 +19,6 @@ const useDashboard = () => {
     let isMounted = true;
 
     if (!loading && user && location.pathname === "/home") {
-      console.log("Ejecutando fetch del Dashboard en /home");
 
       const fetchData = async () => {
         try {

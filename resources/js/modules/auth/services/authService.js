@@ -26,6 +26,7 @@ export const logout = async () => {
   } catch {
     // No importa si el endpoint falla, limpiamos igual
   }
+  
   localStorage.removeItem("token");
 };
 

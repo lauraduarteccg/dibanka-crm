@@ -49,18 +49,19 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages(['email' => 'Credenciales incorrectas']);
         }
-
+   
         $token = $user->createToken('auth-token')->plainTextToken;
         log_activity('inicio de sesión', 'Usuario', [
             'message' => 'El usuario ' . $user->id . ' ha iniciado sesión'
         ], $request);
+
 
         return response()->json([
             'message' => 'Iniciaste sesión con éxito.',
             'token' => $token,
             'data' => [
 
-                'user' => Auth::user(),
+                'user' => $user,
                 'roles' => $user->roles->pluck('name'),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
