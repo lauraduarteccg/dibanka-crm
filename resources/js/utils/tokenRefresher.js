@@ -7,18 +7,18 @@ export const useTokenRefresher = (intervalMin = 35) => {
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    if (!user || intervalRef.current) return; // evita múltiples intervalos
+    // solo configurar el intervalo si hay usuario y no existe uno activo
+    if (!user || intervalRef.current) return;
 
-    // Ejecutar inmediatamente
-    refreshAuthToken();
-
-    // Programar refresco
+    // ⏱️ Programar refresco futuro (sin ejecutarse ahora)
     intervalRef.current = setInterval(() => {
       refreshAuthToken();
     }, intervalMin * 60 * 1000);
 
-
-    // Limpiar al desmontar
-    return () => clearInterval(intervalRef.current);
-  }, [!!user]); // solo se ejecuta cuando pasa de null → objeto válido
+    // 🧹 limpiar al desmontar o cerrar sesión
+    return () => {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
+  }, [!!user]);
 };

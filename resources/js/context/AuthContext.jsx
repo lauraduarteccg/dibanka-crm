@@ -1,7 +1,8 @@
 // @context/AuthContext.jsx
 import { createContext, useState, useEffect } from "react";
-import axios from "axios";
-import {logout, getUser} from "../modules/auth/services/authService";
+import api from "@api/axios";
+import { logout, getUser } from "../modules/auth/services/authService";
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -13,21 +14,17 @@ export const AuthProvider = ({ children }) => {
     // ✅ Mantiene el usuario autenticado al recargar la página
     useEffect(() => {
         if (token) {
-            axios.get("/api/me", {
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            api.get("/me")
                 .then((res) => {
-
                     setUser({
                         id: res.data.data.id,
                         name: res.data.data.name,
-                        email: res.data.data.email
+                        email: res.data.data.email,
                     });
                     setPermissions(res.data.data.permissions || []);
-                
                 })
                 .catch(() => {
-                    handleLogout();
+                    // handleLogout();
                 })
                 .finally(() => setLoading(false));
         } else {
@@ -35,9 +32,8 @@ export const AuthProvider = ({ children }) => {
         }
     }, [token]);
 
+    const handleLogout = async () => {
 
-
-    const handleLogout  = async () => {
         await logout();
         localStorage.removeItem("token");
         setToken(null);
@@ -46,25 +42,19 @@ export const AuthProvider = ({ children }) => {
         window.location.href = "/";
     };
 
-    //  Nueva función: refresca token y actualiza el estado
+    // ✅ Refresca token usando la misma instancia axios (api)
     const refreshAuthToken = async () => {
         try {
-            const res = await axios.post(
-                "/api/refresh-token",
-                {},
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
+            const res = await api.post("/refresh-token");
             const newToken = res.data.token;
-
+            console.log(newToken)
             localStorage.setItem("token", newToken);
             setToken(newToken);
 
             console.info("Token actualizado en AuthContext");
             return newToken;
         } catch (error) {
-            console.error(" Error al refrescar token:", error);
+            console.error("Error al refrescar token:", error);
             handleLogout();
         }
     };
@@ -75,10 +65,10 @@ export const AuthProvider = ({ children }) => {
                 user,
                 token,
                 loading,
-
-                handleLogout ,
+                handleLogout,
                 setUser,
-                permissions, setPermissions,
+                permissions,
+                setPermissions,
                 refreshAuthToken,
             }}
         >
