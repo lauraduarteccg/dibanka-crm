@@ -16,23 +16,29 @@ class UserController extends Controller
     // Obtener todos los usuarios
     public function index(Request $request)
     {
-        $query = User::with('roles'); 
+        $query = User::with('roles');
 
-    if ($request->has('search') && !empty($request->search)) {
-        $searchTerm = $request->search;
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
 
-        $query->where(function ($q) use ($searchTerm) {
-            $q->where('name', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('email', 'LIKE', "%{$searchTerm}%")
-                // 🔍 Búsqueda por nombre del rol asociado
-                ->orWhereHas('roles', function ($roleQuery) use ($searchTerm) {
-                    $roleQuery->where('name', 'LIKE', "%{$searchTerm}%");
-                });
-        });
-    }
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+                    // 🔍 Búsqueda por nombre del rol asociado
+                    ->orWhereHas('roles', function ($roleQuery) use ($searchTerm) {
+                        $roleQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                    });
+            });
+            log_activity('ver_listado', 'Usuarios', [
+                'mensaje' => "El usuario {$request->user()->name} visualizó el listado de usuarios" .
+                    ($request->filled('search') ? " aplicando el filtro: '{$request->search}'" : ""),
+                'criterios' => ['búsqueda' => $request->search ?? null]
+
+            ], $request);
+        }
 
         $users = $query->paginate(10);
-        
+
         return response()->json([
             'message'       => 'Usuarios obtenidos con éxito',
             'users'         => UserResource::collection($users),
@@ -62,6 +68,11 @@ class UserController extends Controller
         if ($request->has('role')) {
             $user->assignRole($request->role);
         }
+        log_activity('crear', 'Usuarios', [
+            'mensaje' => "El usuario {$request->user()->name} creó un nuevo usuario en el sistema.",
+            'user_id' => $user->id
+        ], $request);
+
 
         return response()->json([
             'message' => 'Usuario creado correctamente',
@@ -70,9 +81,15 @@ class UserController extends Controller
         ], Response::HTTP_CREATED);
     }
     // Obtener un usuario por ID
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        log_activity('ver_detalle', 'Usuarios', [
+            'mensaje' => "El usuario {$request->user()->name} visualizó el detalle del usuario con ID {$user->id}.",
+            'id_usuario' => $user->id
+
+        ], $request);
+
         return response()->json([
             'message'   => 'Usuario encontrado',
             'users'     => new UserResource($user)
@@ -83,6 +100,7 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, $id)
     {
         $user = User::findOrFail($id);
+        $dataBefore = $user->toArray();
 
         // Actualizar los campos básicos (nombre, email, password si viene)
         $data = $request->only(['name', 'email', 'is_active']);
@@ -95,6 +113,15 @@ class UserController extends Controller
         if ($request->filled('role')) {
             $user->syncRoles($request->role); // Reemplaza los roles actuales con el nuevo
         }
+        log_activity('actualizar', 'Usuarios', [
+            'mensaje' => "El usuario {$request->user()->name} actualizó la información del usuario con ID {$user->id}.",
+            'cambios' => [
+                'antes' => $dataBefore,
+                'después' => $user->toArray(),
+            ],
+            'user_id' => $user->id
+        ], $request);
+
 
         return response()->json([
             'message' => 'Usuario actualizado con éxito',
@@ -103,11 +130,25 @@ class UserController extends Controller
         ], Response::HTTP_OK);
     }
     // Eliminar un usuario
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $state = $user->is_active;
         $user->update(['is_active' => $user->is_active ? false : true]);
+        log_activity(
+            $user->is_active ? 'activar' : 'desactivar',
+            'Usuarios',
+            [
+                'mensaje' => "El usuario {$request->user()->name} " .
+                    ($user->is_active ? 'activó' : 'desactivó') .
+                    " la cuenta del usuario con ID {$user->id}.",
+         
+            ],
+            $request
+        );
+
+        
+
         return response()->json(['message' => 'Usuario desactivado correctamente'], Response::HTTP_OK);
     }
 }
-

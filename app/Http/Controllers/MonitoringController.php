@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Monitoring;
 use App\Http\Resources\MonitoringResource;
+use Termwind\Components\Raw;
 
 class MonitoringController extends Controller
 {
@@ -26,6 +27,14 @@ class MonitoringController extends Controller
 
         $monitoring = $query->paginate(10);
 
+        log_activity('ver_listado', 'Seguimientos', [
+            'mensaje' => "El usuario {$request->user()->name} visualizó el listado de seguimientos" .
+                ($request->filled('search') ? " aplicando el filtro: '{$request->search}'" : ""),
+            'criterios' => [
+                'búsqueda' => $request->search ?? null
+            ]
+        ], $request);
+
         return response()->json([
             'message'       => 'Seguimientos obtenidos con éxito',
             'monitorings' => MonitoringResource::collection($monitoring),
@@ -40,10 +49,13 @@ class MonitoringController extends Controller
         ], Response::HTTP_OK);
     }
     // Trae solo consultas
-    public function active()
+    public function active(Request $request)
     {
         $monitoring = Monitoring::active()->paginate(10);
+        log_activity('ver_activos', 'Seguimientos', [
+            'mensaje' => "El usuario {$request->user()->name} consultó los seguimientos activos.",
 
+        ], $request);
         return response()->json([
             'message'       => 'Seguimientos activos obtenidos con éxito',
             'monitorings' => MonitoringResource::collection($monitoring),
@@ -63,17 +75,23 @@ class MonitoringController extends Controller
     {
         $monitoring = Monitoring::create($request->all());
 
+        log_activity('crear', 'Seguimientos', [
+            'mensaje' => "El usuario {$request->user()->name} creó un nuevo seguimiento.",
+
+            'monitoring_id' => $monitoring->id
+        ], $request);
+
         return response()->json([
             'message' => 'Seguimiento creado con éxito',
             'monitoring' => new MonitoringResource($monitoring)
         ], Response::HTTP_CREATED);
     }
 
-    
+
     /**
      * Mostrar un seguimiento específico
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $monitoring = Monitoring::find($id);
 
@@ -82,6 +100,10 @@ class MonitoringController extends Controller
                 'message' => 'Contacto no encontrado'
             ], Response::HTTP_NOT_FOUND);
         }
+        log_activity('ver_detalle', 'Seguimientos', [
+            'mensaje' => "El usuario {$request->user()->name} consultó el detalle del seguimiento ID {$id}.",
+            'monitoring_id' => $id,
+        ], $request);
 
         return response()->json([
             'message' => 'Consulta encontrada',
@@ -95,31 +117,57 @@ class MonitoringController extends Controller
     public function update(Request $request, $id)
     {
         $monitoring = Monitoring::findOrFail($id);
-
+        $dataBefore = $monitoring->toArray();
         $monitoring->update($request->all());
+
+        log_activity('actualizar', 'Seguimientos', [
+            'mensaje' => "El usuario {$request->user()->name} actualizó un seguimiento.",
+            'cambios' => [
+                'antes' => $dataBefore,
+                'después' => $monitoring->toArray()
+            ]
+        ], $request);
 
         return response()->json([
             'message' => 'Consulta actualizada con exito',
             'monitoring' => new MonitoringResource($monitoring)
-        ]);
+        ], Response::HTTP_OK);
     }
 
     /**
      * Activar/Desactivar un seguimiento
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $monitoring = Monitoring::findOrFail($id);
-
+        $state = $monitoring->is_active;
         $monitoring->update(['is_active' => !$monitoring->is_active]);
 
+        log_activity(
+            $monitoring->is_active ? 'activar' : 'desactivar',
+            'Seguimientos',
+            [
+                'estado_anterior' => $state,
+                'nuevo_estado' => $monitoring->is_active
+            ]
+        );
+        log_activity(
+            $monitoring->is_active ? 'activar' : 'desactivar',
+            'Seguimientos',
+            [
+                'mensaje' => "El usuario {$request->user()->name} " .
+                    ($monitoring->is_active ? 'activó' : 'desactivó') .
+                    " el seguimiento ID {$id}.",
+                'monitoring_id' => $id,
+            ],
+            $request
+        );
         return response()->json([
             'message' => $monitoring->is_active
-                        ? 'Seguimiento activado correctamente'
-                        : 'Seguimiento desactivado correctamente',
+                ? 'Seguimiento activado correctamente'
+                : 'Seguimiento desactivado correctamente',
             'monitoring' => new MonitoringResource($monitoring)
-            
+
         ], Response::HTTP_OK);
-        
     }
 }

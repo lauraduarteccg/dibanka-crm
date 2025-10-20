@@ -4,6 +4,11 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 export default defineConfig({
+    server: {
+        port: 5173,
+        host: 'localhost',
+    },
+
     plugins: [
         laravel({
             input: [
@@ -26,6 +31,8 @@ export default defineConfig({
             "@styles": path.resolve(__dirname, "resources/css"),
             "@assets": path.resolve(__dirname, "resources/assets"),
             "@hooks": path.resolve(__dirname, "resources/js/hooks"),
+            "@utils": path.resolve(__dirname, "resources/js/utils"),
         },
     },
+
 });

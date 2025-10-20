@@ -34,31 +34,31 @@ const NavBar = () => {
       label: "Contactos",
       path: "/contactos",
       icon: <HiOutlineIdentification className="text-white w-6 h-auto" />,
-      permission: "contact.view",
+      permission: "contact.edit",
     },
     {
       label: "Gestiones",
       path: "/gestiones",
       icon: <HiOutlineRectangleGroup className="text-white w-6 h-auto" />,
-      permission: "management.view",
+      permission: "management.edit",
     },
     {
       label: "Casos especiales",
       path: "/casos_especiales",
       icon: <MdOutlineFolderSpecial className="text-white w-6 h-auto" />,
-      permission: "special_cases.view",
+      permission: "special_cases.edit",
     },
   ];
 
   // ⚙️ MÓDULOS DE CONFIGURACIÓN (permite granularidad)
   const CONFIG_MODULES = [
-    { label: "Usuarios", permission: "config.user.view" },
-    { label: "Pagadurías", permission: "config.payroll.view" },
-    { label: "Consultas", permission: "config.consultation.view" },
-    { label: "Consultas Específicas", permission: "config.specific.view" },
-    { label: "Tipos de Gestiones", permission: "config.typeManagement.view" },
-    { label: "Seguimientos", permission: "config.monitoring.view" },
-    { label: "Perfiles y Roles", permission: "config.role.view" },
+    { label: "Usuarios", permission: "config.user.edit" },
+    { label: "Pagadurías", permission: "config.payroll.edit" },
+    { label: "Consultas", permission: "config.consultation.edit" },
+    { label: "Consultas Específicas", permission: "config.specific.edit" },
+    { label: "Tipos de Gestiones", permission: "config.typeManagement.edit" },
+    { label: "Seguimientos", permission: "config.monitoring.edit" },
+    { label: "Perfiles y Roles", permission: "config.role.edit" },
   ];
 
   const hasConfigAccess = CONFIG_MODULES.some((mod) => can(mod.permission));

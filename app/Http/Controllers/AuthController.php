@@ -25,6 +25,10 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        log_activity('register', 'Usuario', [
+            'message' => 'Se ha creado un nuevo usuario',
+            'data' => $user->toArray()
+        ], $request);
 
         return response()->json(['message' => 'Usuario registrado con éxito']);
     }
@@ -47,14 +51,16 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('auth-token')->plainTextToken;
+        log_activity('inicio de sesión', 'Usuario', [
+            'message' => 'El usuario ' . $user->id . ' ha iniciado sesión'
+        ], $request);
 
         return response()->json([
             'message' => 'Iniciaste sesión con éxito.',
             'token' => $token,
             'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
+
+                'user' => Auth::user(),
                 'roles' => $user->roles->pluck('name'),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
@@ -63,8 +69,13 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
-        return response()->json(['message' => 'Sesión cerrada']);
+        $user = $request->user();
+
+        log_activity('logout', 'Usuario', ['message' => 'Cierre de sesión'], $request);
+
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Sesión cerrada'], Response::HTTP_OK);
     }
 
 
@@ -89,6 +100,23 @@ class AuthController extends Controller
                 'roles' => $user->roles->pluck('name'),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
+        ], Response::HTTP_OK);
+    }
+
+    public function refreshToken(Request $request)
+    {
+        $user = $request->user();
+
+
+        $user->tokens()->delete();
+        log_activity('refrescar_token', 'Usuario', ['message' => 'Token renovado'], $request);
+
+
+        $newToken = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Token renovado con éxito.',
+            'token' => $newToken,
         ], Response::HTTP_OK);
     }
 }

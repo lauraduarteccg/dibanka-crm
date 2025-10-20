@@ -12,6 +12,7 @@ import Management from "@modules/management/pages/Management";
 import AddManagement from "@modules/management/pages/AddManagement";
 import SpecialCases from "@modules/specialCases/pages/SpecialCases";
 import Config from "@modules/config/pages/Config";
+import { useTokenRefresher } from "@utils/tokenRefresher";
 
 // Hook y componente de protección
 import { useCan } from "@hooks/useCan";
@@ -20,7 +21,7 @@ import ProtectedRoute from "@hooks/ProtectedRoute";
 const App = () => {
     const { user, loading } = useContext(AuthContext);
     const { can } = useCan();
-
+    useTokenRefresher(35);
     if (loading) return <Loader />;
 
     return (
@@ -95,13 +96,13 @@ const App = () => {
                         path="/configuraciones"
                         element={
                             <ProtectedRoute permission={[
-                                "config.user.view",
-                                "config.role.view",
-                                "config.payroll.view",
-                                "config.consultation.view",
-                                "config.specific.view",
-                                "config.typeManagement.view",
-                                "config.monitoring.view",
+                                "config.user.edit",
+                                "config.role.edit",
+                                "config.payroll.edit",
+                                "config.consultation.edit",
+                                "config.specific.edit",
+                                "config.typeManagement.edit",
+                                "config.monitoring.edit",
                             ]}>
                                 <Layout>
                                     <Config />

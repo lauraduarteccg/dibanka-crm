@@ -1,46 +1,88 @@
+// @context/AuthContext.jsx
 import { createContext, useState, useEffect } from "react";
-import { getUser, logout } from "@modules/auth/services/authService";
-
+import axios from "axios";
+import {logout, getUser} from "../modules/auth/services/authService";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState([]);
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem("token"));
+    const [permissions, setPermissions] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    // ✅ Mantiene el usuario autenticado al recargar la página
+    useEffect(() => {
+        if (token) {
+            axios.get("/api/me", {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+                .then((res) => {
 
-    getUser()
-      .then((data) => {
-        setUser(data)
-        setRoles(data.roles || []);
-        setPermissions(data.permissions || []);
+                    setUser({
+                        id: res.data.data.id,
+                        name: res.data.data.name,
+                        email: res.data.data.email
+                    });
+                    setPermissions(res.data.data.permissions || []);
+                
+                })
+                .catch(() => {
+                    handleLogout();
+                })
+                .finally(() => setLoading(false));
+        } else {
+            setLoading(false);
+        }
+    }, [token]);
 
-      })
-      .catch(() => localStorage.removeItem("token"))
-      .finally(() => setLoading(false));
-  }, []);
 
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-    setPermissions(userData.permissions || []);
-    setRoles(userData.roles || []);
-  };
-  const handleLogout = async () => {
-    await logout();
-    setUser(null);
-  };
 
-  return (
-    <AuthContext.Provider value={{ user, setUser, handleLogout, loading, permissions,setPermissions,handleLoginSuccess }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    const handleLogout  = async () => {
+        await logout();
+        localStorage.removeItem("token");
+        setToken(null);
+        setPermissions([]);
+        setUser(null);
+        window.location.href = "/";
+    };
+
+    //  Nueva función: refresca token y actualiza el estado
+    const refreshAuthToken = async () => {
+        try {
+            const res = await axios.post(
+                "/api/refresh-token",
+                {},
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            const newToken = res.data.token;
+
+            localStorage.setItem("token", newToken);
+            setToken(newToken);
+
+            console.info("Token actualizado en AuthContext");
+            return newToken;
+        } catch (error) {
+            console.error(" Error al refrescar token:", error);
+            handleLogout();
+        }
+    };
+
+    return (
+        <AuthContext.Provider
+            value={{
+                user,
+                token,
+                loading,
+
+                handleLogout ,
+                setUser,
+                permissions, setPermissions,
+                refreshAuthToken,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
 };
-export default AuthContext;
