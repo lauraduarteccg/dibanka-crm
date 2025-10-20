@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ContactResource;
-USE App\Http\Requests\ContactRequest;
+use App\Http\Requests\ContactRequest;
 
 class ContactController extends Controller
 {
@@ -24,7 +24,7 @@ class ContactController extends Controller
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
 
-            $query->where(function($q) use ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
                 $q->where('campaign', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('name', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
@@ -35,13 +35,20 @@ class ContactController extends Controller
                     ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%");
 
                 // Para buscar en relaciones
-                $q->orWhereHas('payroll', function($payrollQuery) use ($searchTerm) {
+                $q->orWhereHas('payroll', function ($payrollQuery) use ($searchTerm) {
                     $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%");
                 });
             });
         }
 
         $contacts = $query->with('payroll')->paginate(10);
+        log_activity('ver_listado', 'Contactos', [
+            'mensaje' => "El usuario {$request->user()->name} consultó el listado de contactos.",
+            'criterios' => [
+                'búsqueda' => $request->search ?? 'Sin filtro aplicado',
+                'número_identificación' => $request->identification_number ?? 'No especificado'
+            ]
+        ], $request);
 
         return response()->json([
             'message'           => 'Consultas obtenidas con éxito',
@@ -62,6 +69,11 @@ class ContactController extends Controller
     {
         $contacts = Contact::create($request->all());
         $contacts->load(['payroll']);
+        log_activity('crear', 'Contactos', [
+            'mensaje' => "El usuario {$request->user()->name} creó un nuevo contacto.",
+     
+            'contact_id' => $contacts->id
+        ], $request);
 
         return response()->json([
             'message' => 'Consulta creada con éxito',
@@ -70,7 +82,7 @@ class ContactController extends Controller
     }
 
     // Mostrar contacto especifico
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $contacts = Contact::find($id);
 
@@ -79,6 +91,10 @@ class ContactController extends Controller
                 'message' => 'Contacto no encontrado'
             ], Response::HTTP_NOT_FOUND);
         }
+        log_activity('ver_detalle', 'Contactos', [
+            'mensaje' => "El usuario {$request->user()->name} consultó el detalle de un contacto.",
+            'contacto_id' => $id,
+        ], $request);
 
         return response()->json([
             'message' => 'Consulta encontrada',
@@ -90,42 +106,65 @@ class ContactController extends Controller
     public function update(ContactRequest $request, $contact)
     {
         $contacts = Contact::findOrFail($contact);
+        $dataBefore = $contacts->toArray();
+
         $contacts->update($request->only(
             'campaign',
             'payroll_id',
-            'name', 
-            'identification_type', 
-            'phone', 
+            'name',
+            'identification_type',
+            'phone',
             'identification_number',
-            'update_phone', 
-            'email', 
+            'update_phone',
+            'email',
             'is_active'
         ));
         $contacts->load(['payroll']);
+        log_activity('actualizar', 'Contactos', [
+            'mensaje' => "El usuario {$request->user()->name} actualizó la información de un contacto.",
+            'contacto_id' => $contacts->id,
+            'cambios' => [
+                'antes' => $dataBefore,
+                'despues' => $contacts->toArray(),
+            ],
+        ], $request);
+
+
         return response()->json([
             'success' => true,
             'message' => 'Contacto actualizada con éxito',
             'data' => $contacts
-        ], 200);
+        ], Response::HTTP_OK);
     }
 
     //Eliminar contacto
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $contacts = Contact::findOrFail($id);
+        $state = $contacts->is_active;
         $contacts->update(['is_active' => $contacts->is_active ? false : true]);
+        log_activity(
+            $contacts->is_active ? 'activar' : 'desactivar',
+            'Contactos',
+            [
+                'mensaje' => "El usuario {$request->user()->name} " .
+                    ($contacts->is_active ? 'activo' : 'desactivo') .
+                    " un contacto.",
+                'contacto_id' => $contacts->id,
+
+            ],
+            $request
+        );
+
         return response()->json(['message' => 'Contacto desactivado correctamente'], Response::HTTP_OK);
     }
 
     public function count()
     {
-        $count = Contact::count();
+        $count = Contact::where('is_active', 1)->count();
 
         return response()->json([
             'count' => $count
         ], Response::HTTP_OK);
     }
-
-
-
 }

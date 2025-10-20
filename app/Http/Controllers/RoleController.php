@@ -5,13 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Http\Response;
 
 class RoleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $roles = Role::with('permissions')->paginate(10);
-
+        log_activity('ver_listado', 'Roles', [
+            'mensaje' => "El usuario {$request->user()->name} visualizó el listado de roles.",
+            'total_roles' => $roles->total()
+        ], $request);
         return response()->json([
             'roles' => $roles->items(),
             'pagination' => [
@@ -20,7 +24,7 @@ class RoleController extends Controller
                 'total_items' => $roles->total(),
                 'per_page' => $roles->perPage(),
             ],
-        ]);
+        ], Response::HTTP_OK);
     }
 
     public function store(Request $request)
@@ -36,21 +40,35 @@ class RoleController extends Controller
         ]);
 
         $role->syncPermissions($data['permissions']);
+        log_activity('crear', 'Roles', [
+            'mensaje' => "El usuario {$request->user()->name} creó un nuevo rol.",
+            'nombre' => $role->name,
+            'permisos_asignados' => $data['permissions']
+        ], $request);
 
         return response()->json([
             'message' => 'Rol creado correctamente',
             'role' => $role->load('permissions'),
-        ], 201);
+        ], Response::HTTP_CREATED);
     }
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $role = Role::with('permissions')->findOrFail($id);
 
+
+        log_activity('ver_detalle', 'Roles', [
+            'mensaje' => "El usuario {$request->user()->name} consultó el detalle del rol '{$role->name}'.",
+            'id_rol' => $role->id
+        ], $request);
+
         return response()->json([
-            'id' => $role->id,
-            'name' => $role->name,
-            'permissions' => $role->permissions->pluck('name'), 
-        ]);
+            'mensaje' => 'Rol encontrado',
+            'rol' => [
+                'id' => $role->id,
+                'nombre' => $role->name,
+                'permisos' => $role->permissions->pluck('name'),
+            ],
+        ], Response::HTTP_OK);
     }
 
 
@@ -60,7 +78,7 @@ class RoleController extends Controller
             'name' => 'sometimes|string|max:255|unique:roles,name,' . $role->id,
             'permissions' => 'array|min:1',
         ]);
-
+        $dataBefore = $role->toArray();
         if (isset($data['name'])) {
             $role->update(['name' => $data['name']]);
         }
@@ -68,22 +86,41 @@ class RoleController extends Controller
         if (isset($data['permissions'])) {
             $role->syncPermissions($data['permissions']);
         }
+        log_activity('actualizar', 'Roles', [
+            'mensaje' => "El usuario {$request->user()->name} actualizó el rol '{$role->name}'.",
+            'cambios' => [
+                'antes' => $dataBefore,
+                'después' => [
+                    'nombre' => $role->name,
+                    'permisos' => $role->permissions->pluck('name')->toArray(),
+                ],
+            ]
+        ], $request);
 
         return response()->json([
             'message' => 'Rol actualizado correctamente',
             'role' => $role->load('permissions'),
-        ]);
+        ], Response::HTTP_OK);
     }
 
-    public function destroy(Role $role)
+    public function destroy(Request $request, Role $role)
     {
         $role->delete();
-        return response()->json(['message' => 'Rol eliminado.']);
+        log_activity('eliminar', 'Roles', [
+            'mensaje' => "El usuario {$request->user()->name} eliminó el rol '{$role->name}'."
+        ], $request);
+        return response()->json(['message' => 'Rol eliminado.'], Response::HTTP_OK);
     }
 
-    public function getPermissions()
+    public function getPermissions(Request $request)
     {
         $permissions = Permission::all();
-        return response()->json(['permissions' => $permissions]);
+
+        log_activity('ver_permisos', 'Roles', [
+            'mensaje' => "El usuario {$request->user()->name} consultó la lista completa de permisos."
+
+        ], $request);
+
+        return response()->json(['permissions' => $permissions], Response::HTTP_OK);
     }
 }

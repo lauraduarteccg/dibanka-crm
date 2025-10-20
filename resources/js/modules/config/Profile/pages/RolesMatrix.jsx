@@ -12,11 +12,11 @@ const MODULE_GROUPS = {
     label: "Configuración del Sistema",
     modules: [
       { id: "config.user", name: "Usuarios" },
-      { id: "config.payroll", name: "Pagadurías" },
-      { id: "config.consultation", name: "Consultas" },
-      { id: "config.specific", name: "Consultas Específicas" },
-      { id: "config.typeManagement", name: "Tipos de Gestiones" },
-      { id: "config.monitoring", name: "Seguimientos" },
+      { id: "payroll", name: "Pagadurías" },
+      { id: "consultation", name: "Consultas" },
+      { id: "specific", name: "Consultas Específicas" },
+      { id: "typeManagement", name: "Tipos de Gestiones" },
+      { id: "monitoring", name: "Seguimientos" },
       { id: "config.role", name: "Perfiles y Roles" },
     ],
   },
@@ -63,7 +63,7 @@ const RolesMatrix = ({ role, onClose }) => {
   }, []);
 
   // ======================================================
-  // Si estamos editando un rol, cargamos sus permisos
+  // Cargar permisos si estamos editando
   // ======================================================
   useEffect(() => {
     const loadRolePermissions = async () => {
@@ -79,7 +79,10 @@ const RolesMatrix = ({ role, onClose }) => {
               currentPerms[mod.id] = {};
               PERMISSIONS.forEach((perm) => {
                 const permKey = `${mod.id}.${perm.id}`;
-                currentPerms[mod.id][perm.id] = data.permissions.includes(permKey);
+                const configKey = `config.${permKey}`;
+                currentPerms[mod.id][perm.id] =
+                  data.permissions.includes(permKey) ||
+                  data.permissions.includes(configKey);
               });
             });
           });
@@ -111,7 +114,7 @@ const RolesMatrix = ({ role, onClose }) => {
   };
 
   // ======================================================
-  // Guardar cambios
+  // Guardar cambios con lógica de prefijos
   // ======================================================
   const handleSave = async () => {
     if (!roleName.trim()) {
@@ -120,10 +123,19 @@ const RolesMatrix = ({ role, onClose }) => {
     }
 
     const formattedPermissions = [];
+    const configModules = ["payroll", "consultation", "specific", "typeManagement", "monitoring"];
+
     for (const modId in permissions) {
       for (const permId in permissions[modId]) {
         if (permissions[modId][permId]) {
-          formattedPermissions.push(`${modId}.${permId}`);
+          let permKey = `${modId}.${permId}`;
+
+          // Si el módulo está en la lista especial
+          if (configModules.includes(modId) && permId !== "view") {
+            permKey = `config.${permKey}`;
+          }
+
+          formattedPermissions.push(permKey);
         }
       }
     }
@@ -173,7 +185,10 @@ const RolesMatrix = ({ role, onClose }) => {
 
       {/* Permisos por grupo */}
       {Object.entries(MODULE_GROUPS).map(([groupKey, group]) => (
-        <div key={groupKey} className="bg-white shadow-md rounded-xl overflow-hidden border border-gray-200 mt-6">
+        <div
+          key={groupKey}
+          className="bg-white shadow-md rounded-xl overflow-hidden border border-gray-200 mt-6"
+        >
           <h2 className="text-lg font-semibold bg-gray-100 px-6 py-3 border-b text-gray-800">
             {group.label}
           </h2>

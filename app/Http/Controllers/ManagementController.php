@@ -19,42 +19,46 @@ class ManagementController extends Controller
     public function index(Request $request)
     {
         $query = Management::with(['user', 'payroll', 'consultation', 'contact', 'specific', 'monitoring', 'type_management']);
-        
+
         // 🔎 Buscar directamente por identification_number en la relación contact
         if ($request->has('identification_number') && !empty($request->identification_number)) {
-            $query->whereHas('contact', function($q) use ($request) {
+            $query->whereHas('contact', function ($q) use ($request) {
                 $q->where('identification_number', $request->identification_number);
             });
         }
 
         if ($request->filled('search')) {
             $searchTerm = $request->search;
-            
-            $query->where(function($q) use ($searchTerm) {
+
+            $query->where(function ($q) use ($searchTerm) {
                 // Búsqueda en campos principales
                 $q->where('id', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('wolkvox_id', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('solution_date', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('sms', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('wsp', 'LIKE', "%{$searchTerm}%");
-                
+                    ->orWhere('wolkvox_id', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('solution_date', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('sms', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('wsp', 'LIKE', "%{$searchTerm}%");
+
                 // Búsqueda en relaciones usando un array para evitar repetición
                 $relations = [
-                    'user' => ['name', 'email'],
+                    'user' => ['id', 'name', 'email'],
                     'payroll' => ['name'],
                     'monitoring' => ['name'],
                     'consultation' => ['name'],
                     'specific' => ['name'],
                     'type_management' => ['name'],
                     'contact' => [
-                        'name', 'phone', 'update_phone', 'email', 
-                        'identification_type', 'identification_number'
+                        'name',
+                        'phone',
+                        'update_phone',
+                        'email',
+                        'identification_type',
+                        'identification_number'
                     ]
                 ];
-                
+
                 foreach ($relations as $relation => $fields) {
-                    $q->orWhereHas($relation, function($subQuery) use ($searchTerm, $fields) {
-                        $subQuery->where(function($innerQuery) use ($searchTerm, $fields) {
+                    $q->orWhereHas($relation, function ($subQuery) use ($searchTerm, $fields) {
+                        $subQuery->where(function ($innerQuery) use ($searchTerm, $fields) {
                             foreach ($fields as $field) {
                                 $innerQuery->orWhere($field, 'LIKE', "%{$searchTerm}%");
                             }
@@ -63,8 +67,17 @@ class ManagementController extends Controller
                 }
             });
         }
-        
+
         $management = $query->paginate(10);
+
+        log_activity('ver_listado', 'Gestiones', [
+            'mensaje' => "El usuario {$request->user()->name} visualizó el listado de gestiones" .
+                ($request->filled('search') ? " aplicando el filtro: '{$request->search}'" : ""),
+            'criterios' => [
+                'búsqueda' => $request->search ?? null,
+                'identification_number' => $request->identification_number ?? null,
+            ]
+        ], $request);
 
         return response()->json([
             'message'       => 'Gestiones obtenidas con éxito',
@@ -74,7 +87,7 @@ class ManagementController extends Controller
                 'total_pages'           => $management->lastPage(),
                 'per_page'              => $management->perPage(),
                 'total_management'   => $management->total(),
-            ] 
+            ]
         ]);
     }
 
@@ -88,18 +101,22 @@ class ManagementController extends Controller
         // Carga relaciones para devolverlas en el resource
         $management->load(['user', 'payroll', 'consultation', 'contact', 'specific', 'monitoring']);
 
+        log_activity('crear', 'Gestiones', [
+            'mensaje' => "El usuario {$request->user()->name} creó una nueva gestión.",
+
+            'management_id' => $management->id
+        ], $request);
+
         return response()->json([
             'message' => 'Gestión creada correctamente',
             'management' => new ManagementResource($management)
-        ], Response::HTTP_CREATED)  ;
+        ], Response::HTTP_CREATED);
     }
 
     /**
      * Mostrar una gestión específica.
      */
-    public function show($id)
-    {       
-    }
+    public function show($id) {}
 
     /**
      * Actualizar una gestión existente.
@@ -107,6 +124,7 @@ class ManagementController extends Controller
     public function update(ManagementRequest $request, $id)
     {
         $management = Management::find($id);
+        $dataBefore = $management->toArray();
 
         if (!$management) {
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
@@ -124,6 +142,14 @@ class ManagementController extends Controller
 
         // Recargar relaciones para devolver la info actualizada
         $management->load(['usuario', 'payroll', 'consultation', 'contact', 'monitoring']);
+        log_activity('actualizar', 'Gestiones', [
+            'mensaje' => "El usuario {$request->user()->name} actualizó una gestión.",
+            'cambios' => [
+                'anterior' => $dataBefore,
+                'despues' => $management->toArray(),
+            ]
+        ], $request);
+
 
         return (new ManagementResource($management))
             ->response()
@@ -134,14 +160,28 @@ class ManagementController extends Controller
     public function updateMonitoring(Request $request, $id)
     {
         $management = Management::findOrFail($id);
+        $dataBefore = $management->toArray();
         $management->update($request->only(['solution_date', 'monitoring_id']));
-        return response()->json($management, 200);
+
+        log_activity('actualizar', 'Gestiones', [
+            'mensaje' => "El usuario {$request->user()->name} actualizó una gestión.",
+            'detalles' => [
+                'antes' => $dataBefore,
+                'despues' => $management->toArray()
+            ]
+        ], $request);
+
+
+        return response()->json([
+            'message' => 'Gestión actualizada correctamente',
+            'management' => new ManagementResource($management)
+        ], Response::HTTP_OK);
     }
 
     /**
      * Eliminar una gestión.
      */
-    public function destroy($id)
+    public function destroy(Request $request,$id)
     {
         $management = Management::find($id);
 
@@ -151,6 +191,14 @@ class ManagementController extends Controller
 
         $management->delete();
 
+       log_activity(
+            $management->is_active ? 'activar consulta' : 'desactivar gestion',
+            'Gestiones',
+            [
+                "message" => "Se ha" . $management->is_active ? 'activado' : 'desactivado' . " una gestion",
+            ],
+            $request
+        );
         return response()->json(['message' => 'Gestión eliminada correctamente'], Response::HTTP_OK);
     }
 
@@ -160,6 +208,7 @@ class ManagementController extends Controller
     public function count()
     {
         $count = Management::count();
+
         return response()->json(['count' => $count], Response::HTTP_OK);
     }
 }

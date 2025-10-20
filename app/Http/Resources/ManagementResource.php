@@ -14,6 +14,7 @@ class ManagementResource extends JsonResource
             // Usuario relacionado 
             'user' => $this->whenLoaded('user', function () {
                 return [
+                    'id'    => $this->user->id,
                     'name'  => $this->user->name,
                     'email' => $this->user->email,
                     'is_active' => $this->user->is_active

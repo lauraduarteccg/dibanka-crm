@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use App\Http\Resources\PayrollResource;
 use App\Http\Requests\PayrollRequest;
 use Illuminate\Support\Facades\Storage;
+use Termwind\Components\Raw;
 
 class PayrollController extends Controller
 {
@@ -27,6 +28,13 @@ class PayrollController extends Controller
         }
 
         $payrolls = $query->paginate(10);
+        log_activity('ver_listado', 'Pagadurías', [
+            'mensaje' => "El usuario {$request->user()->name} visualizó el listado de pagadurías" .
+                ($request->filled('search') ? " aplicando el filtro: '{$request->search}'" : ""),
+            'criterios' => [
+                'búsqueda' => $request->search ?? null,
+            ],
+        ], $request);
 
         return response()->json([
             'message'    => 'Pagadurías obtenidas con éxito',
@@ -41,10 +49,13 @@ class PayrollController extends Controller
     }
 
     // Trae solo pagadurias activas
-    public function active()
+    public function active(Request $request)
     {
         $payrolls = Payroll::active()->paginate(10);
+        log_activity('ver_activas', 'Pagadurías', [
+            'mensaje' => "El usuario {$request->user()->name} consultó las pagadurías activas.",
 
+        ], $request);
         return response()->json([
             'message'       => 'Pagadurias activas obtenidas con éxito',
             'data' => PayrollResource::collection($payrolls),
@@ -70,6 +81,10 @@ class PayrollController extends Controller
             $payroll->img_payroll = $path;
             $payroll->save();
         }
+        log_activity('crear', 'Pagadurías', [
+            'mensaje' => "El usuario {$request->user()->name} creó una nueva pagaduría.",
+            'pagaduria_id' => $payroll->id
+        ], $request);
 
         return response()->json([
             'message' => 'Pagaduría creada con éxito',
@@ -78,8 +93,12 @@ class PayrollController extends Controller
     }
 
     // Obtener una pagaduría específica
-    public function show(Payroll $payroll)
+    public function show(Request $request, Payroll $payroll)
     {
+        log_activity('ver_detalle', 'Pagadurías', [
+            'mensaje' => "El usuario {$request->user()->name} visualizó el detalle de la pagaduría ID {$payroll->id}.",
+            'datos' => $payroll->toArray()
+        ], $request);
         return response()->json([
             'message' => 'Pagaduría encontrada',
             'data' => new PayrollResource($payroll)
@@ -90,6 +109,7 @@ class PayrollController extends Controller
     public function update(Request $request, $id)
     {
         $payroll = Payroll::findOrFail($id);
+        $dataBefore = $payroll->toArray();
 
         $payroll->name = $request->name;
         $payroll->description = $request->description;
@@ -101,6 +121,7 @@ class PayrollController extends Controller
                 \Storage::disk('public')->delete($payroll->img_payroll);
             }
 
+
             $path = $request->file('img_payroll')->store('img_payroll', 'public');
             $payroll->img_payroll = $path;
         }
@@ -108,20 +129,37 @@ class PayrollController extends Controller
         // 🔹 Si NO viene archivo, conservamos el string actual (no hacemos nada)
 
         $payroll->save();
-
+        log_activity('actualizar', 'Pagadurías', [
+            'mensaje' => "El usuario {$request->user()->name} actualizó una pagaduría.",
+            'cambios' => [
+                'antes' => $dataBefore,
+                'despues' => $payroll->toArray()
+            ]
+        ], $request);
         return response()->json([
             'message' => 'Pagaduría actualizada correctamente',
             'payroll' => $payroll,
-        ], 200);
+        ], Response::HTTP_OK);
     }
 
 
     // Activar/Desactivar una pagaduría
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $payroll = Payroll::findOrFail($id);
+        $state = $payroll->is_active;
         $payroll->update(['is_active' => !$payroll->is_active]);
-
+        log_activity(
+            $payroll->is_active ? 'activar' : 'desactivar',
+            'Pagadurías',
+            [
+                'mensaje' => "El usuario {$request->user()->name} " .
+                    ($payroll->is_active ? 'activó' : 'desactivó') .
+                    " la pagaduría ID {$id}.",
+                'pagaduria_id' => $id,
+            ],
+            $request
+        );
         return response()->json([
             'message' => $payroll->is_active
                 ? 'Pagaduría activada correctamente'
@@ -133,8 +171,13 @@ class PayrollController extends Controller
     // Contar pagadurías
     public function count()
     {
+        // Contar solo las pagadurías activas
+        $total = Payroll::where('is_active', 1)->count();
+
+
+        // Retornar respuesta JSON
         return response()->json([
-            'count' => Payroll::count()
+            'count' => $total
         ], Response::HTTP_OK);
     }
 }

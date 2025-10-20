@@ -22,7 +22,7 @@ const AuthPage = () => {
                         <>
                             <LoginForm
                                 onLoginSuccess={(data) => {
-                                    setUser(data);
+                                    setUser(data.user);
                                     setPermissions(data.permissions || []);
                                     navigate("/home");
                                 }}

@@ -9,8 +9,6 @@ import {
 } from "@modules/management/services/managementService";
 
 export const useManagement = () => {
-  const { token } = useContext(AuthContext);
-
   const [management, setManagement] = useState([]);
   const [monitoring, setMonitoring] = useState([]);
   const [loading, setLoading] = useState(true);

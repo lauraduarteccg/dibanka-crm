@@ -40,7 +40,7 @@ export const updateConsultation = async (id, payload) => {
  * Elimina o desactiva una consulta.
  */
 export const deleteConsultation = async (id) => {
-  const { data } = await api.delete(`/consultations/${id}`);
+  const { data } = await api.delete(`/config/consultations/${id}`);
   return data;
 };
 

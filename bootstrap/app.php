@@ -15,12 +15,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi()
             ->validateCsrfTokens(except: [
                 'api/*',
+                'sanctum/csrf-cookie',
                 'login',
                 'logout',
-                'sanctum/csrf-cookie'
             ]);
-
-        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+    
+        /**
+         * MIDDLEWARES DE SPATIE PERMISSION (ROLES Y PERMISOS)
+         */
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

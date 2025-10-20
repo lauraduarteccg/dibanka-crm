@@ -4,7 +4,7 @@ import { AuthContext } from "@context/AuthContext";
 
 const Layout = ({ children }) => {
     const { user } = useContext(AuthContext);
-
+ 
     return (
         <div className="flex flex-col min-h-screen">
             <NavBar userName={user?.name || "Usuario"} />

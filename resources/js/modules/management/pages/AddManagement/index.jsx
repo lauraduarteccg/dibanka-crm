@@ -165,7 +165,7 @@ const AddManagement = () => {
           "Enviar WhatsApp de recuperar contraseña": wsp ? "SI" : "NO",
         };
 
-        console.log("🔹 Enviando a Google Sheets:", dataToSend);
+
         sendData(dataToSend);
       }
 
@@ -174,7 +174,7 @@ const AddManagement = () => {
     }
   };
 
-  console.log(buildPayload());
+
   // Detecta espacios y convierte a minuscula todo para hacer la busqueda del campo
   const capitalizeWords = (str) =>
     str
@@ -278,7 +278,7 @@ const AddManagement = () => {
         onClick={() => setModal(true)}
       >
         {/* Ícono en la esquina superior izquierda */}
-        <BsInfoCircle className="absolute top-3 left-3 text-2xl text-primary-strong z-10" />
+        <BsInfoCircle className="absolute top-6 left-6 text-2xl text-primary-strong z-10" />
 
         {/* Imagen */}
         {selectedPayroll?.img_payroll ? (
