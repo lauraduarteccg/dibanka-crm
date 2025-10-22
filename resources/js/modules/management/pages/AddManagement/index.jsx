@@ -1,9 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
-import { AuthContext } from "@context/AuthContext";
-import seleccione_imagen from "@assets/seleccione_imagen.png"
-import { useAddManagement } from "@modules/management/hooks/useAddManagement.js";
-import { useLocation, useNavigate } from "react-router-dom";
-import { BsInfoCircle } from "react-icons/bs";
+import {useState} from "react";
 import {
   FormControl,
   InputLabel,
@@ -16,203 +11,69 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  FormControlLabel,
   FormHelperText,
   Alert,
   Snackbar,
 } from "@mui/material";
-
-import { TiContacts } from "react-icons/ti";
-import { sendData } from "@modules/management/services/sendData";
-
+import { TiContacts, TiInfoLarge } from "react-icons/ti";
+import { MdOutlineFolderSpecial } from "react-icons/md";
+import { BsInfoCircle } from "react-icons/bs";
+import SpeedDialButton from "@components/ui/SpeedDialButton";
+import seleccione_imagen from "@assets/seleccione_imagen.png";
+import { useAddManagementForm } from "@modules/management/hooks/useAddManagementForm";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const AddManagement = () => {
-
-  const navigate = useNavigate();
-
   const {
-    modal,
-    setModal,
     payroll,
-    contact,
     consultation,
-    typeManagement,
-    specific,
-    handleSubmit,
+    campaign,
+    sms,
+    wsp,
+    selectedPayroll,
+    selectedTypeManagement,
+    selectedContact,
+    selectedSolution,
+    selectedConsultation,
+    selectedSpecificConsultation,
+    wolkvox_id,
+    comments,
+    modal,
     validationErrors,
+    setCampaign,
+    setSms,
+    setWsp,
+    setSelectedPayroll,
+    setSelectedTypeManagement,
+    setSelectedContact,
+    setSelectedSolution,
+    setSelectedConsultation,
+    setSelectedSpecificConsultation,
+    setWolkvox_id,
+    setObservations,
+    setModal,
     clearValidationError,
-    setValidationErrors,
-  } = useAddManagement();
+    onSave,
+    handleClear,
+    renderDescription,
+    filteredTypeManagement,
+    filteredSpecific,
+    filteredContact,
+  } = useAddManagementForm();
 
-  const { user } = useContext(AuthContext);
-  const location = useLocation();
-  const [formData, setFormData] = useState({
-    campaign: "",
-    payroll: "",
-  });
+  const actions = [
+    { icon: <MdOutlineFolderSpecial className="w-6 h-auto" />, name: "Caso especial" },
+    { icon: <TiInfoLarge className="w-7 h-auto" />, name: "Información", click: () => setModal(true) },
+  ];
+    const [openSections, setOpenSections] = useState({});
 
-  // Reemplaza {{agente}} por el nombre del agente y detecta los saltos delinea
-  const renderDescription = (text, agente) => {
-  if (!text) return null;
-
-  // 1️⃣ Reemplazar {{agente}} por el nombre del agente
-  const replacedText = text.replaceAll("{{agente}}", user.name ?? "");
-
-  // 2️⃣ Separar por saltos de línea
-  const lines = replacedText.split("\n");
-
-  // 3️⃣ Renderizar cada línea con <br />
-  return lines.map((line, index) => (
-    <React.Fragment key={index}>
-      {line}
-      <br />
-    </React.Fragment>
-  ));
-};
-  // Estados locales para controlar inputs
-  const [campaign, setCampaign] = useState("");
-  const [ sms, setSms ] = useState(false);
-  const [ wsp, setWsp ] = useState(false);
-  const [selectedPayroll, setSelectedPayroll] = useState(null);
-  const [selectedTypeManagement, setSelectedTypeManagement] = useState(null);
-  const [selectedContact, setSelectedContact] = useState(null);
-  const [selectedSolution, setSelectedSolution] = useState("");
-  const [selectedConsultation, setSelectedConsultation] = useState(null);
-  const [wolkvox_id, setWolkvox_id] = useState("");
-  const [selectedSpecificConsultation, setSelectedSpecificConsultation] =
-    useState(null);
-  const [comments, setObservations] = useState("");
-
-  // JSON de la gestion creada
-  const buildPayload = () => {
-    return {
-      user_id: user?.id,
-      payroll_id: selectedPayroll?.id ?? null,
-      type_management_id: selectedTypeManagement?.id ?? null,
-      contact_id: selectedContact?.id ?? null,
-      solution: selectedSolution,
-      consultation_id: selectedConsultation?.id ?? null,
-      specific_id: selectedSpecificConsultation?.id ?? null,
-      wolkvox_id: wolkvox_id ?? null,
-      comments,
-      monitoring_id: null,
-      solution_date: null,
-      wsp: wsp ? 1 : 0,
-      sms: sms ? 1 : 0,
-    };
+  const toggleSection = (section) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
   };
-
-  // Listas dependiente a la pagaduria
-  const filteredTypeManagement = selectedPayroll
-  ? typeManagement.filter(
-      (item) => item?.payrolls?.id === selectedPayroll?.id
-    )
-  : typeManagement;
-
-  // Lista de consultas específicas dependiente de la consulta seleccionada
-  const filteredSpecific = selectedConsultation
-    ? specific.filter(
-        (item) => item?.consultation?.id === selectedConsultation?.id
-      )
-    : specific;
-
-
-  // Lista de contactos dependiente de la campaña
-  const filteredContact = contact.filter((item) => {
-    const matchesCampaign = !campaign || item?.campaign === campaign;
-    const matchesPayroll = !selectedPayroll || item?.payroll?.id === selectedPayroll.id;
-    return matchesCampaign && matchesPayroll;
-  });
-
-
-  //Limpia el formulario
-  const handleClear = () => {
-    setCampaign("");
-    setSelectedPayroll(null);
-    setSelectedTypeManagement("");
-    setSelectedContact(null);
-    setSelectedSolution("");
-    setSelectedConsultation(null);
-    setSelectedSpecificConsultation(null);
-    setObservations("");
-    setWolkvox_id("");
-    setSms(false);
-    setWsp(false);
-    setFormData({
-      campaign: "",
-      payroll: "",
-      typemanagement: "",
-      solution: "",
-    });
-    setValidationErrors({})
-  };
-
-  // Guarda la nueva gestion y limpia el formulario
-  const onSave = async () => {
-    const payload = buildPayload();
-    const success = await handleSubmit(payload);
-
-    if (success) {
-      // 🟢 Solo si wsp o sms están activos, enviamos a Google Sheets
-      if (wsp || sms) {
-        const dataToSend = {
-          "Nombre del Cliente": selectedContact?.name ?? "",
-          "Telefono": selectedContact?.phone ?? "",
-          "Pagaduria": selectedPayroll?.name ?? "",
-          "IdWolkvox": wolkvox_id ?? "",
-          "Campaña": campaign ?? "",
-          "Enviar SMS de canal de whastapp": sms ? "SI" : "NO",
-          "Enviar WhatsApp de recuperar contraseña": wsp ? "SI" : "NO",
-        };
-
-
-        sendData(dataToSend);
-      }
-
-      handleClear();
-      navigate("/gestiones/añadir");
-    }
-  };
-
-
-  // Detecta espacios y convierte a minuscula todo para hacer la busqueda del campo
-  const capitalizeWords = (str) =>
-    str
-      ? str
-          .split(" ")
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join(" ")
-      : "";
-
-  // UseEffect para detectar la campaña, pagaduria, cliente y wolkvox_id de los parametros del enlace
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-
-    // Campaña
-    setCampaign(capitalizeWords(params.get("campaign")));
-
-    // Pagaduría
-    const foundPayroll = payroll.find(
-      (p) => p.name === capitalizeWords(params.get("payroll"))
-    ) || null;
-    setSelectedPayroll(foundPayroll);
-
-    // Numero de identificacion del cliente
-    const idNumberParam = params.get("identification_number");
-    if (idNumberParam) {
-      const foundContact = contact.find(
-        (c) => c.identification_number === idNumberParam
-      ) || null;
-      setSelectedContact(foundContact);
-    }
-    
-    setWolkvox_id(capitalizeWords(params.get("wolkvox_id")));
-
-  }, [location.search, payroll, typeManagement, contact]);
-
- // Ejemplo de enlace con parametros para autocompletar los campos
- // http://localhost:8000/gestiones/a%C3%B1adir?campaign=aliados&payroll=educame&identification_number=12345678&wolkvox_id=8465416524132355456
-
+  
   return (
     <div className="flex flex-col gap-4 text-secondary-dark px-[10%] pb-40 ">
       {/* Título */}
@@ -517,17 +378,91 @@ const AddManagement = () => {
       </div>
 
       {/* Popup para mostrar la descripcion de la pagaduria */}
-        <Dialog onClose={() => setModal(false)} open={modal}  >
-          <DialogTitle><p className="mr-12">Descripcion de la pagaduría</p></DialogTitle>
-          <button onClick={() => setModal(false)} className="absolute right-10 top-5"> X </button>
-          <DialogContent dividers>
-            {selectedPayroll?.name ? (
-              <h1>{renderDescription(selectedPayroll.description)}</h1>
-            ) : (
-              <>Seleccione una pagaduria</>
-            )}
-          </DialogContent>
-        </Dialog>
+<Dialog onClose={() => setModal(false)} open={modal} className="max-w-3xl mx-auto">
+      <DialogTitle className="flex justify-between items-center">
+        <p className="text-2xl font-semibold">Descripción de la pagaduría</p>
+        <button onClick={() => setModal(false)} className="text-xl font-bold p-2 hover:bg-gray-200 rounded-full">
+          X
+        </button>
+      </DialogTitle>
+
+      <DialogContent dividers className="space-y-4">
+        {selectedPayroll?.name ? (
+          <div className="space-y-4">
+            {/* Sección principal */}
+            <div className="bg-yellow-100 p-3 rounded-md border border-yellow-300">
+              <p className="font-semibold">Restablecimiento Contraseña</p>
+              <p className="mt-1 text-gray-700 italic">
+                Se envía video por medio de WhatsApp con el paso a paso para el restablecimiento de la contraseña.
+              </p>
+            </div>
+
+            {/* Acordeón dinámico */}
+            {[
+              {
+                title: "Restablecimiento de Contraseña",
+                content: (
+                  <p>
+                    Afiliado se comunicó indicando la necesidad de restablecer la contraseña. Se valida la información
+                    y se envía un video de WhatsApp con el paso a paso.
+                  </p>
+                ),
+              },
+              {
+                title: "Con Autorización",
+                content: (
+                  <p>
+                    Afiliado indica que desea restablecer la contraseña de Dibanka. Se valida la información y se autoriza
+                    a la persona indicada a recibir la información. Se enviará un audio explicativo con el paso a paso.
+                  </p>
+                ),
+              },
+              {
+                title: "Sin Datos Actualizados",
+                content: (
+                  <div className="space-y-2">
+                    <p>Dependiendo de la entidad:</p>
+                    <ul className="list-disc list-inside">
+                      <li>
+                        <span className="font-semibold">CASUR:</span> Se valida información y se envía al correo
+                        <a href="mailto:citse@casur.gov.co" className="text-blue-600 underline"> citse@casur.gov.co</a>
+                        el formato de actualización junto con la copia de la cédula.
+                      </li>
+                      <li>
+                        <span className="font-semibold">FPS:</span> Se valida información y se envía correo a
+                        <a href="mailto:correspondencia@fps.gov.co" className="text-blue-600 underline"> correspondencia@fps.gov.co</a>
+                        indicando nombre completo, cédula, celular, dirección, ciudad y departamento.
+                      </li>
+                    </ul>
+                  </div>
+                ),
+              },
+            ].map((section, idx) => (
+              <div key={idx} className="border rounded-md">
+                <button
+                  onClick={() => toggleSection(idx)}
+                  className="w-full flex justify-between items-center p-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-t-md"
+                >
+                  {section.title}
+                  {openSections[idx] ? <FaChevronUp /> : <FaChevronDown />}
+                </button>
+                {openSections[idx] && (
+                  <div className="p-3 text-gray-700 bg-gray-50 border-t">
+                    {section.content}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <span className="text-xl text-gray-500">Seleccione una pagaduría</span>
+        )}
+      </DialogContent>
+    </Dialog>
+      {/* Boton flotante */}
+      <div className="fixed bottom-10 right-10 z-50">
+        <SpeedDialButton actions={actions} />
+      </div>
 
       {/* Snackbar para alertar al agente que hay errores en el formulario */}
       <Snackbar

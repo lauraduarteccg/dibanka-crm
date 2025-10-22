@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
+    ActivityLogController,
     AuthController,
     ContactController,
     ManagementController,
@@ -93,7 +94,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('{role}', [RoleController::class, 'update'])->middleware('permission:config.role.edit');
             Route::delete('{role}', [RoleController::class, 'destroy'])->middleware('permission:config.role.delete');
         });
-
+        
+        // ------------------- Actividad y logs -------------------
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->middleware('permission:config.role.view');
+        
         // ------------------- Lista de permisos -------------------
         Route::get('/permissions', [RoleController::class, 'getPermissions'])
             ->middleware('permission:config.role.view');
@@ -111,6 +115,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // ------------------- Pagadurías -------------------
     Route::get('/payrolls', [PayrollController::class, 'index'])->middleware('permission:payroll.view');
+    Route::get('/payrolls-all', [PayrollController::class, 'all'])->middleware('permission:payroll.view');
     Route::get('/payrolls/active', [PayrollController::class, 'active'])->middleware('permission:payroll.view');
 
     // ------------------- Seguimientos -------------------

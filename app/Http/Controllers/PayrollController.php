@@ -48,6 +48,17 @@ class PayrollController extends Controller
         ], Response::HTTP_OK);
     }
 
+    // Trae todas las pagadurías sin paginación
+    public function all(Request $request)
+    {
+        $payrolls = Payroll::all();
+
+        return response()->json([
+            'message'    => 'Pagadurías sin paginación obtenidas con éxito',
+            'data'   => PayrollResource::collection($payrolls)
+        ], Response::HTTP_OK);
+    }
+
     // Trae solo pagadurias activas
     public function active(Request $request)
     {

@@ -12,6 +12,7 @@ import Management from "@modules/management/pages/Management";
 import AddManagement from "@modules/management/pages/AddManagement";
 import SpecialCases from "@modules/specialCases/pages/SpecialCases";
 import Config from "@modules/config/pages/Config";
+import Logs from "@modules/config/logs/pages/Logs";
 import { useTokenRefresher } from "@utils/tokenRefresher";
 
 // Hook y componente de protección
@@ -106,6 +107,26 @@ const App = () => {
                             ]}>
                                 <Layout>
                                     <Config />
+                                </Layout>
+                            </ProtectedRoute>
+                        }
+                    />
+                    
+                    {/* Logs de Actividad (config.view) */}
+                    <Route
+                        path="/logs"
+                        element={
+                            <ProtectedRoute permission={[
+                                "config.user.edit",
+                                "config.role.edit",
+                                "config.payroll.edit",
+                                "config.consultation.edit",
+                                "config.specific.edit",
+                                "config.typeManagement.edit",
+                                "config.monitoring.edit",
+                            ]}>
+                                <Layout>
+                                    <Logs />
                                 </Layout>
                             </ProtectedRoute>
                         }

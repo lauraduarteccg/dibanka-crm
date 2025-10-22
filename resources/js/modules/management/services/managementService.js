@@ -15,8 +15,8 @@ export const getManagements = async (page = 1, search = "") => {
   return {
     managements: data.managements || [],
     pagination: {
-      current_page: data.meta?.current_page ?? 1,
-      last_page: data.meta?.last_page ?? 1,
+      current_page: data.pagination?.current_page ?? 1,
+      last_page: data.pagination?.last_page ?? 1,
       per_page: data.pagination?.per_page ?? 0,
       total: data.pagination?.total_management ?? 0,
     },

@@ -125,7 +125,7 @@ const Consultation = () => {
           totalPages={totalPages}
           rowsPerPage={perPage}
           totalItems={totalItems}
-          fetch={(page) => fetchPage(page)}
+          fetchPage ={(page) => fetchPage(page)}
           onDelete={handleDelete}
           actions
           onEdit={handleEdit}

@@ -12,6 +12,7 @@ import ConsultationSpecific from "@modules/config/ConsultationSpecific/pages/Con
 import TypeManagement from "@modules/config/TypeManagement/pages/TypeManagement";
 import Monitoring from "@modules/config/Monitoring/pages/Monitoring";
 import Profiles from "@modules/config/profile/pages/profiles";
+import Logs from "@modules/config/logs/pages/Logs";
 
 import { MdOutlineContentPasteSearch } from "react-icons/md";
 import {
@@ -69,6 +70,13 @@ const MODULES = [
     label: "Tipos de Seguimientos",
     permission: "config.monitoring.edit",
     component: Monitoring,
+    icon: FaClipboardCheck,
+  },
+  {
+    id: "logs",
+    label: "Logs de Actividad",
+    permission: "config.role.view",
+    component: Logs,
     icon: FaClipboardCheck,
   },
 ];

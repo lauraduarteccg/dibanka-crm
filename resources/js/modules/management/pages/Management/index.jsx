@@ -68,6 +68,8 @@ const Management = () => {
 
   const navigate = useNavigate();
 
+ // console.log(currentPage)
+
   return (
     <>
       {can("management.create") && (
