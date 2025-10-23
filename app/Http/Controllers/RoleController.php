@@ -9,23 +9,41 @@ use Illuminate\Http\Response;
 
 class RoleController extends Controller
 {
-    public function index(Request $request)
-    {
-        $roles = Role::with('permissions')->paginate(10);
-        log_activity('ver_listado', 'Roles', [
-            'mensaje' => "El usuario {$request->user()->name} visualizó el listado de roles.",
-            'total_roles' => $roles->total()
-        ], $request);
-        return response()->json([
-            'roles' => $roles->items(),
-            'pagination' => [
-                'current_page' => $roles->currentPage(),
-                'total_pages' => $roles->lastPage(),
-                'total_items' => $roles->total(),
-                'per_page' => $roles->perPage(),
-            ],
-        ], Response::HTTP_OK);
+public function index(Request $request)
+{
+    // 📌 Capturar el término de búsqueda (si existe)
+    $search = $request->input('search');
+
+    // 📌 Query base con relaciones
+    $query = Role::with('permissions');
+
+    // 📌 Si hay búsqueda, filtrar por nombre
+    if ($search) {
+        $query->where('name', 'LIKE', "%{$search}%");
     }
+
+    // 📌 Paginar (por defecto 10 por página)
+    $roles = $query->paginate(10);
+
+    // 📌 Registrar la actividad
+    log_activity('ver_listado', 'Roles', [
+        'mensaje' => "El usuario {$request->user()->name} visualizó el listado de roles.",
+        'busqueda' => $search,
+        'total_roles' => $roles->total()
+    ], $request);
+
+    // 📌 Devolver respuesta
+    return response()->json([
+        'roles' => $roles->items(),
+        'pagination' => [
+            'current_page' => $roles->currentPage(),
+            'total_pages' => $roles->lastPage(),
+            'total_items' => $roles->total(),
+            'per_page' => $roles->perPage(),
+        ],
+    ], Response::HTTP_OK);
+}
+
 
     public function store(Request $request)
     {

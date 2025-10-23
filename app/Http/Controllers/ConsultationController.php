@@ -55,24 +55,17 @@ class ConsultationController extends Controller
         ], Response::HTTP_OK);
     }
 
-    // Trae solo consultas
+    // Trae solo consultas aactivas sin paginacion
     public function active(Request $request)
     {
-        $consultations = Consultation::active()->paginate(10);
+        $consultations = Consultation::active()->get();
         log_activity('ver_activas', 'Consultas', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas activas.",
-
         ], $request);
 
         return response()->json([
             'message'       => 'Consultas activas obtenidas con éxito',
-            'consultation' => ConsultationResource::collection($consultations),
-            'pagination'    => [
-                'current_page'          => $consultations->currentPage(),
-                'total_pages'           => $consultations->lastPage(),
-                'per_page'              => $consultations->perPage(),
-                'total_consultations'        => $consultations->total(),
-            ],
+            'consultation' => ConsultationResource::collection($consultations)
         ], Response::HTTP_OK);
     }
 

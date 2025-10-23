@@ -14,8 +14,12 @@ return new class extends Migration
         Schema::create('payrolls', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('description');
+            $table->mediumText('description');
             $table->string('img_payroll');
+            $table->string('i_title')->nullable();
+            $table->mediumText('i_description')->nullable();
+            $table->string('i_email')->nullable();
+            $table->string('i_phone')->nullable();
             $table->boolean('is_active')->default(1);
             $table->timestamps();
 

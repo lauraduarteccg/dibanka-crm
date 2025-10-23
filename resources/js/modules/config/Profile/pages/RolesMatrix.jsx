@@ -65,40 +65,7 @@ const RolesMatrix = ({ role, onClose }) => {
   // ======================================================
   // Cargar permisos si estamos editando
   // ======================================================
-  useEffect(() => {
-    const loadRolePermissions = async () => {
-      if (role) {
-        setLoading(true);
-        try {
-          const data = await getRoleById(role.id);
-          setRoleName(data.name);
-
-          const currentPerms = {};
-          Object.values(MODULE_GROUPS).forEach((group) => {
-            group.modules.forEach((mod) => {
-              currentPerms[mod.id] = {};
-              PERMISSIONS.forEach((perm) => {
-                const permKey = `${mod.id}.${perm.id}`;
-                const configKey = `config.${permKey}`;
-                currentPerms[mod.id][perm.id] =
-                  data.permissions.includes(permKey) ||
-                  data.permissions.includes(configKey);
-              });
-            });
-          });
-
-          setPermissions(currentPerms);
-        } catch (error) {
-          console.error(error);
-          Swal.fire("Error", "No se pudieron cargar los permisos del rol.", "error");
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadRolePermissions();
-  }, [role]);
+ 
 
   // ======================================================
   // Alternar permisos

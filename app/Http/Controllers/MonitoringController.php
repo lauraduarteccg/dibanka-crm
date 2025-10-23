@@ -51,20 +51,14 @@ class MonitoringController extends Controller
     // Trae solo consultas
     public function active(Request $request)
     {
-        $monitoring = Monitoring::active()->paginate(10);
+        $monitoring = Monitoring::active()->get();
         log_activity('ver_activos', 'Seguimientos', [
             'mensaje' => "El usuario {$request->user()->name} consultó los seguimientos activos.",
 
         ], $request);
         return response()->json([
             'message'       => 'Seguimientos activos obtenidos con éxito',
-            'monitorings' => MonitoringResource::collection($monitoring),
-            'pagination'    => [
-                'current_page'          => $monitoring->currentPage(),
-                'total_pages'           => $monitoring->lastPage(),
-                'per_page'              => $monitoring->perPage(),
-                'total_monitoring'   => $monitoring->total(),
-            ],
+            'monitorings' => MonitoringResource::collection($monitoring)
         ], Response::HTTP_OK);
     }
 

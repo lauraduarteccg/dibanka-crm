@@ -8,7 +8,6 @@ use Illuminate\Http\Response;
 use App\Http\Resources\PayrollResource;
 use App\Http\Requests\PayrollRequest;
 use Illuminate\Support\Facades\Storage;
-use Termwind\Components\Raw;
 
 class PayrollController extends Controller
 {
@@ -48,34 +47,18 @@ class PayrollController extends Controller
         ], Response::HTTP_OK);
     }
 
-    // Trae todas las pagadurías sin paginación
-    public function all(Request $request)
-    {
-        $payrolls = Payroll::all();
-
-        return response()->json([
-            'message'    => 'Pagadurías sin paginación obtenidas con éxito',
-            'data'   => PayrollResource::collection($payrolls)
-        ], Response::HTTP_OK);
-    }
-
     // Trae solo pagadurias activas
     public function active(Request $request)
     {
-        $payrolls = Payroll::active()->paginate(10);
+        $payrolls = Payroll::active()->get();
+
         log_activity('ver_activas', 'Pagadurías', [
             'mensaje' => "El usuario {$request->user()->name} consultó las pagadurías activas.",
-
         ], $request);
+
         return response()->json([
-            'message'       => 'Pagadurias activas obtenidas con éxito',
+            'message' => 'Pagadurias activas obtenidas con éxito',
             'data' => PayrollResource::collection($payrolls),
-            'pagination'    => [
-                'current_page'          => $payrolls->currentPage(),
-                'total_pages'           => $payrolls->lastPage(),
-                'per_page'              => $payrolls->perPage(),
-                'total_payrolls'        => $payrolls->total(),
-            ],
         ], Response::HTTP_OK);
     }
 
@@ -125,6 +108,12 @@ class PayrollController extends Controller
         $payroll->name = $request->name;
         $payroll->description = $request->description;
 
+        // 🔹 Campos informativos opcionales
+        $payroll->i_title = $request->i_title;
+        $payroll->i_description = $request->i_description;
+        $payroll->i_phone = $request->i_phone;
+        $payroll->i_email = $request->i_email;
+
         // 🔹 Si viene un archivo nuevo, lo guardamos
         if ($request->hasFile('img_payroll')) {
             // Borrar imagen anterior si existe
@@ -132,14 +121,12 @@ class PayrollController extends Controller
                 \Storage::disk('public')->delete($payroll->img_payroll);
             }
 
-
             $path = $request->file('img_payroll')->store('img_payroll', 'public');
             $payroll->img_payroll = $path;
         }
 
-        // 🔹 Si NO viene archivo, conservamos el string actual (no hacemos nada)
-
         $payroll->save();
+
         log_activity('actualizar', 'Pagadurías', [
             'mensaje' => "El usuario {$request->user()->name} actualizó una pagaduría.",
             'cambios' => [
@@ -147,12 +134,12 @@ class PayrollController extends Controller
                 'despues' => $payroll->toArray()
             ]
         ], $request);
+
         return response()->json([
             'message' => 'Pagaduría actualizada correctamente',
             'payroll' => $payroll,
         ], Response::HTTP_OK);
     }
-
 
     // Activar/Desactivar una pagaduría
     public function destroy(Request $request, $id)

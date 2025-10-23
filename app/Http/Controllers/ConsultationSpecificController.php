@@ -17,7 +17,7 @@ class ConsultationSpecificController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ConsultationSpecific::with(['consultation']);
+        $query = ConsultationSpecific::with(['consultation.payroll']);
 
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
@@ -55,23 +55,17 @@ class ConsultationSpecificController extends Controller
         ], Response::HTTP_OK);
     }
 
-    // Trae solo consultas
+    // Trae solo consultas especificas activas sin paginacion
     public function active(Request $request)
     {
-        $consultations = ConsultationSpecific::active()->paginate(10);
+        $consultations = ConsultationSpecific::with('consultation.payroll')->get();
 
         log_activity('ver_activas', 'Consultas Especificas', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas especifica activas.",
         ], $request);
         return response()->json([
             'message'       => 'Consultas especificas activas obtenidas con éxito',
-            'consultationspecific' => ConsultationSpecificResource::collection($consultations),
-            'pagination'    => [
-                'current_page'          => $consultations->currentPage(),
-                'total_pages'           => $consultations->lastPage(),
-                'per_page'              => $consultations->perPage(),
-                'total_consultations'        => $consultations->total(),
-            ],
+            'consultationspecific' => ConsultationSpecificResource::collection($consultations)
         ], Response::HTTP_OK);
     }
 

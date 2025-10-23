@@ -14,6 +14,10 @@ class Payroll extends Model
         'name',
         'description',
         'img_payroll',
+        'i_title',
+        'i_description',
+        'i_email',
+        'i_phone',
         'is_active'
     ];
 

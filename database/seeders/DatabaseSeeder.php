@@ -62,9 +62,13 @@ User::find($userIds[2])->syncRoles([$agenteRole->id]);
             [
                 'name'          => 'Casur',
                 'description'   => 'Le recuerdo que puede encontrar nuestro botón de asesoría en la página web del portal DiBanka.
-                
+
                 Recuerde que habló con {{agente}}. Muchas gracias por comunicarse con nosotros.',
                 'img_payroll' => "public/img_payroll/MmIbQ8rzt4sxchuDc2AMvjzc3sN2KHEJSR2WcrAu",
+                'i_title' => 'Título de Casur',
+                'i_description' => 'Descripción de Casur',
+                'i_email' => 'casur@example.com',
+                'i_phone' => '3123456789',
                 'created_at'    => now(),
                 'updated_at'    => now(),
             ],
@@ -74,6 +78,10 @@ User::find($userIds[2])->syncRoles([$agenteRole->id]);
                 
                 Recuerde que habló con {{agente}}. Muchas gracias por comunicarse con nosotros.',
                 'img_payroll' => "public/img_payroll/jUyva4LMaUwe7sEzDrxVrDqHSgL4bekNTuWSzKGY",
+                'i_title' => 'Título de Casur',
+                'i_description' => 'Descripción de Casur',
+                'i_email' => 'casur@example.com',
+                'i_phone' => '3123456789',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

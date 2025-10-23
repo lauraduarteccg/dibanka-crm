@@ -62,25 +62,18 @@ class TypeManagementController extends Controller
         ], Response::HTTP_CREATED);
     }
 
-    // Trae solo tipos de gestion
+    // Trae solo tipos de gestion activos sin paginacion
     public function active(Request $request)
     {
-        $managements = TypeManagement::where('is_active', 1)->paginate(10);
+        $managements = TypeManagement::where('is_active', 1)->get();
 
         log_activity('ver_activos', 'Tipo de Gestión', [
-            'mensaje' => "El usuario {$request->user()->name} consultó los tipos de gestión activos.",
-            'total_activos' => $managements->total()
+            'mensaje' => "El usuario {$request->user()->name} consultó los tipos de gestión activos."
         ], $request);
 
         return response()->json([
             'message'    => 'Gestiones activas obtenidas con éxito',
-            'typeManagement'       => TypeManagementResource::collection($managements),
-            'pagination' => [
-                'current_page' => $managements->currentPage(),
-                'total_pages'  => $managements->lastPage(),
-                'per_page'     => $managements->perPage(),
-                'total'        => $managements->total(),
-            ],
+            'typeManagement'       => TypeManagementResource::collection($managements)
         ], Response::HTTP_OK);
     }
 

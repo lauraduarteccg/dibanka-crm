@@ -1,4 +1,4 @@
-import {useState} from "react";
+import React, {useState, forwardRef} from "react";
 import {
   FormControl,
   InputLabel,
@@ -14,6 +14,7 @@ import {
   FormHelperText,
   Alert,
   Snackbar,
+  Slide
 } from "@mui/material";
 import { TiContacts, TiInfoLarge } from "react-icons/ti";
 import { MdOutlineFolderSpecial } from "react-icons/md";
@@ -21,10 +22,15 @@ import { BsInfoCircle } from "react-icons/bs";
 import SpeedDialButton from "@components/ui/SpeedDialButton";
 import seleccione_imagen from "@assets/seleccione_imagen.png";
 import { useAddManagementForm } from "@modules/management/hooks/useAddManagementForm";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { useSpecialCasesForm } from "@modules/management/hooks/useSpecialCasesForm";
+import PopupInfoPayroll from "@components/ui/PopupInfoPayroll";
+import { motion } from "framer-motion";
 
 const AddManagement = () => {
+
+
   const {
+    infoItems,
     payroll,
     consultation,
     campaign,
@@ -55,25 +61,58 @@ const AddManagement = () => {
     clearValidationError,
     onSave,
     handleClear,
-    renderDescription,
     filteredTypeManagement,
+    filteredConsultation,
     filteredSpecific,
     filteredContact,
+    openSections,
+    setOpenSections,
+    optionsWithIndex,
   } = useAddManagementForm();
 
-  const actions = [
-    { icon: <MdOutlineFolderSpecial className="w-6 h-auto" />, name: "Caso especial" },
-    { icon: <TiInfoLarge className="w-7 h-auto" />, name: "Información", click: () => setModal(true) },
-  ];
-    const [openSections, setOpenSections] = useState({});
+  const {
+    user,
+    payrollSpecial,
+    contact,
+    selectedPayrollSpecial,
+    setSelectedPayrollSpecial,
+    selectedContactSpecial,
+    setSelectedContactSpecial,
+    formData,
+    setFormData,
+    validationErrorsSpecial,
+    handleSubmit,
+    clearFieldError,
+    openSpecialCases,
+    setOpenSpecialCases,
+    onClose,
+  } = useSpecialCasesForm();
 
-  const toggleSection = (section) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-  
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const renderDescription = (text) => {
+    if (!text) return null;
+
+    // 1️⃣ Reemplazar {{agente}} por el nombre del agente
+    const replacedText = text.replaceAll("{{agente}}", user.name ?? "");
+
+    // 2️⃣ Separar por saltos de línea
+    const lines = replacedText.split("\n");
+
+    // 3️⃣ Renderizar cada línea con <br />
+    return lines.map((line, index) => (
+      <React.Fragment key={index}>
+        {line}
+        <br />
+      </React.Fragment>
+    ));
+  }; 
+
+  const actions = [
+    { icon: <MdOutlineFolderSpecial className="w-6 h-auto" />, name: "Caso especial", click: () => setOpenSpecialCases(true) },
+    { icon: <TiInfoLarge className="w-7 h-auto" />, name: "Información", click: () => setIsPopupOpen(true) },
+  ];
+
+
   return (
     <div className="flex flex-col gap-4 text-secondary-dark px-[10%] pb-40 ">
       {/* Título */}
@@ -267,9 +306,9 @@ const AddManagement = () => {
       <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
         <h2 className="text-xl font-semibold">Motivo de consulta</h2>
         <Autocomplete
-          options={consultation}
+          options={optionsWithIndex}
           getOptionLabel={(option) =>
-            `${option?.id || ""} | ${option?.name || ""}`
+            `${option?.index || ""} | ${option?.name || ""}`
           }
           value={selectedConsultation}
             onChange={(event, value) => {
@@ -378,92 +417,285 @@ const AddManagement = () => {
       </div>
 
       {/* Popup para mostrar la descripcion de la pagaduria */}
-<Dialog onClose={() => setModal(false)} open={modal} className="max-w-3xl mx-auto">
-      <DialogTitle className="flex justify-between items-center">
-        <p className="text-2xl font-semibold">Descripción de la pagaduría</p>
-        <button onClick={() => setModal(false)} className="text-xl font-bold p-2 hover:bg-gray-200 rounded-full">
-          X
-        </button>
-      </DialogTitle>
-
-      <DialogContent dividers className="space-y-4">
-        {selectedPayroll?.name ? (
-          <div className="space-y-4">
-            {/* Sección principal */}
-            <div className="bg-yellow-100 p-3 rounded-md border border-yellow-300">
-              <p className="font-semibold">Restablecimiento Contraseña</p>
-              <p className="mt-1 text-gray-700 italic">
-                Se envía video por medio de WhatsApp con el paso a paso para el restablecimiento de la contraseña.
-              </p>
+    <Dialog onClose={() => setModal(false)} open={modal} className="max-w-3xl mx-auto">
+        <DialogTitle className="border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 pb-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <motion.p 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-2xl font-bold bg-primary-strong bg-clip-text text-transparent"
+              >
+                Descripción de la pagaduría
+              </motion.p>
             </div>
-
-            {/* Acordeón dinámico */}
-            {[
-              {
-                title: "Restablecimiento de Contraseña",
-                content: (
-                  <p>
-                    Afiliado se comunicó indicando la necesidad de restablecer la contraseña. Se valida la información
-                    y se envía un video de WhatsApp con el paso a paso.
-                  </p>
-                ),
-              },
-              {
-                title: "Con Autorización",
-                content: (
-                  <p>
-                    Afiliado indica que desea restablecer la contraseña de Dibanka. Se valida la información y se autoriza
-                    a la persona indicada a recibir la información. Se enviará un audio explicativo con el paso a paso.
-                  </p>
-                ),
-              },
-              {
-                title: "Sin Datos Actualizados",
-                content: (
-                  <div className="space-y-2">
-                    <p>Dependiendo de la entidad:</p>
-                    <ul className="list-disc list-inside">
-                      <li>
-                        <span className="font-semibold">CASUR:</span> Se valida información y se envía al correo
-                        <a href="mailto:citse@casur.gov.co" className="text-blue-600 underline"> citse@casur.gov.co</a>
-                        el formato de actualización junto con la copia de la cédula.
-                      </li>
-                      <li>
-                        <span className="font-semibold">FPS:</span> Se valida información y se envía correo a
-                        <a href="mailto:correspondencia@fps.gov.co" className="text-blue-600 underline"> correspondencia@fps.gov.co</a>
-                        indicando nombre completo, cédula, celular, dirección, ciudad y departamento.
-                      </li>
-                    </ul>
-                  </div>
-                ),
-              },
-            ].map((section, idx) => (
-              <div key={idx} className="border rounded-md">
-                <button
-                  onClick={() => toggleSection(idx)}
-                  className="w-full flex justify-between items-center p-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-t-md"
-                >
-                  {section.title}
-                  {openSections[idx] ? <FaChevronUp /> : <FaChevronDown />}
-                </button>
-                {openSections[idx] && (
-                  <div className="p-3 text-gray-700 bg-gray-50 border-t">
-                    {section.content}
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
-        ) : (
-          <span className="text-xl text-gray-500">Seleccione una pagaduría</span>
-        )}
-      </DialogContent>
+        </DialogTitle>
+        <DialogContent dividers className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 min-h-[200px]">
+          {selectedPayroll?.name ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-blue-100 hover:shadow-md transition-shadow duration-300">
+                <div className="flex items-start gap-3">
+                  <div className="w-1 h-full bg-gradient-to-b from-blue-500 via-indigo-500 to-blue-400 rounded-full min-h-[60px]"></div>
+                  <div className="flex-1">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                      className="prose prose-blue max-w-none"
+                    >
+                      <div className="text-slate-700 leading-relaxed text-base">
+                        {renderDescription(selectedPayroll.description)}
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+              </div>
+              
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-lg px-4 py-2 border border-blue-100"
+              >
+                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                <span className="font-medium">{selectedPayroll.name}</span>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="flex flex-col items-center justify-center min-h-[200px] gap-4"
+            >
+              <motion.div
+                animate={{ 
+                  rotate: [0, 10, -10, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 1
+                }}
+                className="w-20 h-20 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg"
+              >
+                <span className="text-4xl">📝</span>
+              </motion.div>
+              <p className="text-slate-400 text-lg font-medium">
+                Seleccione una pagaduría
+              </p>
+              <div className="flex gap-2 mt-2">
+                <span className="w-2 h-2 bg-blue-300 rounded-full animate-bounce"></span>
+                <span className="w-2 h-2 bg-indigo-300 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                <span className="w-2 h-2 bg-blue-300 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+              </div>
+            </motion.div>
+          )}
+        </DialogContent>
     </Dialog>
       {/* Boton flotante */}
       <div className="fixed bottom-10 right-10 z-50">
         <SpeedDialButton actions={actions} />
       </div>
 
+      {/* POPUP DE CASOS ESPECIALES */}
+      <Dialog
+        open={openSpecialCases}
+        onClose={onClose}
+        sx={{
+          "& .MuiDialog-paper": {
+            position: "fixed",
+            right: 0,
+            top: 0,
+            height: "100vh",
+            maxHeight: "100vh",
+            width: "36%",
+            maxWidth: "none",
+            margin: 0,
+            borderRadius: "12px 0 0 12px",
+          },
+        }}
+      >
+      <div className="flex flex-col items-right justify-center p-10 w-full text-secondary-dark">
+        <DialogTitle className="flex justify-between items-center">
+          <p className="text-2xl font-semibold">Agregar caso especial</p>
+          <button
+            onClick={() => setOpenSpecialCases(false)}
+            className="text-xl font-bold p-2 hover:bg-gray-200 rounded-full"
+          >
+            X
+          </button>
+        </DialogTitle>
+
+        <DialogContent dividers className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            {/* AGENTE */}
+            <TextField
+              label="Agente"
+              value={user?.name || ""}
+              fullWidth
+              disabled
+            />
+
+            {/* PAGADURÍA */}
+            <Autocomplete
+              options={payrollSpecial || []}
+              getOptionLabel={(option) => option?.name || ""}
+              value={selectedPayrollSpecial || null}
+              onChange={(e, value) => {
+                setSelectedPayrollSpecial(value);
+                clearFieldError("payroll_id");
+                setFormData((prev) => ({
+                  ...prev,
+                  payroll_id: value?.id || "",
+                  contact_id: "",
+                }));
+                setSelectedContactSpecial(null);
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Pagaduría"
+                  error={!!validationErrorsSpecial?.payroll_id}
+                  helperText={
+                    validationErrorsSpecial?.payroll_id
+                      ? validationErrorsSpecial.payroll_id[0]
+                      : ""
+                  }
+                  fullWidth
+                />
+              )}
+            />
+
+            {/* CLIENTE */} 
+            <Autocomplete
+              options={
+                Array.isArray(contact) && selectedPayrollSpecial
+                  ? contact.filter((c) => c?.payroll?.id === selectedPayrollSpecial?.id)
+                  : contact || []
+              }
+              getOptionLabel={(option) =>
+                `${option.identification_number} | ${option.name}`
+              }
+              value={selectedContactSpecial || null}
+              onChange={(e, value) => {
+                setSelectedContactSpecial(value);
+                clearFieldError("contact_id");
+                setFormData((prev) => ({
+                  ...prev,
+                  contact_id: value?.id || "",
+                }));
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Cliente"
+                  error={!!validationErrorsSpecial?.contact_id}
+                  helperText={
+                    validationErrorsSpecial?.contact_id
+                      ? validationErrorsSpecial.contact_id[0]
+                      : ""
+                  }
+                  fullWidth
+                />
+              )}
+            />
+
+            {/* GESTIÓN DE MESSI */}
+            <FormControl
+              fullWidth
+              error={!!validationErrorsSpecial?.management_messi}
+            >
+              <InputLabel>Gestión de Messi</InputLabel>
+              <Select
+                value={formData?.management_messi || ""}
+                onChange={(e) => {
+                  clearFieldError("management_messi");
+                  setFormData((prev) => ({
+                    ...prev,
+                    management_messi: e.target.value,
+                  }));
+                }}
+                label="Gestión de Messi"
+              >
+                <MenuItem value="">Seleccione</MenuItem>
+                <MenuItem value="Nota creada">Nota creada</MenuItem>
+              </Select>
+              {validationErrorsSpecial?.management_messi && (
+                <FormHelperText>
+                  {validationErrorsSpecial.management_messi[0]}
+                </FormHelperText>
+              )}
+            </FormControl>
+
+            {/* ID LLAMADA */}
+            <TextField
+              label="ID de la llamada"
+              value={formData?.id_call || ""}
+              onChange={(e) => {
+                clearFieldError("id_call");
+                setFormData((prev) => ({
+                  ...prev,
+                  id_call: e.target.value,
+                }));
+              }}
+              error={!!validationErrorsSpecial?.id_call}
+              helperText={
+                validationErrorsSpecial?.id_call
+                  ? validationErrorsSpecial.id_call[0]
+                  : ""
+              }
+              fullWidth
+            />
+
+            {/* ID MESSI */}
+            <TextField
+              label="ID Messi"
+              value={formData?.id_messi || ""}
+              onChange={(e) => {
+                clearFieldError("id_messi");
+                setFormData((prev) => ({
+                  ...prev,
+                  id_messi: e.target.value,
+                }));
+              }}
+              error={!!validationErrorsSpecial?.id_messi}
+              helperText={
+                validationErrorsSpecial?.id_messi
+                  ? validationErrorsSpecial.id_messi[0]
+                  : ""
+              }
+              fullWidth
+            />
+          </div>
+
+          {/* BOTONES */}
+          <div className="flex justify-end gap-4 mt-6">
+            <Button
+              variant="outlined"
+              onClick={onClose}
+            >
+              Cancelar
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleSubmit}>
+              Guardar caso especial
+            </Button>
+          </div>
+        </DialogContent>
+        </div>
+      </Dialog>
+
+      {/* POPUP DE INFORMACIÓN DE LA PAGADURIA */}
+      <PopupInfoPayroll isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} infoItems={infoItems} />
+      
       {/* Snackbar para alertar al agente que hay errores en el formulario */}
       <Snackbar
         open={Object.keys(validationErrors).length > 0}

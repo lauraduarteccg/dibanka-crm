@@ -10,7 +10,7 @@ import { useConsultSpecifics } from "@modules/config/consultationSpecific/hooks/
  *  CAMPOS DEL FORMULARIO
  * =========================================================== */
 const fields = [
-  { name: "consultation_id", label: "Motivo", type: "select", options: [] },
+  { name: "consultation_id", label: "Motivo consulta", type: "autocomplete", options: [] },
   { name: "name", label: "Motivo específico", type: "text" },
 ];
 
@@ -30,12 +30,13 @@ const schema = yup.object().shape({
  * =========================================================== */
 const columns = [
   { header: "ID", key: "id" },
+  { header: "Pagaduría", key: "payroll" },
   { header: "Motivo General", key: "consultation" },
   { header: "Motivo Específico", key: "name" },
 ];
 
 /* ===========================================================
- *  COMPONENTE PRINCIPAL
+ *  COMPONENTE PRINCIPAL 
  * =========================================================== */
 const ConsultationSpecific = () => {
   const {
@@ -99,17 +100,27 @@ const ConsultationSpecific = () => {
         handleSubmit={handleSubmit}
         loading={loading}
         validationErrors={validationErrors}
-        fields={fields.map((f) =>
-          f.name === "consultation_id"
-            ? {
-                ...f,
-                options: consultationNoSpecific.map((c) => ({
+        fields={fields.map((f) => {
+          if (f.name === "consultation_id") {
+            // 🔹 Filtramos solo activos y evitamos duplicados por nombre + pagaduría
+            const uniqueOptions = [];
+            const seen = new Set();
+
+            consultationNoSpecific.forEach((c) => {
+              const key = `${c.payrolls?.name || "Sin pagaduría"}-${c.name}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                uniqueOptions.push({
                   value: c.id,
-                  label: c.name,
-                })),
+                  label: `${c.payrolls?.name || "Sin pagaduría"} - ${c.name}`,
+                });
               }
-            : f
-        )}
+            });
+
+            return { ...f, options: uniqueOptions };
+          }
+          return f;
+        })}
         schema={schema}
       />
 

@@ -6,9 +6,11 @@ import {
   updateConsultationSpecific,
   deleteConsultationSpecific,
   getConsultationsForSelect,
+  getActivePayrolls,
 } from "@modules/config/consultationSpecific/services/consultationSpecificService";
 
 export const useConsultSpecifics = () => {
+  const [payroll, setPayroll] = useState([]);
   const [consultation, setConsultation] = useState([]);
   const [consultationNoSpecific, setConsultationNoSpecific] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,7 @@ export const useConsultSpecifics = () => {
   const [perPage, setPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [isOpenADD, setIsOpenADD] = useState(false);
-
+  const [selectedPayroll, setSelectedPayroll] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
     name: "",
@@ -84,6 +86,34 @@ export const useConsultSpecifics = () => {
   useEffect(() => {
     fetchConsultations();
   }, [fetchConsultations]);
+
+  /* ===========================================================
+   *  Obtener pagadurías para selector
+   * =========================================================== */
+  const fetchPayroll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getActivePayrolls();
+      setPayroll(data);
+    } catch (err) {
+      console.error("Error al obtener pagadurías:", err);
+      setError("Error al obtener las pagadurías.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPayroll();
+  }, [fetchPayroll]);
+
+  // ==========================
+  // FILTROS
+  // ==========================
+
+const filteredConsultation = selectedPayroll
+  ? consultation.filter((item) => item?.payrolls?.id === selectedPayroll?.id)
+  : consultation;
 
   /* ===========================================================
    *  Crear o actualizar
@@ -169,6 +199,9 @@ export const useConsultSpecifics = () => {
   };
 
   return {
+    filteredConsultation,
+    payroll,
+    selectedPayroll,
     handleCloseModal,
     fetchPage,
     handleSearch,

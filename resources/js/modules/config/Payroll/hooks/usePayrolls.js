@@ -25,6 +25,10 @@ export const usePayrolls = () => {
     name: "",
     description: "",
     img_payroll: null,
+    i_title: "",
+    i_description: "",
+    i_phone: "",
+    i_email: "",
   });
 
   /* ===========================================================
@@ -34,6 +38,7 @@ export const usePayrolls = () => {
     setLoading(true);
     try {
       const data = await getPayrolls(page, search);
+      console.log(data)
       setPayrolls(data.payrolls);
       setTotalPages(data.pagination.total_pages);
       setCurrentPage(data.pagination.current_page);
@@ -95,7 +100,11 @@ export const usePayrolls = () => {
       id: item.id,
       name: item.name,
       description: item.description,
-      img_payroll: item.img_payroll,
+      img_payroll: item.img_payroll ? item.img_payroll : null,
+      i_title: item.i_title,
+      i_description: item.i_description,
+      i_phone: item.i_phone,
+      i_email: item.i_email,
     });
     setValidationErrors({});
     setIsOpenADD(true);

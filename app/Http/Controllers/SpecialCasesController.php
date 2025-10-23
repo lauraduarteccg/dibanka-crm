@@ -90,7 +90,7 @@ class SpecialCasesController extends Controller
 
         return response()->json([
             'message' => 'Caso especial creado correctamente',
-            'special case' => new SpecialCasesResource($specialcases)
+            'special_case' => new SpecialCasesResource($specialcases)
         ], Response::HTTP_CREATED);
     }
 
@@ -113,7 +113,7 @@ class SpecialCasesController extends Controller
         return response()->json([
             'succes' => true,
             'message' => 'Caso especial actualizado con exito',
-            'special case' => new SpecialCasesResource($specialcase)
+            'special_case' => new SpecialCasesResource($specialcase)
         ], Response::HTTP_OK);
     }
 
@@ -138,7 +138,7 @@ class SpecialCasesController extends Controller
             'message' => $specialcase->is_active
                 ? 'Caso especial activado correctamente'
                 : 'Caso especial desactivado correctamente',
-            'special case' => new SpecialCasesResource($specialcase)
+            'special_case' => new SpecialCasesResource($specialcase)
         ], Response::HTTP_OK);
     }
 }

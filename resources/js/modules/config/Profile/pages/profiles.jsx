@@ -48,7 +48,7 @@ const Profiles = () => {
         <Search onSearch={handleSearch} placeholder="Buscar rol..." />
       </div>
 
-      {/* Tabla */}
+      {/* Tabla */ }
       {loading ? (
         <Loader />
       ) : (
@@ -59,7 +59,8 @@ const Profiles = () => {
           totalPages={totalPages}
           rowsPerPage={perPage}
           totalItems={totalItems}
-          fetch={(page) => fetchPage(page)}
+          onPageChange={fetchPage}
+          fetchPage={(page) => fetchPage(page)}
           onDelete={(id) => handleDelete(id)}
           actions={true}
           onActiveOrInactive={false}

@@ -64,6 +64,19 @@ class ContactController extends Controller
         ], Response::HTTP_OK);
     }
 
+    // Obtener contactos activos sin paginación
+    public function active(Request $request)
+    {
+        $contacts = Contact::where('is_active', 1)->with('payroll')->get();
+        log_activity('ver_listado', 'Contactos', [
+            'mensaje' => "El usuario {$request->user()->name} consultó el listado de contactos activos.",
+        ], $request);
+        return response()->json([
+            'message' => 'Contactos activos obtenidos con éxito',
+            'contacts' => ContactResource::collection($contacts)
+        ], Response::HTTP_OK);
+    }
+
     // Crear contact
     public function store(ContactRequest $request)
     {

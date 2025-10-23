@@ -94,10 +94,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('{role}', [RoleController::class, 'update'])->middleware('permission:config.role.edit');
             Route::delete('{role}', [RoleController::class, 'destroy'])->middleware('permission:config.role.delete');
         });
-        
+
         // ------------------- Actividad y logs -------------------
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->middleware('permission:config.role.view');
-        
+
         // ------------------- Lista de permisos -------------------
         Route::get('/permissions', [RoleController::class, 'getPermissions'])
             ->middleware('permission:config.role.view');
@@ -109,13 +109,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // ------------------- Contactos -------------------
     Route::get('/contacts', [ContactController::class, 'index'])->middleware('permission:contact.view');
+    Route::get('/contacts/active', [ContactController::class, 'active'])->middleware('permission:contact.view');
     Route::post('/contacts', [ContactController::class, 'store'])->middleware('permission:contact.create');
     Route::put('/contacts/{contact}', [ContactController::class, 'update'])->middleware('permission:contact.edit');
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->middleware('permission:contact.delete');
 
     // ------------------- Pagadurías -------------------
     Route::get('/payrolls', [PayrollController::class, 'index'])->middleware('permission:payroll.view');
-    Route::get('/payrolls-all', [PayrollController::class, 'all'])->middleware('permission:payroll.view');
     Route::get('/payrolls/active', [PayrollController::class, 'active'])->middleware('permission:payroll.view');
 
     // ------------------- Seguimientos -------------------

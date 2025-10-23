@@ -13,6 +13,11 @@ const fields = [
     { name: "name", label: "Nombre", type: "text" },
     { name: "description", label: "Descripción", type: "longtext" },
     { name: "img_payroll", label: "Imagen de pagaduría", type: "file", withLabel: false },
+    { type: "additional", text: "La siguiente información es opcional y se coloca en el popup de información." },
+    { name: "i_title", label: "Título de la información", type: "text" },
+    { name: "i_description", label: "Descripción de la información", type: "longtext" },
+    { name: "i_phone", label: "Teléfono de la información", type: "text" },
+    { name: "i_email", label: "Email de la información", title: "INFORMA", type: "text" },
 ];
 
 /* ===========================================================
@@ -28,6 +33,10 @@ const payrollSchema = yup.object().shape({
             if (value instanceof File) return true;
             return false;
         }),
+    i_title: yup.string(),
+    i_description: yup.string(),
+    i_phone: yup.string(),
+    i_email: yup.string(),
 });
 
 /* ===========================================================
@@ -89,7 +98,7 @@ const Payroll = () => {
                 <Search onSearch={handleSearch} placeholder="Buscar pagaduría..." />
             </div>
 
-            {/* Modal Formulario */}
+            {/* Modal Formulario */ }
             <FormAdd
                 isOpen={isOpenADD}
                 setIsOpen={handleCloseModal}

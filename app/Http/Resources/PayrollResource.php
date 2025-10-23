@@ -21,6 +21,10 @@ class PayrollResource extends JsonResource
             'img_payroll' => $this->img_payroll 
                 ? asset('storage/' . $this->img_payroll) 
                 : null,
+            'i_title' => $this->i_title,
+            'i_description' => $this->i_description,
+            'i_phone' => $this->i_phone,
+            'i_email' => $this->i_email,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
         ];

@@ -16,6 +16,7 @@ export const getConsultationSpecifics = async (page = 1, search = "") => {
     ...s,
     consultation: s.consultation?.name || "—",
     consultation_id: s.consultation?.id || null,
+    payroll: s.consultation?.payroll?.name || "—",
   }));
 
   return {
@@ -59,4 +60,12 @@ export const deleteConsultationSpecific = async (id) => {
 export const getConsultationsForSelect = async () => {
   const { data } = await api.get("/config/consultations/active");
   return data || [];
+};
+
+/**
+ * Pagadurías activas.
+ */
+export const getActivePayrolls = async () => {
+  const { data } = await api.get("/payrolls/active");
+  return data.data || [];
 };

@@ -12,14 +12,14 @@ export const getRoles = async (page = 1, search = "") => {
     `/config/roles?page=${page}&search=${encodeURIComponent(search)}`
   );
 
-
+console.log(data)
   return {
     roles: data.roles || [],
     pagination: {
       total_pages: data.pagination?.total_pages ?? 1,
       current_page: data.pagination?.current_page ?? 1,
       per_page: data.pagination?.per_page ?? 10,
-      total_roles: data.pagination?.total_roles ?? 0,
+      total_roles: data.pagination?.total_items ?? 0,
     },
   };
 };

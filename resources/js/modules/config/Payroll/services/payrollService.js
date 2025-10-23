@@ -9,7 +9,7 @@ import api from "@api/axios";
  */
 export const getPayrolls = async (page = 1, search = "") => {
   const { data } = await api.get(
-    `/config/payrolls-all?page=${page}&search=${encodeURIComponent(search)}`
+    `/config/payrolls?page=${page}&search=${encodeURIComponent(search)}`
   );
   return {
     payrolls: data.data || [],

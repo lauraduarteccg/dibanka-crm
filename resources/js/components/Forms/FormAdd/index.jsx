@@ -5,7 +5,7 @@ import { AuthContext } from "@context/AuthContext";
 import Button from "@components/ui/Button";
 import PrettyFileInput from "@components/forms/PrettyFileInput";
 import { Dialog, Slide } from "@mui/material";
-import { Autocomplete, TextField, Select, MenuItem, InputLabel, FormControl, Snackbar, Alert } from "@mui/material";
+import { Autocomplete, TextField, Select, MenuItem, InputLabel, FormControl, Snackbar, Alert, Typography, Box } from "@mui/material";
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="left" ref={ref} {...props} />;
@@ -199,6 +199,20 @@ const FormAdd = ({
                       setFormData({ ...formData, [field.name]: file });
                     }}
                   />
+                ) : field.type === "additional" ? (
+                  <Box
+                    sx={{
+                      backgroundColor: "#f5f5f5",
+                      borderLeft: "4px solid #1976d2",
+                      padding: 2,
+                      borderRadius: 1,
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant="subtitle1" color="text.primary" fontWeight="500">
+                      {field.text}
+                    </Typography>
+                  </Box>
                 ) : (
                   <TextField
                     fullWidth
