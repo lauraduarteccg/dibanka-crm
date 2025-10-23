@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
-import { X, Phone, FileText, Mail, Link2, Calendar, DollarSign, Users, AlertCircle, Search } from 'lucide-react';
+import { 
+  MdClose, 
+  MdPhone, 
+  MdDescription, 
+  MdEmail, 
+  MdCalendarToday, 
+  MdAttachMoney, 
+  MdPeople, 
+  MdSearch 
+} from 'react-icons/md';
+import { PiWarningCircleLight } from "react-icons/pi";
 
 const PopupInfoPayroll = ({isOpen, setIsOpen, infoItems}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const categories = [
-    { id: 'all', name: 'Todo', icon: <Users size={18} /> },
-    { id: 'general', name: 'General', icon: <Calendar size={18} /> },
-    { id: 'actualiza', name: 'Actualización', icon: <FileText size={18} /> },
-    { id: 'enrolamiento', name: 'Enrolamiento', icon: <Users size={18} /> },
-    { id: 'contra', name: 'Contraseña', icon: <Calendar size={18} /> },
-    { id: 'credito', name: 'Solicitud crédito', icon: <DollarSign size={18} /> },
-    { id: 'bloqueos', name: 'Bloqueos', icon: <AlertCircle size={18} /> },
+    { id: 'all', name: 'Todo', icon: <MdPeople size={18} /> },
+    { id: 'general', name: 'General', icon: <MdCalendarToday size={18} /> },
+    { id: 'actualiza', name: 'Actualización', icon: <MdDescription size={18} /> },
+    { id: 'enrolamiento', name: 'Enrolamiento', icon: <MdPeople size={18} /> },
+    { id: 'contra', name: 'Contraseña', icon: <MdCalendarToday size={18} /> },
+    { id: 'credito', name: 'Solicitud crédito', icon: <MdAttachMoney size={18} /> },
+    { id: 'bloqueos', name: 'Bloqueos', icon: <PiWarningCircleLight size={23} /> },
   ];
 
   const tickets = [
@@ -71,7 +81,7 @@ const PopupInfoPayroll = ({isOpen, setIsOpen, infoItems}) => {
           {/* Search Bar */}
           <div className="w-full m-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
                 placeholder="Buscar información..."
@@ -87,7 +97,7 @@ const PopupInfoPayroll = ({isOpen, setIsOpen, infoItems}) => {
               onClick={() => setIsOpen(false)}
               className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 text-white"
             >
-              <X size={24} />
+              <MdClose size={24} />
             </button>
           </div>
         </div>
@@ -164,7 +174,7 @@ const PopupInfoPayroll = ({isOpen, setIsOpen, infoItems}) => {
                         <div className="flex flex-wrap gap-2">
                           {section.contact.map((c, i) => (
                             <div key={i} className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-purple-200">
-                              {c.type === 'email' ? <Mail size={16} className="text-blue-600" /> : <Phone size={16} className="text-green-600" />}
+                              {c.type === 'email' ? <MdEmail size={16} className="text-blue-600" /> : <MdPhone size={16} className="text-green-600" />}
                               <span className="text-gray-700 text-sm font-mono">{c.value}</span>
                             </div>
                           ))}
@@ -179,7 +189,7 @@ const PopupInfoPayroll = ({isOpen, setIsOpen, infoItems}) => {
                 <div className="mt-3 flex flex-wrap gap-3">
                   {item.contact.map((c, i) => (
                     <div key={i} className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg border border-gray-200">
-                      {c.type === 'email' ? <Mail size={16} className="text-blue-600" /> : <Phone size={16} className="text-green-600" />}
+                      {c.type === 'email' ? <MdEmail size={16} className="text-blue-600" /> : <MdPhone size={16} className="text-green-600" />}
                       <span className="text-gray-700 text-sm font-mono">{c.value}</span>
                     </div>
                   ))}
@@ -191,7 +201,7 @@ const PopupInfoPayroll = ({isOpen, setIsOpen, infoItems}) => {
           {/* Tickets Section */}
           <div className="mt-6 pt-6 border-t border-gray-300">
             <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <AlertCircle className="text-amber-500" size={24} />
+              <PiWarningCircleLight className="text-amber-500" size={24} />
               Tickets de Seguimiento
             </h3>
             <div className="space-y-3">
@@ -202,7 +212,7 @@ const PopupInfoPayroll = ({isOpen, setIsOpen, infoItems}) => {
                 >
                   <div className="flex items-start gap-3">
                     <div className="bg-amber-100 p-2 rounded-lg">
-                      <AlertCircle className="text-amber-600" size={20} />
+                      <PiWarningCircleLight className="text-amber-600" size={20} />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-amber-800 mb-2 uppercase text-sm">

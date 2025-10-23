@@ -26,7 +26,7 @@ const Calendar = ({
     <>
       {/* Botón abrir calendario */}
       <button
-        className="fixed top-24 right-0 w-40 h-12 bg-purple-light z-50 shadow-custom
+        className="fixed top-64 right-0 w-40 h-12 bg-purple-light z-50 shadow-custom
                    rounded-bl-2xl rounded-tl-2xl hover:scale-105
                    transition-all duration-200 ease-in-out"
         onClick={() => setCalendarOpen(true)}
