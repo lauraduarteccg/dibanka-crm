@@ -48,6 +48,7 @@ class RolePermissionSeeder extends Seeder
                 'config.specific.delete',
 
                 //  Gestiones
+                'management.viewFiltred',
                 'management.view',
                 'management.create',
                 'management.edit',

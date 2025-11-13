@@ -16,32 +16,41 @@ class PayrollController extends Controller
     {
         $query = Payroll::query();
 
-        // Si hay término de búsqueda, aplicar filtro
-        if ($request->has('search') && !empty($request->search)) {
+        // 🔹 Si viene un payrollId, filtramos por él directamente
+        if ($request->has('payroll_id') && !empty($request->payrollId)) {
+            $query->where('id', $request->payrollId);
+        }
+
+        // 🔹 Si hay término de búsqueda, aplicar filtro
+        elseif ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
 
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('description', 'LIKE', "%{$searchTerm}%");
+                ->orWhere('description', 'LIKE', "%{$searchTerm}%");
             });
         }
 
         $payrolls = $query->paginate(10);
+
+        // 🔹 Registrar actividad
         log_activity('ver_listado', 'Pagadurías', [
             'mensaje' => "El usuario {$request->user()->name} visualizó el listado de pagadurías" .
-                ($request->filled('search') ? " aplicando el filtro: '{$request->search}'" : ""),
+                ($request->filled('search') ? " aplicando el filtro: '{$request->search}'" : "") .
+                ($request->filled('payrollId') ? " filtrando por ID: '{$request->payrollId}'" : ""),
             'criterios' => [
                 'búsqueda' => $request->search ?? null,
+                'payrollId' => $request->payrollId ?? null,
             ],
         ], $request);
 
         return response()->json([
-            'message'    => 'Pagadurías obtenidas con éxito',
-            'data'   => PayrollResource::collection($payrolls),
+            'message' => 'Pagadurías obtenidas con éxito',
+            'data' => PayrollResource::collection($payrolls),
             'pagination' => [
-                'current_page'   => $payrolls->currentPage(),
-                'total_pages'    => $payrolls->lastPage(),
-                'per_page'       => $payrolls->perPage(),
+                'current_page' => $payrolls->currentPage(),
+                'total_pages' => $payrolls->lastPage(),
+                'per_page' => $payrolls->perPage(),
                 'total_payrolls' => $payrolls->total(),
             ]
         ], Response::HTTP_OK);

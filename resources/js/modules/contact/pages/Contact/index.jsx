@@ -67,7 +67,7 @@ const columns = [
     { header: "Correo", key: "email" },
     { header: "Teléfono", key: "phone" },
     { header: "Celular actualizado", key: "update_phone" },
-    { header: "Tipo de identificación", key: "identification_type" },
+    //{ header: "Tipo de identificación", key: "identification_type" },
     { header: "Número de identificación", key: "identification_number" },
 ];
 
@@ -83,7 +83,7 @@ const columnsManagement = [
 ];
 
 
-const Contact = () => {
+const Contact = ({addContact, searchContact, viewManagementContact, editContact, activeOrDesactiveContact}) => {
 const { can, canAny } = useCan();
 const navigate = useNavigate();
     const {
@@ -128,13 +128,15 @@ const navigate = useNavigate();
         <>
             {can("contact.create") && (
                 <ButtonAdd
+                    id={addContact}
                     onClickButtonAdd={() => setIsOpenADD(true)}
                     text="Agregar contacto"
                 />
             )}
 
-            <div className="flex justify-end px-12 -mt-10 ">
+            <div  className="flex justify-end px-12 -mt-10 ">
                 <Search
+                    id={searchContact} 
                     onSearch={handleSearch}
                     placeholder="Buscar contacto..."
                 />
@@ -166,6 +168,8 @@ const navigate = useNavigate();
                     return field;
                 })}
                 schema={userSchema}
+
+                /*  */
             />
 
             {loading ? (
@@ -187,6 +191,10 @@ const navigate = useNavigate();
                         setSelectedContact(row);
                         navigate(`/gestiones?search=${row.identification_number}`);
                     }}
+                    //IDS
+                    idManagement={viewManagementContact}  
+                    idEdit={editContact}
+                    idOnActiveOrInactive={activeOrDesactiveContact}
                 />
             )}
         </>

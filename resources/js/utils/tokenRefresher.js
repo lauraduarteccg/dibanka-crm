@@ -2,7 +2,7 @@
 import { useEffect, useContext, useRef } from "react";
 import { AuthContext } from "@context/AuthContext";
 
-export const useTokenRefresher = (intervalMin = 35) => {
+export const useTokenRefresher = (intervalMin = z) => {
   const { user, refreshAuthToken } = useContext(AuthContext);
   const intervalRef = useRef(null);
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 
-export default function SearchBar({ onSearch, placeholder = "Buscar gestión..." }) {
+export default function SearchBar({ id, onSearch, placeholder = "Buscar gestión..." }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (e) => {
@@ -19,6 +19,7 @@ export default function SearchBar({ onSearch, placeholder = "Buscar gestión..."
           backdrop-blur-sm shadow-md
           transition-colors
         "
+        id={id}
       >
         {/* Icono de búsqueda (MUI) */}
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center gap-2 justify-center pl-3 text-white">

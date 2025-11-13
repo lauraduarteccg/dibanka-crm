@@ -9,7 +9,7 @@ export const useAddManagementForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useContext(AuthContext);
-
+  const [isPopupOpen, setIsPopupOpen] = useState(true);
   const {
     modal,
     setModal,
@@ -158,188 +158,14 @@ export const useAddManagementForm = () => {
       index: i + 1, // 👈 empezamos desde 1
     }));
 
-    const infoItems = [
-      // GENERAL
-      {
-        category: 'general',
-        title: 'Llamada Caída',
-        items: [
-          'Ingresa llamada sin comunicación → Restablecimiento enviando a buzón de voz',
-          'Ingresa llamada sin comunicación → No se restablece por disponibilidad de línea'
-        ]
-      },
-      {
-        category: 'general',
-        title: 'Desprendible de Nómina',
-        description: 'Afiliado desea descargar desprendible de nómina',
-        action: 'Validar datos e informar que debe comunicarse con la pagaduría'
-      },
-      {
-        category: 'general',
-        title: 'Activación Correo Institucional',
-        description: 'Afiliado solicita activación del correo institucional',
-        action: 'Validar datos e indicar que debe solicitarlo a pagaduría Casur por los siguientes medios:',
-        contact: [
-          { type: 'email', value: 'citse@casur.gov.co' },
-          { type: 'phone', value: '601 286 0911' }
-        ]
-      },
-      {
-        category: 'general',
-        title: 'Link de Plataforma',
-        description: 'Afiliado desea conocer los pasos para ingresar',
-        action: 'Validar datos e indicar los pasos para el ingreso'
-      },
-      {
-        category: 'general',
-        title: 'Apertura/Cierre Plataforma',
-        items: [
-          'Afiliado desea validar fecha de apertura de la plataforma. Se validan los datos, se le informa que actualmente no contamos con fecha de apertura.',
-          'Afiliado se comunica indicando que quiere conocer fecha de apertura y cierre de la plataforma Dibanka. Se hace validación de datos, se le indica que la plataforma abrió el día __ de octubre y cierra para compra de cartera el día __ de noviembre y su cierre total es el día __ de noviembre.',
-          'Afiliado desea validar fecha de cierre. Se validan los datos, se le informa que la plataforma dará cierre',
-        ]
-      },
-      {
-        category: 'general',
-        title: 'Cupo Disponible Actualizado',
-        items: [
-          'Cuota 0 en la siguiente nómina',
-          'Retiro otras causales automático'
-        ]
-      },
-      {
-        category: 'general',
-        title: 'Afiliado Tejen',
-        description: 'Afiliada Tejen desea registrarse en Dibanka',
-        action: 'Validar datos e indicar que NO debe hacer registro en plataforma de Dibanka. La entidad reporta el crédito directamente a pagaduría'
-      },
-      {
-        category: 'general',
-        title: 'Embargo',
-        description: 'Afiliado indica embargo',
-        action: 'Validar datos'
-      },
-      // ACTUALIZACIÓN DE DATOS
-      {
-        category: 'actualiza',
-        title: selectedPayroll?.name || "Seleccione una pagaduría",
-        description: selectedPayroll?.i_description || "Seleccione una pagaduría",
-        contact: [
-          { type: 'email', value: selectedPayroll?.i_email || "Seleccione una pagaduría" },
-          { type: 'phone', value: selectedPayroll?.i_phone || "Seleccione una pagaduría" }
-        ]
-      },
-      // ENROLAMIENTO
-      {
-        category: 'enrolamiento',
-        title: 'Enrolamiento con autorización a tercero',
-        description: 'Desea registrarse en Dibanka. Se validan los datos, autoriza a la señora a recibir la información; se le indican los pasos para el ingreso, por la opción registrarme asigna contraseña, realiza el registro biométrico culminando con un enrolamiento exitoso.'
-      },
-      {
-        category: 'enrolamiento',
-        title: 'Enrolamiento',
-        description: 'Desea registrarse en Dibanka. Se validan los datos, se le indican los pasos para el ingreso, por la opción registrarme asigna contraseña, realiza el registro biométrico culminando con un enrolamiento exitoso.'
-      },
-      // RECUPERAR CONTRASEÑA
-      {
-        category: 'contra',
-        title: 'Restablecimiento de contraseña',
-        description: 'Afiliado se comunicó por qué necesita restablecer la contraseña, se hace validación de datos y cuenta con datos actualizados, se le indica que se va a restablecer contraseña, se procede a enviar video de WhatsApp donde le van brindar paso a paso para el restablecimiento de contraseña',
-        action: 'Se envía el video por medio de WhatsApp con el paso a paso para el restablecimiento de la contraseña'
-      },
-      {
-        category: 'contra',
-        title: 'Restablecimiento de contraseña con autorización',
-        description: 'Afiliado indica que desea restablecer la contraseña de Dibanka. Se validan los datos, autoriza a la señora _____________ a recibir la información; se le indica que se transferirá con un audio que le indicara el paso a paso para el restablecimiento'
-      },
-      {
-        category: 'contra',
-        title: 'Restablecimiento de contraseña sin datos actualizados',
-        sections: [
-          {
-            subtitle: 'CASUR',
-            description: 'Afiliado se comunicó por qué necesita restablecer la contraseña. Se validan los datos, se evidencia desactualizados, se le informa que debe solicitar el formato de actualización al correo citse@casur.gov.co una vez cuente con el formato, lo diligencia y lo envía al correo que le acabo de indicar junto con la copia de su cédula.',
-            contact: [
-              { type: 'email', value: 'citse@casur.gov.co' }
-            ]
-          },
-          {
-            subtitle: 'FPS',
-            description: 'Pensionado se comunicó por qué necesita restablecer la contraseña. Se validan los datos, se evidencia desactualizados, se le informa que debe actualizar datos, enviar un correo electrónico a correspondencia@fps.gov.co indicando nombre completo, cédula, celular, correo electrónico, dirección, ciudad y departamento; se le sugiere comunicarse cuando cuente con N° radicado.',
-            contact: [
-              { type: 'email', value: 'correspondencia@fps.gov.co' }
-            ]
-          }
-        ]
-      },
-      // SOLICITUD CRÉDITO
-      {
-        category: 'credito',
-        title: 'Solicitud de crédito sin pre-aprobado',
-        description: 'desea asesoría para el ingreso de la solicitud. Se validan los datos, no cuenta con el pre aprobado, se le indica que desde la plataforma podrá realizar una simulación con el fin de evidenciar las entidades o puede comunicarse con la entidad que desee realizar la solicitud y cuando cuente con la información comunicarse a la línea Dibanka para radicar el crédito. '
-      },
-      {
-        category: 'credito',
-        title: 'Solicitud de crédito exitosa',
-        description: 'desea asesoría para el ingreso de la solicitud. Se validan los datos, se le sugiere ingresar a la plataforma, se le indican pasos para el ingreso, realiza el registro biométrico y se culmina el ingreso de la solicitud de forma exitosa.'
-      },
-      // BLOQUEOS
-      {
-        category: 'bloqueos',
-        title: 'BLOQUEO DESCUENTO EN COLA ',
-        action: 'CUANDO SOLO SE BRINDA INFORMACIÓN DE DESCUENTO EN COLA LA PLANTILLA EN MESSI ES DESBLOQUEO DESCUENTO EN COLA',
-        sections: [
-          {
-            subtitle: 'información general des-cola',
-            description: 'indica que presenta un bloqueo por descuento en cola y desea validar la razón. Se validan los datos, se le informa que es con la entidad __________ debe comunicarse con ellos para llegar a un acuerdo y se pueda retirar el bloqueo. ',
-          },
-          {
-            subtitle: 'envío a soporte - ticket en validación',
-            description: 'indica que presenta un bloqueo por descuento en cola, envió la solicitud a soporte y desea validar una respuesta. Se validan los datos, se le indica que la solicitud fue recibida bajo el N°  esta se encuentra en validación nos comunicaremos cuando contemos con una respuesta.',
-          },
-          {
-            subtitle: 'en validación',
-            description: 'indica que tiene un bloqueo por descuento en cola y desea validar si ya tenemos una respuesta. Se validan los datos, se le informa que la solicitud está en validación bajo el N° ____ nos comunicaremos cuando contemos con una respuesta. ',
-          },
-        ]
-      },
-      {
-        category: 'bloqueos',
-        title: 'CASUR (INGRESO CONCEPTO 222)',
-        description: 'Afiliado indica que presenta un bloqueo por descuento en cola y desea validar la razón. Se validan los datos, se le informa que es con la entidad __________ debido a que se evidencia con el estado Descuento en Cola ya que ingresó el descuento bajo el concepto 222 (Bienestar social de la policía nacional) debe esperar a la siguiente apertura para que se normalice el ingreso del descuento a la nómina.'
-      },
-      {
-        category: 'bloqueos',
-        title: 'BLOQUEO ESPECIAL DE NOMINA',
-        description: 'indica que al intentar ingresar a Dibanka le aparece un bloqueo especial de nómina y desea validar la razón. Se validan los datos, se le informa que es un bloqueo preventivo que se genera en la plataforma debido a que se está tomando el 50% de las asignación salarial. '
-      },
-      {
-        category: 'bloqueos',
-        title: 'BLOQUEO BAJA PAGADURÍA',
-        description: 'indica que cuenta con un bloqueo de BAJAPAGADURIA y desea validar la razón y para cuando le será retirado el bloqueo. Se validan los datos, se le indica que es debido a una actualización en la DATA que se está realizando por parte de Dibanka. '
-      },
-      {
-        category: 'bloqueos',
-        title: 'BLOQUEO POR INTENTOS FALLIDOS',
-        description: 'indica que al ingresar a la plataforma  evidencia un bloqueo por intentos fallidos. Se validan los datos, se le indica que se transferirá con un audio que le indicara el paso a paso para el restablecimiento '
-      },
-      {
-        category: 'bloqueos',
-        title: 'BLOQUEO INICIO DE SESIÓN EN OTRO DISPOSITIVO',
-        description: 'indica que intenta ingresar a la plataforma pero evidencia un bloqueo de inicio de sesión en otro dispositivo. Se validan los datos, se le indica que el bloqueo se presenta debido a que se ingresó a la plataforma y no se cerró de forma correcta debe esperar 5 minutos para que le permita el acceso nuevamente, se le sugiere cerrar correctamente la plataforma desde la parte superior derecha en la casilla salir. '
-      },
-      {
-        category: 'bloqueos',
-        title: 'BLOQUEO POR SEGURIDAD',
-        description: 'indica que al ingresar a la plataforma evidencia un bloqueo por seguridad. Se validan los datos, se evidencia bloqueo; se le informa que el bloqueo es debido a inconsistencia en el registro biométrico se le solicita el envío de una carta indicando lo sucedido y solicitando el desbloqueo, adjuntando copia de cédula, y copia del carnet institucional/desprendible de nomina enviar al correo soporte@dibanka.co con copia al correo desde el correo institucional'
-      },
-    ];
+
 
   // ==========================
   // RETORNO DEL HOOK
   // ==========================
   return {
-    infoItems,
+    isPopupOpen,
+    setIsPopupOpen,
     // Estados
     payroll,
     campaign,

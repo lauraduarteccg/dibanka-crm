@@ -89,11 +89,15 @@ export const getActivePayrolls = async () => {
 /**
  * Contactos.
  */
-export const getContacts = async () => {
-  const { data } = await api.get("/contacts");
-  return data.contacts || [];
+export const getContacts = async (page = 1, search = "") => {
+  const { data } = await api.get(`/contacts?page=${page}&search=${encodeURIComponent(search)}`);
+  return data || [];
 };
 
+/* export const getManagements = async (page = 1, search = "") => {
+  const { data } = await api.get(
+    `/management?page=${page}&search=${encodeURIComponent(search)}`
+  ); */
 
 
 /**

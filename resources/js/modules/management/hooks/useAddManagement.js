@@ -1,226 +1,244 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Swal from "sweetalert2";
 import {
-  getManagements,
-  saveManagement,
-
-  getActiveTypeManagements,
-  getActiveConsultations,
-  getActiveSpecificConsultations,
-  getActivePayrolls,
-  getContacts
+    getManagements,
+    saveManagement,
+    getContacts,
 } from "@modules/management/services/managementService";
+import { useManagementStaticData } from "@modules/management/context/ManagementStaticDataContext";
+import { useDebounce } from "@modules/management/hooks/useDebounce";
 
 export const useAddManagement = () => {
-  const [management, setManagement] = useState([]);
-  const [payroll, setPayroll] = useState([]);
-  const [contact, setContact] = useState([]);
-  const [consultation, setConsultation] = useState([]);
-  const [typeManagement, setTypeManagement] = useState([]);
-  const [specific, setSpecific] = useState([]);
+    // Usar datos estáticos del contexto compartido
+    const {
+        payroll,
+        typeManagement,
+        consultation,
+        specific,
+        loading: staticDataLoading,
+    } = useManagementStaticData();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [IsOpenADD, setIsOpenADD] = useState(false);
-  const [view, setView] = useState(false);
-  const [modal, setModal] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
+    const [management, setManagement] = useState([]);
+    const [contact, setContact] = useState([]);
 
-  /* ===========================================================
-   *  FETCH GESTIONES
-   * =========================================================== */
-  const fetchManagement = useCallback(async (page = 1, search = "") => {
-    setLoading(true);
-    try {
-      const data = await getManagements(page, search);
-      setManagement(data.managements);
-      setTotalPages(data.pagination.last_page);
-      setCurrentPage(data.pagination.current_page);
-    } catch (err) {
-      console.error(err);
-      setError("Error al obtener las gestiones.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [validationErrors, setValidationErrors] = useState({});
 
-  useEffect(() => {
-    fetchManagement(currentPage, searchTerm);
-  }, [fetchManagement, currentPage, searchTerm]);
+    // Paginación general
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchPage = useCallback(
-    (page) => fetchManagement(page, searchTerm),
-    [fetchManagement, searchTerm]
-  );
+    // Contactos
+    const [currentPageContact, setCurrentPageContact] = useState(1);
+    const [totalPagesContact, setTotalPagesContact] = useState(1);
+    const [searchTermContact, setSearchTermContact] = useState("");
+    const [perPageContact, setPerPageContact] = useState(10);
+    const [totalItemsContact, setTotalItemsContact] = useState(0);
 
-  const handleSearch = useCallback((value) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  }, []);
+    // Modales
+    const [IsOpenADD, setIsOpenADD] = useState(false);
+    const [view, setView] = useState(false);
+    const [modal, setModal] = useState(false);
 
-  /* ===========================================================
-   *  CREAR / ACTUALIZAR GESTIÓN
-   * =========================================================== */
-const handleSubmit = async (payload) => {
-  setLoading(true);
-  setValidationErrors({});
+    // Debounce para búsqueda de contactos (optimización)
+    const debouncedSearchContact = useDebounce(searchTermContact, 500);
 
-  try {
-    const response = await saveManagement(payload);
+    // Refs para evitar loops
+    const isFetchingContacts = useRef(false);
 
-    Swal.fire({
-      title: "Gestión guardada",
-      text: "La gestión ha sido creada correctamente.",
-      icon: "success",
-      timer: 1500,
-      showConfirmButton: false,
-    });
+    /* ===========================================================
+     *  FETCH GESTIONES (solo cuando se necesita)
+     * =========================================================== */
+    const fetchManagement = useCallback(async (page = 1, search = "") => {
+        try {
+            const data = await getManagements(page, search);
+            setManagement(data.managements);
+            setTotalPages(data.pagination.last_page);
+            setCurrentPage(data.pagination.current_page);
+        } catch (err) {
+            console.error(err);
+            setError("Error al obtener las gestiones.");
+        }
+    }, []);
 
-    setIsOpenADD(false);
-    fetchManagement(currentPage, searchTerm);
-    return true;
+    /* ===========================================================
+     *  FETCH CONTACTOS (optimizado con debounce)
+     * =========================================================== */
+    const fetchContacts = useCallback(async (page = 1, search = "") => {
+        if (isFetchingContacts.current) return; // Evitar peticiones simultáneas
 
-  } catch (error) {
-    if (error.response?.status === 422) {
-      setValidationErrors(error.response.data.errors);
-    } else {
-      console.error("Error al guardar gestión:", error);
-      Swal.fire({
-        title: "Error",
-        text: "Ocurrió un error al guardar la gestión.",
-        icon: "error",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    }
-    return false;
-  } finally {
-    setLoading(false);
-  }
-};
+        isFetchingContacts.current = true;
+        try {
+            const contactData = await getContacts(page, search);
+            setContact(contactData.contacts || []);
+            setCurrentPageContact(contactData.pagination?.current_page || 1);
+            setTotalPagesContact(
+                contactData.pagination?.total_pages ||
+                    contactData.pagination?.last_page ||
+                    1
+            );
+            setPerPageContact(contactData.pagination?.per_page || 10);
+            setTotalItemsContact(contactData.pagination?.total_contacts || 0);
+        } catch (err) {
+            console.error("Error al obtener contactos:", err);
+        } finally {
+            isFetchingContacts.current = false;
+        }
+    }, []);
 
+    // Cargar contactos solo cuando cambie la página o búsqueda (con debounce)
+    useEffect(() => {
+        fetchContacts(currentPageContact, debouncedSearchContact);
+    }, [currentPageContact, debouncedSearchContact, fetchContacts]);
 
-  /* ===========================================================
-   *  FETCH LISTAS (Pagadurías, Contactos, Consultas, etc.)
-   * =========================================================== */
-  const fetchPayroll = useCallback(async () => {
-    try {
-      const data = await getActivePayrolls();
-      setPayroll(data);
-    } catch {
-      setError("Error al obtener los payrolls.");
-    }
-  }, []);
-  const fetchContact = useCallback(async (page = 1, search = "") => {
-    setLoading(true);
-    try {
-      const data = await getContacts(page, search);
-      setContact(data);
+    /* ===========================================================
+     *  CREAR / ACTUALIZAR GESTIÓN
+     * =========================================================== */
+    const handleSubmit = useCallback(
+        async (payload) => {
+            setLoading(true);
+            setValidationErrors({});
+            try {
+                await saveManagement(payload);
 
-    } catch (err) {
-      console.error(err);
-      setError("Error al obtener los contactos.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+                Swal.fire({
+                    title: "Gestión guardada",
+                    text: "La gestión ha sido creada correctamente.",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
 
-  const fetchTypeManagement = useCallback(async () => {
-    try {
-      const data = await getActiveTypeManagements();
-      setTypeManagement(data);
-    } catch {
-      setError("Error al obtener los tipos de gestión.");
-    }
-  }, []);
+                setIsOpenADD(false);
+                fetchManagement(currentPage, searchTerm);
+                return true;
+            } catch (error) {
+                if (error.response?.status === 422) {
+                    setValidationErrors(error.response.data.errors);
+                } else {
+                    console.error("Error al guardar gestión:", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: "Ocurrió un error al guardar la gestión.",
+                        icon: "error",
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                }
+                return false;
+            } finally {
+                setLoading(false);
+            }
+        },
+        [currentPage, searchTerm, fetchManagement]
+    );
 
-  const fetchConsultation = useCallback(async () => {
-    try {
-      const data = await getActiveConsultations();
-      setConsultation(data);
-    } catch {
-      setError("Error al obtener las consultas.");
-    }
-  }, []);
+    /* ===========================================================
+     *  BÚSQUEDAS Y PAGINACIÓN
+     * =========================================================== */
+    const fetchPage = useCallback(
+        (page) => {
+            fetchManagement(page, searchTerm);
+        },
+        [searchTerm, fetchManagement]
+    );
 
-  const fetchSpecific = useCallback(async () => {
-    try {
-      const data = await getActiveSpecificConsultations();
-      setSpecific(data);
-    } catch {
-      setError("Error al obtener las consultas específicas.");
-    }
-  }, []);
+    const handleSearch = useCallback((value) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    }, []);
 
-  useEffect(() => {
-    fetchPayroll();
-    fetchContact();
+    const fetchPageContact = useCallback((page) => {
+        setCurrentPageContact(page);
+    }, []);
 
-    fetchTypeManagement();
-    fetchConsultation();
-    fetchSpecific();
-  }, [fetchPayroll, fetchContact, fetchTypeManagement, fetchConsultation, fetchSpecific]);
+    const handleSearchContact = useCallback((value) => {
+        setSearchTermContact(value);
+        setCurrentPageContact(1); // Resetear a página 1 cuando se busca
+    }, []);
 
-  /* ===========================================================
-   *  LIMPIAR ERRORES
-   * =========================================================== */
-  const clearValidationError = (field) => {
-    setValidationErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[field];
-      return newErrors;
-    });
-  };
+    const clearValidationError = useCallback((field) => {
+        setValidationErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[field];
+            return newErrors;
+        });
+    }, []);
 
-   /* ===========================================================
-   *  ENVIO DE SMS
-   * =========================================================== */
+    /* ===========================================================
+     *  VALORES MEMOIZADOS
+     * =========================================================== */
+    const values = useMemo(
+        () => ({
+            // Datos
+            management,
+            payroll,
+            consultation,
+            typeManagement,
+            specific,
+            contact,
 
-  const fetchSMS = useCallback(async () => {
-    try {
-      const data = await getActiveSpecificConsultations();
-      setSpecific(data);
-    } catch {
-      setError("Error al obtener las consultas específicas.");
-    }
-  }, []);
+            // Estados (combinar loading estático con loading local)
+            loading: loading || staticDataLoading,
+            error,
+            view,
+            modal,
+            IsOpenADD,
+            validationErrors,
+            totalPages,
+            currentPage,
 
+            // Acciones
+            setView,
+            setModal,
+            setIsOpenADD,
+            setCurrentPage,
+            setValidationErrors,
+            fetchPage,
+            fetchManagement,
+            handleSearch,
+            handleSubmit,
+            clearValidationError,
 
-  /* ===========================================================
-   *  RETORNO DEL HOOK
-   * =========================================================== */
-  return {
-    // Datos
-    management,
-    payroll,
-    contact,
-    consultation,
-    typeManagement,
-    specific,
+            // Contactos
+            currentPageContact,
+            totalPagesContact,
+            perPageContact,
+            totalItemsContact,
+            fetchPageContact,
+            handleSearchContact,
+        }),
+        [
+            management,
+            payroll,
+            consultation,
+            typeManagement,
+            specific,
+            contact,
+            loading,
+            staticDataLoading,
+            error,
+            view,
+            modal,
+            IsOpenADD,
+            validationErrors,
+            totalPages,
+            currentPage,
+            currentPageContact,
+            totalPagesContact,
+            perPageContact,
+            totalItemsContact,
+            fetchPage,
+            fetchManagement,
+            handleSearch,
+            handleSubmit,
+            clearValidationError,
+            fetchPageContact,
+            handleSearchContact,
+        ]
+    );
 
-    // Estados
-    loading,
-    error,
-    view,
-    modal,
-    IsOpenADD,
-    validationErrors,
-    totalPages,
-    currentPage,
-
-    // Acciones
-    setView,
-    setModal,
-    setIsOpenADD,
-    setCurrentPage,
-    setValidationErrors,
-    fetchPage,
-    fetchManagement,
-    handleSearch,
-    handleSubmit,
-    clearValidationError,
-  };
+    return values;
 };

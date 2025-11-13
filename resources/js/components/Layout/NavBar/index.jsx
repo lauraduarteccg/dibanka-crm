@@ -21,9 +21,11 @@ import logo from "@assets/logo.png";
 import { AuthContext } from "@context/AuthContext";
 import { useCan } from "@hooks/useCan";
 
-const NavBar = () => {
+const NavBar = ({ id_contact, id_management, id_special_cases }) => {
   const { user, handleLogout } = useContext(AuthContext);
+
   const { can } = useCan();
+
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
@@ -31,18 +33,21 @@ const NavBar = () => {
   // 🔹 MENÚ PRINCIPAL — módulos operativos
   const MENU_ITEMS = [
     {
+      id: id_contact,
       label: "Contactos",
       path: "/contactos",
       icon: <HiOutlineIdentification className="text-white w-6 h-auto" />,
       permission: "contact.edit",
     },
     {
+      id: id_management,
       label: "Gestiones",
       path: "/gestiones",
       icon: <HiOutlineRectangleGroup className="text-white w-6 h-auto" />,
-      permission: "management.edit",
+      permission: "management.view",
     },
     {
+      id: id_special_cases,
       label: "Casos especiales",
       path: "/casos_especiales",
       icon: <MdOutlineFolderSpecial className="text-white w-6 h-auto" />,
@@ -93,7 +98,7 @@ const NavBar = () => {
           <div>
             {/* 🔸 Módulos operativos */}
             {accessibleItems.map((item) => (
-              <ListItem disablePadding key={item.path}>
+              <ListItem disablePadding key={item.path} id={item.id}>
                 <ListItemButton
                   onClick={() => navigate(item.path)}
                   selected={location.pathname === item.path}

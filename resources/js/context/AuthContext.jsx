@@ -20,6 +20,8 @@ export const AuthProvider = ({ children }) => {
                         id: res.data.data.id,
                         name: res.data.data.name,
                         email: res.data.data.email,
+                        roles: res.data.data.roles,
+                        permissions: res.data.data.permissions,
                     });
                     setPermissions(res.data.data.permissions || []);
                 })

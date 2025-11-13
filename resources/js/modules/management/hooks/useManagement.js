@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useCallback } from "react";
+import { useState, useEffect, useContext, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import { AuthContext } from "@context/AuthContext";
@@ -7,6 +7,7 @@ import {
   getActiveMonitorings,
   updateManagementMonitoring,
 } from "@modules/management/services/managementService";
+import { useDebounce } from "@modules/management/hooks/useDebounce";
 
 export const useManagement = () => {
   const [management, setManagement] = useState([]);
@@ -26,6 +27,13 @@ export const useManagement = () => {
   const [view, setView] = useState(false);
   const [onMonitoring, setOnMonitoring] = useState(false);
 
+  // Debounce para búsqueda (optimización)
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Refs para evitar loops y peticiones simultáneas
+  const isFetching = useRef(false);
+  const hasInitialLoad = useRef(false);
+
   // Validaciones y formulario
   const [validationErrors, setValidationErrors] = useState({});
   const [formData, setFormData] = useState({
@@ -39,44 +47,49 @@ export const useManagement = () => {
   });
 
   /* ===========================================================
-   *  Fetch principal de gestiones
+   *  Fetch principal de gestiones (optimizado)
    * =========================================================== */
   const fetchManagement = useCallback(
     async (page = 1, search = "") => {
+      if (isFetching.current) return; // Evitar peticiones simultáneas
+      
+      isFetching.current = true;
       setLoading(true);
       try {
         const data = await getManagements(page, search);
-        setManagement(data.managements);
-        setCurrentPage(data.pagination.current_page);
-        setTotalPages(data.pagination.last_page);
-        setPerPage(data.pagination.per_page);
-        setTotalItems(data.pagination.total);
+        setManagement(data.managements || []);
+        setCurrentPage(data.pagination?.current_page || 1);
+        setTotalPages(data.pagination?.last_page || 1);
+        setPerPage(data.pagination?.per_page || 1);
+        setTotalItems(data.pagination?.total || 0);
       } catch (err) {
         console.error("Error al obtener gestiones:", err);
         setError("Error al obtener las gestiones.");
       } finally {
         setLoading(false);
+        isFetching.current = false;
       }
     },
     []
   );
 
+  // Cargar gestiones cuando cambie la página o búsqueda (con debounce)
   useEffect(() => {
-    fetchManagement(currentPage, searchTerm);
-  }, [fetchManagement, currentPage, searchTerm]);
+    fetchManagement(currentPage, debouncedSearchTerm);
+  }, [currentPage, debouncedSearchTerm, fetchManagement]);
 
   /* ===========================================================
    *  Paginación y búsqueda
    * =========================================================== */
   const fetchPage = useCallback(
-    (page) => fetchManagement(page, searchTerm),
-    [fetchManagement, searchTerm]
+    (page) => fetchManagement(page, debouncedSearchTerm),
+    [fetchManagement, debouncedSearchTerm]
   );
 
   const handleSearch = useCallback(
     (value) => {
       setSearchTerm(value);
-      setCurrentPage(1);
+      setCurrentPage(1); // Resetear a página 1 cuando se busca
     },
     []
   );
@@ -129,7 +142,7 @@ export const useManagement = () => {
 
       setOnMonitoring(false);
       setIsOpenADD(false);
-      fetchManagement(currentPage, searchTerm);
+      fetchManagement(currentPage, debouncedSearchTerm);
     } catch (error) {
       if (error.response?.status === 422) {
         setValidationErrors(error.response.data.errors);
@@ -181,27 +194,23 @@ export const useManagement = () => {
 
 
   /* ===========================================================
-   *  Extraer parámetros de la URL
+   *  Extraer parámetros de la URL (optimizado)
    * =========================================================== */
-  
   const location = useLocation();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const searchParam = params.get("search");
 
-    if (searchParam) {
-      // Actualiza el término de búsqueda
+    if (searchParam && searchParam !== searchTerm) {
+      // Solo actualizar si el parámetro es diferente al término actual
       setSearchTerm(searchParam);
-      // Reinicia la paginación
       setCurrentPage(1);
-      // Ejecuta la búsqueda en la API
-      fetchManagement(1, searchParam);
-    } else {
-      // Si no hay parámetro, carga normalmente sin filtro
-      fetchManagement(currentPage, "");
+    } else if (!searchParam && searchTerm && !hasInitialLoad.current) {
+      // Solo cargar inicialmente si no hay búsqueda
+      hasInitialLoad.current = true;
     }
-  }, [location.search, fetchManagement]);
+  }, [location.search]); // Removido fetchManagement y searchTerm de dependencias para evitar loops
 
   /* ===========================================================
    *  Return

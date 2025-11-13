@@ -8,7 +8,7 @@ export const useSpecialCasesForm = () => {
   const { user } = useContext(AuthContext);
   const location = window.location;
   const [openSpecialCases, setOpenSpecialCases] = useState(false);
-
+  const [openSearchPayroll, setOpenSearchPayroll] = useState(false);
   const {
     payroll,
     contact,
@@ -134,6 +134,8 @@ export const useSpecialCasesForm = () => {
   };
 
   return {
+    openSearchPayroll, 
+    setOpenSearchPayroll,
     onClose,
     clearFieldError,
     user,

@@ -65,7 +65,39 @@ const RolesMatrix = ({ role, onClose }) => {
   // ======================================================
   // Cargar permisos si estamos editando
   // ======================================================
- 
+  useEffect(() => {
+    if (role?.permissions) {
+      const rolePermissions = role.permissions.map((p) => p.name);
+
+      const loadedPerms = {};
+      Object.values(MODULE_GROUPS).forEach((group) => {
+        group.modules.forEach((mod) => {
+          // base
+          loadedPerms[mod.id] = PERMISSIONS.reduce((acc, perm) => {
+            const key = `${mod.id}.${perm.id}`;
+            const configKey = `config.${mod.id}.${perm.id}`;
+            acc[perm.id] =
+              rolePermissions.includes(key) ||
+              rolePermissions.includes(configKey);
+            return acc;
+          }, {});
+
+          // 👇 agregamos la excepción especial solo para management
+          if (mod.id === "management") {
+            const filtredValue =
+              role?.config?.management?.viewFiltred ?? 
+              rolePermissions.includes("management.viewFiltred");
+            loadedPerms[mod.id]["viewFiltred"] = filtredValue;
+          }
+
+        });
+      });
+
+      setRoleName(role.name);
+      setPermissions(loadedPerms);
+    }
+  }, [role]);
+
 
   // ======================================================
   // Alternar permisos
@@ -83,47 +115,54 @@ const RolesMatrix = ({ role, onClose }) => {
   // ======================================================
   // Guardar cambios con lógica de prefijos
   // ======================================================
-  const handleSave = async () => {
-    if (!roleName.trim()) {
-      Swal.fire("Atención", "Debes ingresar un nombre para el rol.", "info");
-      return;
-    }
+const handleSave = async () => {
+  if (!roleName.trim()) {
+    Swal.fire("Atención", "Debes ingresar un nombre para el rol.", "info");
+    return;
+  }
 
-    const formattedPermissions = [];
-    const configModules = ["payroll", "consultation", "specific", "typeManagement", "monitoring"];
+  const formattedPermissions = [];
+  const configModules = ["payroll", "consultation", "specific", "typeManagement", "monitoring"];
 
-    for (const modId in permissions) {
-      for (const permId in permissions[modId]) {
-        if (permissions[modId][permId]) {
-          let permKey = `${modId}.${permId}`;
+  for (const modId in permissions) {
+    for (const permId in permissions[modId]) {
+      if (permissions[modId][permId]) {
+        let permKey = `${modId}.${permId}`;
 
-          // Si el módulo está en la lista especial
-          if (configModules.includes(modId) && permId !== "view") {
-            permKey = `config.${permKey}`;
-          }
-
-          formattedPermissions.push(permKey);
+        // Si el módulo está en la lista especial
+        if (configModules.includes(modId) && permId !== "view") {
+          permKey = `config.${permKey}`;
         }
-      }
-    }
 
-    setLoading(true);
-    try {
-      if (role) {
-        await updateRole(role.id, { name: roleName, permissions: formattedPermissions });
-        Swal.fire("Actualizado", "El rol se ha actualizado correctamente.", "success");
-      } else {
-        await createRole({ name: roleName, permissions: formattedPermissions });
-        Swal.fire("Creado", "El nuevo rol ha sido creado.", "success");
+        formattedPermissions.push(permKey);
       }
-      onClose();
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "No se pudieron guardar los cambios.", "error");
-    } finally {
-      setLoading(false);
     }
-  };
+  }
+
+  // ✅ Nuevo bloque: configuración especial para management.viewFiltred
+  const config = {};
+  if (permissions.management?.viewFiltred !== undefined) {
+    config.management = { viewFiltred: permissions.management.viewFiltred };
+  }
+
+  setLoading(true);
+  try {
+    if (role) {
+      await updateRole(role.id, { name: roleName, permissions: formattedPermissions, config });
+      Swal.fire("Actualizado", "El rol se ha actualizado correctamente.", "success");
+    } else {
+      await createRole({ name: roleName, permissions: formattedPermissions, config });
+      Swal.fire("Creado", "El nuevo rol ha sido creado.", "success");
+    }
+    onClose();
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", "No se pudieron guardar los cambios.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (loading) return <Loader />;
 
@@ -181,6 +220,7 @@ const RolesMatrix = ({ role, onClose }) => {
                   </td>
                   <td className="px-6 py-3">
                     <div className="flex flex-wrap gap-4">
+                      {/* permisos base */}
                       {PERMISSIONS.map((perm) => (
                         <label
                           key={`${mod.id}-${perm.id}`}
@@ -195,11 +235,28 @@ const RolesMatrix = ({ role, onClose }) => {
                           {perm.label}
                         </label>
                       ))}
+
+                      {/* permiso adicional SOLO para management */}
+                      {mod.id === "management" && (
+                        <label
+                          key={`${mod.id}-viewFiltred`}
+                          className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            className="accent-purple-light"
+                            checked={permissions[mod.id]?.["viewFiltred"] || false}
+                            onChange={() => togglePermission(mod.id, "viewFiltred")}
+                          />
+                          Ver filtradas
+                        </label>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
       ))}

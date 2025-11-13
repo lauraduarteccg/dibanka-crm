@@ -17,6 +17,8 @@ import { FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import { GoEye } from "react-icons/go";
 import { IoFootstepsOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
+import { MdPersonAddAlt1 } from "react-icons/md";
+
 // 🔎 Función para obtener valores anidados
 export const getNestedValue = (obj, path) =>
   path.split(".").reduce((acc, key) => acc?.[key], obj) ?? "—";
@@ -50,6 +52,7 @@ const MuiTable = ({
   onView,
   onManagement,
   onMonitoring,
+  onSelectRecord,
   edit = true,
   view = false,
   management = false,
@@ -59,6 +62,17 @@ const MuiTable = ({
   rowsPerPage,
   currentPage,
   fetchPage,
+  paginationSection = true,
+  selectRecord,
+
+  //ID de los botones
+  idSelectRecord,
+  idOnActiveOrInactive,
+  idMonitoring,
+  idEdit,
+  idView,
+  idManagement,
+
 }) => {
   
   const { user } = useContext(AuthContext);
@@ -148,6 +162,7 @@ const MuiTable = ({
                       {management && (
                         <Tooltip title="Ver gestión" arrow>
                           <button
+                            id={idManagement}
                             onClick={() => onManagement(row)}
                             className="text-blue-500 hover:text-blue-700"
                           >
@@ -158,6 +173,7 @@ const MuiTable = ({
                       {edit && (
                         <Tooltip title="Editar" arrow>
                           <button
+                            id={idEdit}
                             onClick={() => onEdit(row)}
                             className="text-blue-500 hover:text-blue-700"
                           >
@@ -168,6 +184,7 @@ const MuiTable = ({
                       {view && (
                         <Tooltip title="Ver" arrow>
                           <button
+                            id={idView}
                             onClick={() => onView(row)}
                             className="text-blue-500 hover:text-blue-700"
                           >
@@ -178,6 +195,7 @@ const MuiTable = ({
                       {monitoring && (
                         <Tooltip title="Seguimiento" arrow>
                           <button
+                            id={idMonitoring}
                             onClick={() => onMonitoring(row)}
                             className="text-blue-500 hover:text-blue-700"
                           >
@@ -188,6 +206,7 @@ const MuiTable = ({
                       {onActiveOrInactive && (
                         <Tooltip title="Activar o desactivar" arrow>
                           <button
+                            id={idOnActiveOrInactive}
                             onClick={() => onDelete(row.id, row.is_active)}
                             className="text-red-500 hover:text-red-700"
                           >
@@ -196,6 +215,17 @@ const MuiTable = ({
                             ) : (
                               <FaToggleOff size={20} color="red" />
                             )}
+                          </button>
+                        </Tooltip>
+                      )}
+                      {selectRecord && (
+                        <Tooltip title="Seleccionar registro" arrow>
+                          <button
+                            id={idSelectRecord}
+                            onClick={() => onSelectRecord(row.id)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                              <MdPersonAddAlt1 size={20} />
                           </button>
                         </Tooltip>
                       )}
@@ -215,7 +245,8 @@ const MuiTable = ({
           </TableBody>
         </Table>
       </TableContainer>
-
+      
+      {paginationSection && 
       <TablePagination
         rowsPerPageOptions={[]}
         component="div"
@@ -223,8 +254,8 @@ const MuiTable = ({
         rowsPerPage={rowsPerPage}
         page={currentPage - 1} 
         onPageChange={handleChangePage}
-      
       />
+      }
     </Paper>
   );
 };

@@ -1,16 +1,16 @@
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react"
 import { useCan } from "@hooks/useCan";
 import Drawer from '@mui/material/Drawer';
 import { TextField, FormControl, Autocomplete } from "@mui/material";
 import { useManagement } from "@modules/management/hooks/useManagement.js";
+import { AuthContext } from "@context/AuthContext";
 
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import Loader from "@components/ui/Loader";
 import Button from "@components/ui/Button"
 import SearchBar from "@components/forms/Search";
-
-
 
 const columns = [
   { header: "ID", key: "id" },
@@ -31,7 +31,7 @@ const P = ({ text1, text2 }) => (
   </p>
 );
 
-const Management = () => {
+const Management = ({idView, idMonitoring, idSearchManagement, idAddManagement}) => {
   const {
     handleSubmit,
     monitoring,
@@ -50,6 +50,7 @@ const Management = () => {
     fetchPage,
     handleSearch,
   } = useManagement();
+
   const { can, canAny } = useCan();
   const handleView = (item) => {
     setFormData(item);
@@ -57,30 +58,38 @@ const Management = () => {
   };
   
   const handleMonitoring = (item) => {
-    // Establecer los valores predeterminados desde la gestión
     setFormData({
       ...item,
-      solution_date: item.solution_date || "", // Usar la fecha de solución del monitoring si existe
-      monitoring_id: item.monitoring?.id || "", // Usar el ID del monitoring si existe
+      solution_date: item.solution_date || "", 
+      monitoring_id: item.monitoring?.id || "",
     });
     setOnMonitoring(true);
   };
 
   const navigate = useNavigate();
 
- // console.log(currentPage)
+    const { user, user: authUser } = useContext(AuthContext);
+  const filteredManagement =
+    management?.filter((item) => item.user?.id === authUser?.id) || [];
+
+  const canViewFiltered =
+  user?.permissions?.includes("management.viewFiltred") &&
+  user?.permissions?.includes("management.view");
+
+const dataToShow = canViewFiltered ? filteredManagement : management;
 
   return (
     <>
       {can("management.create") && (
 
         <ButtonAdd
+          id={idAddManagement}
           onClickButtonAdd={() => navigate("/gestiones/añadir")}
           text="Agregar Gestión"
         />)}
 
       <div className="flex justify-end px-12 -mt-10 ">
-        <SearchBar onSearch={handleSearch} placeholder="Buscar gestión..." />
+        <SearchBar id={idSearchManagement} onSearch={handleSearch} placeholder="Buscar gestión..." />
       </div>
 
       <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
@@ -92,7 +101,12 @@ const Management = () => {
       ) : (
         <Table
           columns={columns}
-          data={management ?? []}
+          // DESCOMENTAR esta linea de codigo para que en la tabla aparezcan
+          // las gestones unicamente del usuario que ingreso
+          // 
+          //  data={user.id === 1 ? management : filteredManagement}
+          data={dataToShow}
+
           currentPage={currentPage}
           totalPages={totalPages}
           rowsPerPage={perPage}
@@ -105,6 +119,8 @@ const Management = () => {
           monitoring={true}
           onMonitoring={(item) => handleMonitoring(item)}
           onActiveOrInactive={false}
+          idView={idView}
+          idMonitoring={idMonitoring}
         />
       )}
 
