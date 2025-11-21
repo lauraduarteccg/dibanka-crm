@@ -105,5 +105,6 @@ export const getContacts = async (page = 1, search = "") => {
  */
 export const getActiveConsultations = async () => {
   const { data } = await api.get("/config/consultations/active");
+  console.log(data)
   return data.consultation || [];
 };

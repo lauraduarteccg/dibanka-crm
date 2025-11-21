@@ -29,7 +29,7 @@ const payrollSchema = yup.object().shape({
   id_messi: yup.string().required("El ID Messi es obligatorio")
 });
 
-const SpecialCases = () => {
+const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
   const { user } = useContext(AuthContext);
   const {
     users,
@@ -83,12 +83,13 @@ const SpecialCases = () => {
     <>
       {can("special_cases.create") && (
         <ButtonAdd
+          id={idAddSpecialCase}
           onClickButtonAdd={() => setIsOpenADD(true)}
           text="Agregar caso especial"
         />
       )}
       <div className="flex justify-end px-12 -mt-10 ">
-        <Search onSearch={handleSearch} placeholder="Buscar caso especial..." />
+        <Search id={idSearchSpecialCase} onSearch={handleSearch} placeholder="Buscar caso especial..." />
       </div>
 
       <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">

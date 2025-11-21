@@ -49,6 +49,8 @@ const Management = ({idView, idMonitoring, idSearchManagement, idAddManagement})
     totalItems,
     fetchPage,
     handleSearch,
+    searchTerm,
+    handleClearSearch,
   } = useManagement();
 
   const { can, canAny } = useCan();
@@ -88,7 +90,15 @@ const dataToShow = canViewFiltered ? filteredManagement : management;
           text="Agregar Gestión"
         />)}
 
-      <div className="flex justify-end px-12 -mt-10 ">
+      <div className="flex justify-end px-12 -mt-10 gap-2">
+        {searchTerm && (
+            <button
+                onClick={handleClearSearch}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+            >
+                Limpiar filtro
+            </button>
+        )}
         <SearchBar id={idSearchManagement} onSearch={handleSearch} placeholder="Buscar gestión..." />
       </div>
 

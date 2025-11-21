@@ -16,14 +16,16 @@ import { IoIosLogOut } from "react-icons/io";
 import { HiOutlineRectangleGroup, HiOutlineIdentification } from "react-icons/hi2";
 import { MdOutlineFolderSpecial } from "react-icons/md";
 import { VscTools } from "react-icons/vsc";
+import { HiOutlineQuestionMarkCircle } from "react-icons/hi2";
 import logo from "@assets/logo.png";
 
 import { AuthContext } from "@context/AuthContext";
 import { useCan } from "@hooks/useCan";
+import { useTour } from "@context/TourContext";
 
-const NavBar = ({ id_contact, id_management, id_special_cases }) => {
+const NavBar = ({ id_contact, id_management, id_special_cases, id_config }) => {
   const { user, handleLogout } = useContext(AuthContext);
-
+  const { startTour } = useTour();
   const { can } = useCan();
 
   const navigate = useNavigate();
@@ -116,6 +118,7 @@ const NavBar = ({ id_contact, id_management, id_special_cases }) => {
           {hasConfigAccess && (
             <ListItem disablePadding>
               <ListItemButton
+                id={id_config}
                 onClick={() => navigate("/configuraciones")}
                 selected={location.pathname === "/configuraciones"}
               >
@@ -143,13 +146,34 @@ const NavBar = ({ id_contact, id_management, id_special_cases }) => {
           <img className="w-24" src={logo} alt="Logo" />
         </button>
 
-        <div className="flex items-center space-x-10">
-          <button className="flex items-center space-x-2">
+        <div className="flex items-center space-x-6">
+          {/* Botón de Inicio Guiado */}
+          <Tooltip title="Iniciar Tour Guiado">
+            <IconButton
+              onClick={() => {
+                console.log("🔘 Botón de tour clickeado");
+                startTour();
+              }}
+              size="small"
+              className="hover:bg-white/10 transition-colors"
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                },
+              }}
+            >
+              <HiOutlineQuestionMarkCircle className="w-6 h-6" />
+            </IconButton>
+          </Tooltip>
+
+          <button className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
             <FaUserCircle className="w-6 h-6 text-white" />
             <h2 className="text-lg font-semibold">
               {user?.name ?? "Usuario indefinido"}
             </h2>
           </button>
+          
           <div className="flex items-center w-8 h-8">
             <Tooltip title="Cerrar Sesión">
               <IconButton
@@ -158,8 +182,15 @@ const NavBar = ({ id_contact, id_management, id_special_cases }) => {
                   navigate("/");
                 }}
                 size="small"
+                className="hover:bg-white/10 transition-colors"
+                sx={{
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                }}
               >
-                <IoIosLogOut className="w-7 h-7 text-white" />
+                <IoIosLogOut className="w-7 h-7" />
               </IconButton>
             </Tooltip>
           </div>

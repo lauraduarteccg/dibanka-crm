@@ -81,7 +81,7 @@ const MODULES = [
   },
 ];
 
-const Config = () => {
+const Config = ({ idConfigMenu }) => {
   const { can } = useCan();
   const [selected, setSelected] = useState("usuarios");
 
@@ -98,6 +98,7 @@ const Config = () => {
 
       {/* Menú lateral superior (mismo estilo, ahora dinámico) */}
       <ConfigMenu
+        id={idConfigMenu}
         onSelect={setSelected}
         selected={selected}
         menuItems={accessibleModules.map((m) => ({

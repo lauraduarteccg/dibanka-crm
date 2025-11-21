@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useCallback, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { AuthContext } from "@context/AuthContext";
 import {
@@ -22,7 +22,17 @@ export const useManagement = () => {
   const [totalItems, setTotalItems] = useState(1);
 
   // UI y búsqueda
-  const [searchTerm, setSearchTerm] = useState("");
+  /* ===========================================================
+   *  Extraer parámetros de la URL (optimizado)
+   * =========================================================== */
+  const location = useLocation();
+
+  // Inicializar searchTerm desde la URL para evitar doble fetch
+  const [searchTerm, setSearchTerm] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("search") || "";
+  });
+
   const [IsOpenADD, setIsOpenADD] = useState(false);
   const [view, setView] = useState(false);
   const [onMonitoring, setOnMonitoring] = useState(false);
@@ -192,25 +202,29 @@ export const useManagement = () => {
     }
   }, [monitoring]);
 
-
   /* ===========================================================
-   *  Extraer parámetros de la URL (optimizado)
+   *  Sincronizar URL con searchTerm
    * =========================================================== */
-  const location = useLocation();
+  /* ===========================================================
+   *  Sincronizar URL con searchTerm
+   * =========================================================== */
+  const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const searchParam = params.get("search");
 
-    if (searchParam && searchParam !== searchTerm) {
-      // Solo actualizar si el parámetro es diferente al término actual
+    if (searchParam !== null && searchParam !== searchTerm) {
       setSearchTerm(searchParam);
       setCurrentPage(1);
-    } else if (!searchParam && searchTerm && !hasInitialLoad.current) {
-      // Solo cargar inicialmente si no hay búsqueda
-      hasInitialLoad.current = true;
     }
-  }, [location.search]); // Removido fetchManagement y searchTerm de dependencias para evitar loops
+  }, [location.search]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm("");
+    setCurrentPage(1);
+    navigate(location.pathname, { replace: true });
+  }, [navigate, location.pathname]);
 
   /* ===========================================================
    *  Return
@@ -221,6 +235,7 @@ export const useManagement = () => {
     monitoring,
     formData,
     validationErrors,
+    searchTerm,
 
     // Estados UI
     loading,
@@ -240,6 +255,7 @@ export const useManagement = () => {
     fetchManagement,
     fetchPage,
     handleSearch,
+    handleClearSearch,
     handleSubmit,
     setFormData,
     setIsOpenADD,
