@@ -221,20 +221,27 @@ const handleSave = async () => {
                   <td className="px-6 py-3">
                     <div className="flex flex-wrap gap-4">
                       {/* permisos base */}
-                      {PERMISSIONS.map((perm) => (
-                        <label
-                          key={`${mod.id}-${perm.id}`}
-                          className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            className="accent-purple-light"
-                            checked={permissions[mod.id]?.[perm.id] || false}
-                            onChange={() => togglePermission(mod.id, perm.id)}
-                          />
-                          {perm.label}
-                        </label>
-                      ))}
+                      {PERMISSIONS.map((perm) => {
+                        // 🔒 Lógica para ocultar permisos específicos
+                        if (mod.id === "special_cases" && (perm.id === "delete" || perm.id === "edit")) return null;
+                        if (mod.id === "config.role" && perm.id === "delete") return null;
+                        if (mod.id === "management" && perm.id === "delete") return null;
+
+                        return (
+                          <label
+                            key={`${mod.id}-${perm.id}`}
+                            className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              className="accent-purple-light"
+                              checked={permissions[mod.id]?.[perm.id] || false}
+                              onChange={() => togglePermission(mod.id, perm.id)}
+                            />
+                            {perm.label}
+                          </label>
+                        );
+                      })}
 
                       {/* permiso adicional SOLO para management */}
                       {mod.id === "management" && (

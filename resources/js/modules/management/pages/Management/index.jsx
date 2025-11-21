@@ -99,7 +99,7 @@ const dataToShow = canViewFiltered ? filteredManagement : management;
                 Limpiar filtro
             </button>
         )}
-        <SearchBar id={idSearchManagement} onSearch={handleSearch} placeholder="Buscar gestión..." />
+        <SearchBar id={idSearchManagement} value={searchTerm} onSearch={handleSearch} placeholder="Buscar gestión..." />
       </div>
 
       <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">

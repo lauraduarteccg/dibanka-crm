@@ -1,13 +1,18 @@
 import { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 
-export default function SearchBar({ id, onSearch, placeholder = "Buscar gestión..." }) {
-  const [searchTerm, setSearchTerm] = useState("");
+export default function SearchBar({ id, onSearch, value, placeholder = "Buscar gestión..." }) {
+  const [internalSearchTerm, setInternalSearchTerm] = useState("");
+  
+  const isControlled = value !== undefined;
+  const searchTerm = isControlled ? value : internalSearchTerm;
 
   const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    if (onSearch) onSearch(value);
+    const val = e.target.value;
+    if (!isControlled) {
+      setInternalSearchTerm(val);
+    }
+    if (onSearch) onSearch(val);
   };
 
   return (
