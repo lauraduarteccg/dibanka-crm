@@ -38,7 +38,6 @@ export const usePayrolls = () => {
     setLoading(true);
     try {
       const data = await getPayrolls(page, search);
-      console.log(data)
       setPayrolls(data.payrolls);
       setTotalPages(data.pagination.total_pages);
       setCurrentPage(data.pagination.current_page);

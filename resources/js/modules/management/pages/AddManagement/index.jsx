@@ -422,6 +422,7 @@ const AddManagement = () => {
         openSearchPayroll={openSearchPayroll}
         setOpenSearchPayroll={setOpenSearchPayroll}
         onSelectContact={setSelectedContact} // 👈 envía el contacto seleccionado
+        selectedPayroll={selectedPayroll}
       />
 
       {/* POPUP DE INFORMACIÓN DE LA PAGADURIA */}

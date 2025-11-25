@@ -89,8 +89,8 @@ export const getActivePayrolls = async () => {
 /**
  * Contactos.
  */
-export const getContacts = async (page = 1, search = "") => {
-  const { data } = await api.get(`/contacts?page=${page}&search=${encodeURIComponent(search)}`);
+export const getContacts = async (page = 1, search = "", payroll = "") => {
+  const { data } = await api.get(`/contacts/active?search=${encodeURIComponent(search)}&payroll=${encodeURIComponent(payroll)}&page=${page}`);
   return data || [];
 };
 
@@ -105,6 +105,5 @@ export const getContacts = async (page = 1, search = "") => {
  */
 export const getActiveConsultations = async () => {
   const { data } = await api.get("/config/consultations/active");
-  console.log(data)
   return data.consultation || [];
 };

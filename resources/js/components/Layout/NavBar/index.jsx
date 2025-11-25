@@ -151,7 +151,6 @@ const NavBar = ({ id_contact, id_management, id_special_cases, id_config }) => {
           <Tooltip title="Iniciar Tour Guiado">
             <IconButton
               onClick={() => {
-                console.log("🔘 Botón de tour clickeado");
                 startTour();
               }}
               size="small"

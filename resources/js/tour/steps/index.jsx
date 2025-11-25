@@ -1,5 +1,3 @@
-// steps.js
-import React from "react";
 
 const steps = [
     // CONTACTOS
@@ -10,7 +8,7 @@ const steps = [
             <div>
                 <p className="mb-2">
                     Bienvenido al <strong>Módulo de Contactos</strong>. Aquí
-                    podrás gestionar toda la información de tus clientes.
+                    podrás gestionar toda la información de los clientes de DIBANKA.
                 </p>
                 <p className="text-sm text-gray-600">
                     Haz clic en este botón y luego presiona{" "}
@@ -45,7 +43,8 @@ const steps = [
                     Busca contactos <strong>rápidamente</strong>.
                 </p>
                 <p className="text-sm text-gray-600">
-                    Funciona por nombre, teléfono, identificación, etc.
+                    Funciona por nombre, teléfono, tipo y numero de 
+                    identificación, correo, campaña y pagaduria.
                 </p>
             </div>
         ),
@@ -57,10 +56,8 @@ const steps = [
         content: (
             <div>
                 <p className="mb-2">
-                    Aquí ves todas las <strong>gestiones asociadas</strong>.
-                </p>
-                <p className="text-sm text-gray-600">
-                    Tiene historial completo del cliente.
+                    Aquí verás todas las <strong>gestiones</strong> que se le han
+                    realizado a este contacto.
                 </p>
             </div>
         ),
@@ -73,6 +70,9 @@ const steps = [
             <div>
                 <p className="mb-2">
                     Edita la información del <strong>contacto</strong>.
+                </p>
+                <p className="text-sm text-gray-600">
+                    Se abrirá un formulario completo para diligenciar.
                 </p>
             </div>
         ),
@@ -100,8 +100,9 @@ const steps = [
         title: "📝 Módulo de Gestiones",
         content: (
             <div>
+                <p>Haz clic en este botón y luego presiona <strong>Siguiente</strong>.</p><br />
                 <p className="mb-2">
-                    Administra todas las <strong>gestiones</strong>.
+                    Desde aqui podras administrar todas las <strong>gestiones</strong>.
                 </p>
             </div>
         ),
@@ -114,7 +115,7 @@ const steps = [
         content: (
             <div>
                 <p className="mb-2">
-                    Observa los <strong>detalles completos</strong>.
+                    Aqui podras observar los <strong>detalles completos</strong> de la gestión.
                 </p>
             </div>
         ),
@@ -126,7 +127,8 @@ const steps = [
         content: (
             <div>
                 <p className="mb-2">
-                    Agrega <strong>seguimiento</strong> a una gestión.
+                    Añade <strong>seguimiento</strong> a una gestión, podras marcarla como
+                    resuelta en primer o segundo contacto.
                 </p>
             </div>
         ),
@@ -138,7 +140,12 @@ const steps = [
         content: (
             <div>
                 <p className="mb-2">
-                    Encuentra gestiones <strong>fácilmente</strong>.
+                    Busca gestiones <strong>fácilmente</strong>.
+                </p>
+                <p>
+                    Podrás buscar por <strong>nombre o correo del usuario que creo la gestion</strong>, 
+                    pagaduría, seguimiento, consulta, consulta específica, tipo de gestion,
+                    wolkvox_id, fecha de solución y <strong>por datos del mismo contacto</strong>.
                 </p>
             </div>
         ),
@@ -164,7 +171,9 @@ const steps = [
         content: (
             <div>
                 <p className="mb-2">
-                    Accede al módulo de <strong>casos especiales</strong>.
+                    Accede al módulo en donde se registran los
+                    <strong>casos especiales</strong> haciendo clic
+                    en este botón.
                 </p>
             </div>
         ),
@@ -179,6 +188,9 @@ const steps = [
                 <p className="mb-2">
                     Registra un <strong>caso especial</strong>.
                 </p>
+                <p>
+                    Se abrirá un formulario completo para diligenciar.
+                </p>
             </div>
         ),
         placement: "bottom",
@@ -190,6 +202,10 @@ const steps = [
             <div>
                 <p className="mb-2">
                     Busca casos especiales <strong>rápidamente</strong>.
+                </p>
+                <p>
+                    Busca por gestion de mesi, id de la llamada, id de messi, nombre o 
+                    del usuario que creo el caso y por informacion del contacto mismo.
                 </p>
             </div>
         ),
@@ -205,9 +221,13 @@ const steps = [
                 <p className="mb-2">
                     Administra toda la <strong>configuración</strong>.
                 </p>
+                <p>
+                    Haz clic en este botón para acceder a la configuración y luego presiona next.
+                </p>
             </div>
         ),
         placement: "bottom",
+        spotlightClicks: true,
     },
     {
         target: "#dieciseisavo-paso",
@@ -215,7 +235,11 @@ const steps = [
         content: (
             <div>
                 <p className="mb-2">
-                    Accede a usuarios, perfiles, consultas, etc.
+                    Aquí podras modificar y configurar todo el sistema. 
+                    <br />
+                    Puedes <strong>modificar o añadir</strong> usuarios, roles, paagadurias, tipos de consultas,
+                    consultas especificas, tipos de gestiones, tipos de seguimientos y 
+                    <strong> mirar los logs de actividades</strong> del sistema.
                 </p>
             </div>
         ),

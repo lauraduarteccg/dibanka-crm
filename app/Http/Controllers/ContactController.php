@@ -67,13 +67,35 @@ class ContactController extends Controller
     // Obtener contactos activos sin paginación
     public function active(Request $request)
     {
-        $contacts = Contact::where('is_active', 1)->with('payroll')->get();
+        $query = Contact::where('is_active', 1);
+
+        // 🔎 Filtrar por pagaduría si viene en el request
+        if ($request->has('payroll') && !empty($request->payroll)) {
+            $payrollTerm = $request->payroll;
+            
+            $query->whereHas('payroll', function ($payrollQuery) use ($payrollTerm) {
+                $payrollQuery->where('name', 'LIKE', "%{$payrollTerm}%");
+            });
+        }
+
+        $contacts = $query->with('payroll')->paginate(10);
+        
         log_activity('ver_listado', 'Contactos', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de contactos activos.",
+            'criterios' => [
+                'pagaduría' => $request->payroll ?? 'Sin filtro aplicado'
+            ]
         ], $request);
+        
         return response()->json([
             'message' => 'Contactos activos obtenidos con éxito',
-            'contacts' => ContactResource::collection($contacts)
+            'contacts' => ContactResource::collection($contacts),
+            'pagination'        => [
+                'current_page'      => $contacts->currentPage(),
+                'total_pages'       => $contacts->lastPage(),
+                'per_page'          => $contacts->perPage(),
+                'total_contacts'    => $contacts->total(),
+            ]
         ], Response::HTTP_OK);
     }
 

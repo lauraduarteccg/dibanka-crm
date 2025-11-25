@@ -32,6 +32,7 @@ export default defineConfig({
             "@assets": path.resolve(__dirname, "resources/assets"),
             "@hooks": path.resolve(__dirname, "resources/js/hooks"),
             "@utils": path.resolve(__dirname, "resources/js/utils"),
+            "@tour": path.resolve(__dirname, "resources/js/tour"),
         },
     },
 

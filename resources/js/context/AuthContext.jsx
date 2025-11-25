@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const res = await api.post("/refresh-token");
             const newToken = res.data.token;
-            console.log(newToken)
+           //  console.log(newToken)
             localStorage.setItem("token", newToken);
             setToken(newToken);
 

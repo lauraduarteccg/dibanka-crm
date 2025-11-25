@@ -1,5 +1,6 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "@context/AuthContext";
+import { useTour } from "@context/TourContext";
 import Counter from "@modules/dashboard/components/Counter";
 import Loader from "@components/ui/Loader";
 import useDashboard from "@modules/dashboard/hooks/useDashboard";
@@ -17,6 +18,15 @@ function Dashboard() {
     const { user, loading, dataCounts } = useDashboard();
     const { management } = useManagement();
     const { user: authUser } = useContext(AuthContext);
+    const { startTour } = useTour();
+
+    useEffect(() => {
+        const hasSeenTour = localStorage.getItem("hasSeenTour");
+        if (!hasSeenTour) {
+            startTour();
+            localStorage.setItem("hasSeenTour", "true");
+        }
+    }, [startTour]);
 
     if (loading) return <Loader />;
 

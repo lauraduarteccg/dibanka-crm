@@ -9,13 +9,11 @@ export const TourProvider = ({ children }) => {
     // Pequeño delay para asegurar que el DOM esté listo
     setTimeout(() => {
       setRun(true);
-      console.log("🚀 Tour iniciado");
     }, 100);
   }, []);
 
   const stopTour = useCallback(() => {
     setRun(false);
-    console.log("🛑 Tour detenido");
   }, []);
 
   const value = {

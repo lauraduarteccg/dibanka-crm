@@ -82,7 +82,6 @@ export const useSpecialCases = () => {
         if (payload[key] === "true") payload[key] = true;
         if (payload[key] === "false") payload[key] = false;
       });
-      console.log(payload);
       await saveSpecialCase(payload);
 
       Swal.fire({

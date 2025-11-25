@@ -8,7 +8,7 @@ import {
 import { useManagementStaticData } from "@modules/management/context/ManagementStaticDataContext";
 import { useDebounce } from "@modules/management/hooks/useDebounce";
 
-export const useAddManagement = () => {
+export const useAddManagement = (selectedPayroll = null) => {
     // Usar datos estáticos del contexto compartido
     const {
         payroll,
@@ -71,7 +71,9 @@ export const useAddManagement = () => {
 
         isFetchingContacts.current = true;
         try {
-            const contactData = await getContacts(page, search);
+            const payrollName = selectedPayroll?.name || "";
+            const contactData = await getContacts(page, search, payrollName);
+            console.log(contactData)
             setContact(contactData.contacts || []);
             setCurrentPageContact(contactData.pagination?.current_page || 1);
             setTotalPagesContact(
@@ -86,7 +88,7 @@ export const useAddManagement = () => {
         } finally {
             isFetchingContacts.current = false;
         }
-    }, []);
+    }, [selectedPayroll]);
 
     // Cargar contactos solo cuando cambie la página o búsqueda (con debounce)
     useEffect(() => {

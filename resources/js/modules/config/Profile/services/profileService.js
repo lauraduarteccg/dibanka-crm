@@ -12,7 +12,6 @@ export const getRoles = async (page = 1, search = "") => {
     `/config/roles?page=${page}&search=${encodeURIComponent(search)}`
   );
 
-console.log(data)
   return {
     roles: data.roles || [],
     pagination: {
