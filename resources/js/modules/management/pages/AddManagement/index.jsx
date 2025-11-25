@@ -22,6 +22,7 @@ import FormSpecialCases from "@modules/management/components/FormSpecialCases";
 import PopupLittlePayroll from "@modules/management/components/PopupLittlePayroll";
 import SearchPayroll from "@modules/management/components/SearchPayroll";
 import { IoMdSearch } from "react-icons/io";
+import Agent from "@modules/management/components/agent";
 
 
 const AddManagement = () => {
@@ -408,11 +409,12 @@ const AddManagement = () => {
       </div>
 
       {/* Popup para mostrar la descripcion de la pagaduria */}
-          <PopupLittlePayroll modal={modal} setModal={setModal} selectedPayroll={selectedPayroll} user={user} />
+      <PopupLittlePayroll modal={modal} setModal={setModal} selectedPayroll={selectedPayroll} user={user} />
       {/* Boton flotante */}
-      <div className="fixed bottom-10 right-10 z-50">
+      <div className="fixed bottom-20 right-10 z-50">
         <SpeedDialButton actions={actions} />
       </div>
+        <Agent />
 
       {/* POPUP DE CASOS ESPECIALES */}
       <FormSpecialCases openSpecialCases={openSpecialCases} setOpenSpecialCases={setOpenSpecialCases} />
@@ -425,7 +427,6 @@ const AddManagement = () => {
         selectedPayroll={selectedPayroll}
       />
 
-      {/* POPUP DE INFORMACIÓN DE LA PAGADURIA */}
       
       {/* Snackbar para alertar al agente que hay errores en el formulario */}
       <Snackbar
