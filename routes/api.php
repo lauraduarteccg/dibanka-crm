@@ -14,7 +14,8 @@ use App\Http\Controllers\{
     SpecialCasesController,
     MonitoringController,
     RoleController,
-    PasswordResetController
+    PasswordResetController,
+    SendToWolkvoxController
 };
 
 // ==========================================================
@@ -127,6 +128,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/management/{id}', [ManagementController::class, 'update'])->middleware('permission:management.edit');
     Route::put('/managementmonitoring/{id}', [ManagementController::class, 'updateMonitoring'])->middleware('permission:management.edit');
     Route::delete('/management/{id}', [ManagementController::class, 'destroy'])->middleware('permission:management.delete');
+    
+    // -------------- Enviar a camapaña de wolkvox ----------------------
+    Route::post('/send-sms', [SendToWolkvoxController::class, 'sendSMS'])->middleware('permission:management.create');
+    Route::post('/send-wsp', [SendToWolkvoxController::class, 'sendWhatsApp'])->middleware('permission:management.create');
 
     // ------------------- Casos Especiales -------------------
     Route::get('/specialcases', [SpecialCasesController::class, 'index'])->middleware('permission:special_cases.view');

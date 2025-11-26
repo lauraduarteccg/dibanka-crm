@@ -94,16 +94,26 @@ export const getContacts = async (page = 1, search = "", payroll = "") => {
   return data || [];
 };
 
-/* export const getManagements = async (page = 1, search = "") => {
-  const { data } = await api.get(
-    `/management?page=${page}&search=${encodeURIComponent(search)}`
-  ); */
-
-
 /**
  * Consultas activas.
  */
 export const getActiveConsultations = async () => {
   const { data } = await api.get("/config/consultations/active");
   return data.consultation || [];
+};
+
+/**
+ * Enviar sms.
+ */
+export const sendSms = async (payload) => {
+  const { data } = await api.post("/send-sms", payload);
+  return data;
+};
+
+/**
+ * Enviar WhatsApp.
+ */
+export const sendWhatsApp = async (payload) => {
+  const { data } = await api.post("/send-wsp", payload);
+  return data;
 };

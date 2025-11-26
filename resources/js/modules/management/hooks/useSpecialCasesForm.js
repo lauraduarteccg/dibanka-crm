@@ -123,6 +123,15 @@ export const useSpecialCasesForm = () => {
       setOpenSpecialCases(false);
   }
 
+  const onSelectContact = (contact) => {
+    setSelectedContactSpecial(contact);
+    setFormData((prev) => ({
+      ...prev,
+      contact_id: contact?.id || "",
+    }));
+    clearFieldError("contact_id");
+  };
+
   const clearFieldError = (field) => {
     if (validationErrorsSpecial?.[field]) {
       setValidationErrorsSpecial((prev) => {
@@ -137,6 +146,7 @@ export const useSpecialCasesForm = () => {
     openSearchPayroll, 
     setOpenSearchPayroll,
     onClose,
+    onSelectContact,
     clearFieldError,
     user,
     payrollSpecial: payroll,

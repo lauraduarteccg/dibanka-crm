@@ -73,7 +73,6 @@ export const useAddManagement = (selectedPayroll = null) => {
         try {
             const payrollName = selectedPayroll?.name || "";
             const contactData = await getContacts(page, search, payrollName);
-            console.log(contactData)
             setContact(contactData.contacts || []);
             setCurrentPageContact(contactData.pagination?.current_page || 1);
             setTotalPagesContact(

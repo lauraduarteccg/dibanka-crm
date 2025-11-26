@@ -14,6 +14,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 import { useSpecialCasesForm } from "@modules/management/hooks/useSpecialCasesForm";
+import SearchPayroll from "@modules/management/components/SearchPayroll";
 
 export default function FormSpecialCases({openSpecialCases,setOpenSpecialCases}) {
     const {
@@ -29,6 +30,9 @@ export default function FormSpecialCases({openSpecialCases,setOpenSpecialCases})
         validationErrorsSpecial,
         handleSubmit,
         clearFieldError,
+        openSearchPayroll,
+        setOpenSearchPayroll,
+        onSelectContact,
     } = useSpecialCasesForm();
 
 
@@ -102,39 +106,32 @@ export default function FormSpecialCases({openSpecialCases,setOpenSpecialCases})
               )}
             />
 
-            {/* CLIENTE */} 
-            <Autocomplete
-              options={
-                Array.isArray(contact) && selectedPayrollSpecial
-                  ? contact.filter((c) => c?.payroll?.id === selectedPayrollSpecial?.id)
-                  : contact || []
-              }
-              getOptionLabel={(option) =>
-                `${option.identification_number} | ${option.name}`
-              }
-              value={selectedContactSpecial || null}
-              onChange={(e, value) => {
-                setSelectedContactSpecial(value);
-                clearFieldError("contact_id");
-                setFormData((prev) => ({
-                  ...prev,
-                  contact_id: value?.id || "",
-                }));
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Cliente"
-                  error={!!validationErrorsSpecial?.contact_id}
-                  helperText={
-                    validationErrorsSpecial?.contact_id
-                      ? validationErrorsSpecial.contact_id[0]
-                      : ""
-                  }
-                  fullWidth
-                />
-              )}
-            />
+            {/* CLIENTE */}
+            <div className="flex gap-2 items-start">
+              <TextField
+                label="Cliente"
+                value={
+                  selectedContactSpecial
+                    ? `${selectedContactSpecial.identification_number} | ${selectedContactSpecial.name}`
+                    : ""
+                }
+                fullWidth
+                disabled
+                error={!!validationErrorsSpecial?.contact_id}
+                helperText={
+                  validationErrorsSpecial?.contact_id
+                    ? validationErrorsSpecial.contact_id[0]
+                    : ""
+                }
+              />
+              <Button
+                variant="contained"
+                onClick={() => setOpenSearchPayroll(true)}
+                sx={{ height: "56px", minWidth: "120px" }}
+              >
+                Buscar
+              </Button>
+            </div>
 
             {/* GESTIÓN DE MESSI */}
             <FormControl
@@ -218,6 +215,14 @@ export default function FormSpecialCases({openSpecialCases,setOpenSpecialCases})
           </div>
         </DialogContent>
         </div>
+
+      {/* SearchPayroll Dialog */}
+      <SearchPayroll
+        openSearchPayroll={openSearchPayroll}
+        setOpenSearchPayroll={setOpenSearchPayroll}
+        onSelectContact={onSelectContact}
+        selectedPayroll={selectedPayrollSpecial}
+      />
       </Drawer>
   )
 }

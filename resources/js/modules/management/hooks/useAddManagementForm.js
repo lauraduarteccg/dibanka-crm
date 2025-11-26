@@ -2,8 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "@context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAddManagement } from "@modules/management/hooks/useAddManagement";
-import { sendData } from "@modules/management/services/sendData";
-import { RiH1 } from "react-icons/ri";
+import { sendSms, sendWhatsApp } from "@modules/management/services/managementService";
 
 export const useAddManagementForm = () => {
   const navigate = useNavigate();
@@ -83,16 +82,20 @@ export const useAddManagementForm = () => {
 
     if (success) {
       if (wsp || sms) {
-        const dataToSend = {
-          "Nombre del Cliente": selectedContact?.name ?? "",
-          Telefono: selectedContact?.phone ?? "",
-          Pagaduria: selectedPayroll?.name ?? "",
-          IdWolkvox: wolkvox_id ?? "",
-          Campaña: campaign ?? "",
-          "Enviar SMS de canal de whastapp": sms ? "SI" : "NO",
-          "Enviar WhatsApp de recuperar contraseña": wsp ? "SI" : "NO",
+        const payloadWolkvox = {
+          nombre: selectedContact?.name ?? "",
+          telefono: selectedContact?.phone ?? "",
+          id_wolkvox: wolkvox_id ?? "",
+          pagaduria: selectedPayroll?.name ?? "",
         };
-        sendData(dataToSend);
+
+        if (sms) {
+          await sendSms(payloadWolkvox);
+        }
+
+        if (wsp) {
+          await sendWhatsApp(payloadWolkvox);
+        }
       }
       handleClear();
       navigate("/gestiones/añadir");
