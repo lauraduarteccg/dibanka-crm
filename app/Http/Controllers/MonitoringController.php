@@ -43,8 +43,6 @@ class MonitoringController extends Controller
                 'total_pages'           => $monitoring->lastPage(),
                 'per_page'              => $monitoring->perPage(),
                 'total_monitorings'   => $monitoring->total(),
-                'next_page_url'         => $monitoring->nextPageUrl(),
-                'prev_page_url'         => $monitoring->previousPageUrl(),
             ],
         ], Response::HTTP_OK);
     }

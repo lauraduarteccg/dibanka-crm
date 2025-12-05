@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Afiliados;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -11,6 +11,14 @@ class ManagementResource extends JsonResource
     {
         return [
             'id'        => $this->id,
+            'wolkvox_id' => $this->wolkvox_id,
+            'solution'  => $this->solution,            
+            'comments'  => $this->comments,
+            'solution_date' => $this->solution_date,
+            
+            'sms'       => $this->sms,
+            'wsp'       => $this->wsp,
+
             // Usuario relacionado 
             'user' => $this->whenLoaded('user', function () {
                 return [
@@ -21,8 +29,6 @@ class ManagementResource extends JsonResource
                 ];
             }),
             
-            'wolkvox_id' => $this->wolkvox_id,
-
             // Campaña relacionada
             'payroll' => $this->whenLoaded('payroll', function () {
                 return [
@@ -31,8 +37,6 @@ class ManagementResource extends JsonResource
                     'is_active' => $this->payroll->is_active
                 ];
             }),
-
-            'solution'  => $this->solution,
 
             // Contacto relacionado
             'contact' => $this->whenLoaded('contact', function () {
@@ -52,9 +56,9 @@ class ManagementResource extends JsonResource
             // Consulta relacionada
             'consultation' => $this->whenLoaded('consultation', function () {
                 return [
-                    'id'                    => $this->consultation->id,
-                    'name'   => $this->consultation->name,
-                    'is_active'             => $this->consultation->is_active
+                    'id'        => $this->consultation->id,
+                    'name'      => $this->consultation->name,
+                    'is_active' => $this->consultation->is_active
                 ];
             }),
 
@@ -74,22 +78,16 @@ class ManagementResource extends JsonResource
                     'name'              => $this->specific->name,
                     'is_active'         => $this->specific->is_active
                 ];
-            }),            
-            'comments'  => $this->comments,
-            'solution_date' => $this->solution_date,
+            }),
 
             // Seguimiento relacionada
             'monitoring' => $this->whenLoaded('monitoring', function () {
                 return [
                     'id'            => $this->monitoring->id,
                     'name'          => $this->monitoring->name,
-                    'solution_date' => $this->monitoring->solution_date,
                     'is_active'     => $this->monitoring->is_active
                 ];
             }),
-            
-            'sms'       => $this->sms,
-            'wsp'       => $this->wsp,
 
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

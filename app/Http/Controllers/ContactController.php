@@ -25,8 +25,7 @@ class ContactController extends Controller
             $searchTerm = $request->search;
 
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('campaign', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('name', 'LIKE', "%{$searchTerm}%")
+                $q->where('name', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('update_phone', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('email', 'LIKE', "%{$searchTerm}%")
@@ -41,7 +40,7 @@ class ContactController extends Controller
             });
         }
 
-        $contacts = $query->with('payroll')->paginate(10);
+        $contacts = $query->with('payroll', 'campaign')->paginate(10);
         log_activity('ver_listado', 'Contactos', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de contactos.",
             'criterios' => [
@@ -58,8 +57,6 @@ class ContactController extends Controller
                 'total_pages'       => $contacts->lastPage(),
                 'per_page'          => $contacts->perPage(),
                 'total_contacts'    => $contacts->total(),
-                'next_page_url'     => $contacts->nextPageUrl(),
-                'prev_page_url'     => $contacts->previousPageUrl(),
             ]
         ], Response::HTTP_OK);
     }
@@ -103,7 +100,8 @@ class ContactController extends Controller
     public function store(ContactRequest $request)
     {
         $contacts = Contact::create($request->all());
-        $contacts->load(['payroll']);
+        $contacts->load(['payroll', 'campaign']);
+        
         log_activity('crear', 'Contactos', [
             'mensaje' => "El usuario {$request->user()->name} creó un nuevo contacto.",
      
@@ -144,7 +142,7 @@ class ContactController extends Controller
         $dataBefore = $contacts->toArray();
 
         $contacts->update($request->only(
-            'campaign',
+            'campaign_id',
             'payroll_id',
             'name',
             'identification_type',

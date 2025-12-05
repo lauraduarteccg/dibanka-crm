@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Aliados;
 
-use App\Models\Consultation;
+use App\Http\Controllers\Controller;
+use App\Models\Aliados\Consultation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\ConsultationResource;
-use App\Http\Requests\ConsultationRequest;
+use App\Http\Resources\Aliados\ConsultationResource;
+use App\Http\Requests\Aliados\ConsultationRequest;
 
 class ConsultationController extends Controller
 {
@@ -17,7 +18,7 @@ class ConsultationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Consultation::with(['payroll']);
+        $query = Consultation::with(['payrolls']);
 
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
@@ -74,7 +75,15 @@ class ConsultationController extends Controller
      */
     public function store(ConsultationRequest $request)
     {
-        $consultation = Consultation::create($request->all());
+        $consultation = Consultation::create($request->validated());
+
+        //Crear automaticamente los registros pivote
+        if ($request->has('payroll_ids')) {
+            $consultation->payrolls()->sync($request->payroll_ids);
+        }
+
+        $consultation->load('payrolls');
+
         log_activity('crear', 'Consultas', [
             'mensaje' => "El usuario {$request->user()->name} creó una nueva consulta.",
             'consulta_id' => $consultation->id
@@ -121,13 +130,21 @@ class ConsultationController extends Controller
         $consultation = Consultation::findOrFail($id);
         $consultationBefore = $consultation->toArray();
 
+        // Sincronizar pagadurías (si vienen)
+        if ($request->has('payroll_ids')) {
+            $consultation->payrolls()->sync($request->payroll_ids);
+        }    
+        
+        // Obtener estado actualizado después del sync
+        $after = $consultation->load('payrolls')->toArray();    
+
         $consultation->update($request->all());
 
         log_activity('actualizar', 'Consultas', [
             'mensaje' => "El usuario {$request->user()->name} actualizó una consulta.",
             'cambios' => [
                 'antes' => $consultationBefore,
-                'después' => $consultation->toArray(),
+                'después' => $after,
             ],
             'consulta_id' => $consultation->id,
         ], $request);
@@ -145,26 +162,37 @@ class ConsultationController extends Controller
     {
         $consultation = Consultation::findOrFail($id);
 
+        // Nuevo estado (toggle)
+        $newState = $consultation->is_active ? 0 : 1;
 
-        $consultation->update(['is_active' => $consultation->is_active ? 0 : 1]);
+        // Actualizar consulta
+        $consultation->update(['is_active' => $newState]);
+
+        // Si se DESACTIVA → borrar relaciones
+        if ($newState === 0) {
+            \DB::table('payroll_consultations_aliados')
+                ->where('consultation_id', $consultation->id)
+                ->delete();
+        }
 
         log_activity(
-            $consultation->is_active ? 'activar consulta' : 'desactivar consulta',
+            $newState ? 'activar consulta' : 'desactivar consulta',
             'Consultas',
             [
-                "message" => "Se ha" . $consultation->is_active ? 'activado' : 'desactivado' . " una consulta",
+                "mensaje" => "Se ha " . ($newState ? "activado" : "desactivado") . " una consulta",
+                "consulta_id" => $consultation->id
             ],
             $request
         );
 
         return response()->json([
-            'message' => $consultation->is_active
+            'message' => $newState
                 ? 'Consulta activada correctamente'
-                : 'Consulta desactivada correctamente',
+                : 'Consulta desactivada correctamente (relaciones eliminadas)',
             'consultation' => new ConsultationResource($consultation)
-
         ], Response::HTTP_OK);
     }
+
 
     /**
      * Contar todas las consultas

@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Afiliados;
 
-use App\Http\Requests\ManagementRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Afiliados\ManagementRequest;
 use App\Http\Requests\UpdateMonitoringRequest;
-use App\Models\Management;
+use App\Models\Afiliados\Management;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use App\Http\Resources\ManagementResource;
+use App\Http\Resources\Afiliados\ManagementResource;
 use Illuminate\Support\Facades\Validator;
 
 class ManagementController extends Controller
@@ -18,7 +19,8 @@ class ManagementController extends Controller
 
     public function index(Request $request)
     {
-        $query = Management::with(['user', 'payroll', 'consultation', 'contact', 'specific', 'monitoring', 'type_management']);
+        $query = Management::with(['user', 'payroll', 'consultation', 
+        'contact', 'specific', 'monitoring', 'type_management']);
 
         // 🔎 Buscar directamente por identification_number en la relación contact
         if ($request->has('identification_number') && !empty($request->identification_number)) {
@@ -42,7 +44,6 @@ class ManagementController extends Controller
                 $relations = [
                     'user' => ['id', 'name', 'email'],
                     'payroll' => ['name'],
-                    'monitoring' => ['name'],
                     'consultation' => ['name'],
                     'specific' => ['name'],
                     'type_management' => ['name'],
@@ -90,6 +91,37 @@ class ManagementController extends Controller
             ]
         ]);
     }
+    /**
+     * Obtener una gestión específica con toda su información relacionada.
+     */
+    public function show(Request $request, $id)
+    {
+        $management = Management::with([
+            'user', 
+            'payroll', 
+            'consultation', 
+            'contact', 
+            'specific', 
+            'monitoring', 
+            'type_management'
+        ])->find($id);
+
+        if (!$management) {
+            return response()->json([
+                'message' => 'Gestión no encontrada'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        log_activity('ver_detalle', 'Gestiones', [
+            'mensaje' => "El usuario {$request->user()->name} visualizó el detalle de la gestión ID {$management->id}.",
+            'management_id' => $management->id
+        ], $request);
+
+        return response()->json([
+            'message' => 'Gestión encontrada',
+            'management' => new ManagementResource($management)
+        ], Response::HTTP_OK);
+    }
 
     /**
      * Guardar una nueva gestión en la base de datos.
@@ -114,14 +146,9 @@ class ManagementController extends Controller
     }
 
     /**
-     * Mostrar una gestión específica.
-     */
-    public function show($id) {}
-
-    /**
      * Actualizar una gestión existente.
      */
-    public function update(ManagementRequest $request, $id)
+    public function update(Request $request, $id)
     {
         $management = Management::find($id);
         $dataBefore = $management->toArray();
@@ -130,18 +157,11 @@ class ManagementController extends Controller
             return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
-        $validator = Validator::make($request->all());
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $data = $request->all();
-
-        $management->update($data);
+        $management->update($request->all());
 
         // Recargar relaciones para devolver la info actualizada
-        $management->load(['usuario', 'payroll', 'consultation', 'contact', 'monitoring']);
+        $management->load(['user', 'payroll', 'consultation', 'specific', 'contact', 'monitoring']);
+        
         log_activity('actualizar', 'Gestiones', [
             'mensaje' => "El usuario {$request->user()->name} actualizó una gestión.",
             'cambios' => [
@@ -150,10 +170,10 @@ class ManagementController extends Controller
             ]
         ], $request);
 
-
-        return (new ManagementResource($management))
-            ->response()
-            ->setStatusCode(Response::HTTP_OK);
+        return response()->json([
+            'message' => 'Gestión actualizada correctamente',
+            'management' => new ManagementResource($management)
+        ], Response::HTTP_OK);
     }
 
     // Actualiza unicamente estos dos campos

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Aliados;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,12 +17,14 @@ class ConsultationResource extends JsonResource
         return [
             'id'                    => $this->id,
             'name'                  => $this->name,
-            'payrolls' => [
-                'id'    => optional($this->payroll)->id,
-                'name'  => optional($this->payroll)->name,
-            ],             
-            'created_at'            => $this->created_at->format('Y-m-d H:i:s'),
-            'is_active'             => $this->is_active
+            'payrolls'  => $this->payrolls->map(function ($payroll) {
+                return [
+                    'id'   => $payroll->id,
+                    'name' => $payroll->name,
+                ];
+            }),            
+            'is_active'             => $this->is_active,
+            'created_at'            => $this->created_at->format('Y-m-d H:i:s')
         ];
     }
 }

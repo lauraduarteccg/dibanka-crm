@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Afiliados;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,8 +25,8 @@ class ManagementRequest extends FormRequest
             'user_id'           => 'required|integer|exists:users,id',
             'payroll_id'        => 'required|integer|exists:payrolls,id',
             'contact_id'        => 'required|integer|exists:contacts,id',
-            'consultation_id'   => 'required|integer|exists:consultations,id',
-            'specific_id'       => 'required|integer|exists:consultation_specifics,id',
+            'consultation_id'   => 'required|integer|exists:consultations_afiliados,id',
+            'specific_id'       => 'required|integer|exists:specifics_afiliados,id',
             'monitoring_id'     => 'nullable|integer|exists:monitoring,id',
             'type_management_id'=> 'required|integer|exists:type_management,id',
 

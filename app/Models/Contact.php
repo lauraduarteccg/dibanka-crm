@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Contact extends Model
 {
     protected $fillable = [
-        'campaign',
+        'campaign_id',
         'payroll_id',
         'name',
         'identification_type',
@@ -18,9 +18,9 @@ class Contact extends Model
         'is_active',
     ];
 
-    public function contacts()
+    public function campaign()
     {
-        return $this->hasMany(Contact::class);
+        return $this->belongsTo(Campaign::class, 'campaign_id');
     }
     
     public function payroll()

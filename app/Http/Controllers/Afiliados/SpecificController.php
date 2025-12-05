@@ -1,23 +1,24 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Afiliados;
 
-use App\Models\ConsultationSpecific;
+use App\Http\Controllers\Controller;
+use App\Models\Afiliados\Specific;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\ConsultationSpecificResource;
-use App\Http\Requests\SpecificConsultRequest;
+use App\Http\Resources\Afiliados\SpecificResource;
+use App\Http\Requests\Afiliados\SpecificRequest;
 
-class ConsultationSpecificController extends Controller
+class SpecificController extends Controller
 {
     /**
      * Listar todas las consultas específicas con paginación
      */
     public function index(Request $request)
     {
-        $query = ConsultationSpecific::with(['consultation.payroll']);
+        $query = Specific::with(['consultation.payrolls']);
 
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
@@ -43,14 +44,12 @@ class ConsultationSpecificController extends Controller
 
         return response()->json([
             'message'       => 'Consultas específicas obtenidas con éxito',
-            'specifics' => ConsultationSpecificResource::collection($specifics),
+            'specifics' => SpecificResource::collection($specifics),
             'pagination'    => [
                 'current_page'        => $specifics->currentPage(),
                 'total_pages'         => $specifics->lastPage(),
                 'per_page'            => $specifics->perPage(),
                 'total_consultations' => $specifics->total(),
-                'next_page_url'       => $specifics->nextPageUrl(),
-                'prev_page_url'       => $specifics->previousPageUrl(),
             ],
         ], Response::HTTP_OK);
     }
@@ -58,35 +57,33 @@ class ConsultationSpecificController extends Controller
     // Trae solo consultas especificas activas sin paginacion
     public function active(Request $request)
     {
-        $consultations = ConsultationSpecific::with('consultation.payroll')->get();
+        $consultations = Specific::with('consultation.payrolls')->get();
 
         log_activity('ver_activas', 'Consultas Especificas', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas especifica activas.",
         ], $request);
         return response()->json([
             'message'       => 'Consultas especificas activas obtenidas con éxito',
-            'consultationspecific' => ConsultationSpecificResource::collection($consultations)
+            'consultationspecific' => SpecificResource::collection($consultations)
         ], Response::HTTP_OK);
     }
 
     /**
      * Crear una nueva consulta específica
      */
-    public function store(SpecificConsultRequest $request)
+    public function store(SpecificRequest $request)
     {
 
-        $specific = ConsultationSpecific::create($request->all());
+        $specific = Specific::create($request->all());
 
         log_activity('crear', 'Consultas Especificas', [
             'mensaje' => "El usuario {$request->user()->name} creó una nueva consulta especifica.",
-   
-            
             'consulta_id' => $specific->id
         ], $request);
 
         return response()->json([
             'message' => 'Consulta especifica creada correctamente',
-            'specific' => new ConsultationSpecificResource($specific)
+            'specific' => new SpecificResource($specific)
         ], Response::HTTP_CREATED);
     }
 
@@ -95,7 +92,7 @@ class ConsultationSpecificController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        $specific = ConsultationSpecific::find($id);
+        $specific = Specific::find($id);
 
         if (! $specific) {
             return response()->json(['message' => 'Consulta específica no encontrada'], Response::HTTP_NOT_FOUND);
@@ -107,16 +104,16 @@ class ConsultationSpecificController extends Controller
 
         return response()->json([
             'message' => 'Consulta específica encontrada',
-            'specific' => new ConsultationSpecificResource($specific)
+            'specific' => new SpecificResource($specific)
         ], Response::HTTP_OK);
     }
 
     /**
      * Actualizar una consulta específica
      */
-    public function update(SpecificConsultRequest $request, $id)
+    public function update(SpecificRequest $request, $id)
     {
-        $specific = ConsultationSpecific::findOrFail($id);
+        $specific = Specific::findOrFail($id);
         $dataBefore = $specific->toArray();
 
         $specific->update($request->all());
@@ -132,7 +129,7 @@ class ConsultationSpecificController extends Controller
         return response()->json([
             'succes' => true,
             'message' => 'Consults especifica actualizada con exito',
-            'specific' => new ConsultationSpecificResource($specific)
+            'specific' => new SpecificResource($specific)
         ], Response::HTTP_OK);
     }
 
@@ -141,7 +138,7 @@ class ConsultationSpecificController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
-        $specific = ConsultationSpecific::find($id);
+        $specific = Specific::find($id);
 
         if (! $specific) {
             return response()->json(['message' => 'Consulta específica no encontrada'], Response::HTTP_NOT_FOUND);
@@ -166,7 +163,7 @@ class ConsultationSpecificController extends Controller
      */
     public function count()
     {
-        $count = ConsultationSpecific::where('is_active', 1)->count();
+        $count = Specific::where('is_active', 1)->count();
 
         return response()->json(['estadisticas' => $count], Response::HTTP_OK);
     }

@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use App\Http\Resources\PayrollResource;
 use App\Http\Requests\PayrollRequest;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PayrollController extends Controller
 {
@@ -153,26 +154,55 @@ class PayrollController extends Controller
     // Activar/Desactivar una pagaduría
     public function destroy(Request $request, $id)
     {
-        $payroll = Payroll::findOrFail($id);
-        $state = $payroll->is_active;
-        $payroll->update(['is_active' => !$payroll->is_active]);
-        log_activity(
-            $payroll->is_active ? 'activar' : 'desactivar',
-            'Pagadurías',
-            [
-                'mensaje' => "El usuario {$request->user()->name} " .
-                    ($payroll->is_active ? 'activó' : 'desactivó') .
-                    " la pagaduría ID {$id}.",
-                'pagaduria_id' => $id,
-            ],
-            $request
-        );
-        return response()->json([
-            'message' => $payroll->is_active
-                ? 'Pagaduría activada correctamente'
-                : 'Pagaduría desactivada correctamente',
-            'payroll' => new PayrollResource($payroll)
-        ], Response::HTTP_OK);
+        try {
+            DB::beginTransaction();
+            
+            $payroll = Payroll::findOrFail($id);
+            $state = $payroll->is_active;
+            
+            // Si se está desactivando, eliminar las relaciones
+            if ($state) { // Si estaba activa (true) y se va a desactivar
+                DB::table('payroll_consultations_aliados')
+                    ->where('payroll_id', $id)
+                    ->delete();
+                
+                DB::table('payroll_consultations_afiliados')
+                    ->where('payroll_id', $id)
+                    ->delete();
+            }
+            
+            $payroll->update(['is_active' => !$payroll->is_active]);
+            
+            log_activity(
+                $payroll->is_active ? 'activar' : 'desactivar',
+                'Pagadurías',
+                [
+                    'mensaje' => "El usuario {$request->user()->name} " .
+                        ($payroll->is_active ? 'activó' : 'desactivó') .
+                        " la pagaduría ID {$id}." .
+                        (!$payroll->is_active ? ' Se eliminaron las relaciones asociadas.' : ''),
+                    'pagaduria_id' => $id,
+                ],
+                $request
+            );
+            
+            DB::commit();
+            
+            return response()->json([
+                'message' => $payroll->is_active
+                    ? 'Pagaduría activada correctamente'
+                    : 'Pagaduría desactivada correctamente. Relaciones eliminadas.',
+                'payroll' => new PayrollResource($payroll)
+            ], Response::HTTP_OK);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'message' => 'Error al procesar la operación',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     // Contar pagadurías

@@ -5,18 +5,29 @@ use App\Http\Controllers\{
     ActivityLogController,
     AuthController,
     ContactController,
-    ManagementController,
     PayrollController,
-    ConsultationController,
-    ConsultationSpecificController,
     UserController,
     TypeManagementController,
     SpecialCasesController,
     MonitoringController,
     RoleController,
     PasswordResetController,
-    SendToWolkvoxController
+    SendToWolkvoxController,
+    CampaignController,
 };
+
+use App\Http\Controllers\Aliados\ConsultationController as AliadosConsultationController;
+use App\Http\Controllers\Afiliados\ConsultationController as AfiliadosConsultationController;
+
+use App\Http\Controllers\Aliados\SpecificController as AliadosSpecificController;
+use App\Http\Controllers\Afiliados\SpecificController as AfiliadosSpecificController;
+
+use App\Http\Controllers\Aliados\ManagementController as AliadosManagementController;
+use App\Http\Controllers\Afiliados\ManagementController as AfiliadosManagementController;
+
+use App\Http\Controllers\Aliados\PayrollConsultationController as AliadosPayrollConsultationController;
+use App\Http\Controllers\Afiliados\PayrollConsultationController as AfiliadosPayrollConsultationController;
+
 
 // ==========================================================
 //  RUTAS PÚBLICAS
@@ -34,7 +45,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     //  CONFIGURACIÓN DEL SISTEMA (config.*)
     // ==========================================================
     Route::prefix('config')->group(function () {
-
+            
         // ------------------- Usuarios -------------------
         Route::prefix('users')->group(function () {
             Route::get('/', [UserController::class, 'index'])->middleware('permission:config.user.view');
@@ -47,32 +58,57 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // ------------------- Pagadurías -------------------
         Route::prefix('payrolls')->group(function () {
             Route::get('/', [PayrollController::class, 'index'])->middleware('permission:payroll.view');
+            Route::get('/active', [PayrollController::class, 'active'])->middleware('permission:payroll.view');
+            Route::get('/{payroll}', [PayrollController::class, 'show'])->middleware('permission:payroll.view');
             Route::post('/', [PayrollController::class, 'store'])->middleware('permission:config.payroll.create');
             Route::put('{payroll}', [PayrollController::class, 'update'])->middleware('permission:config.payroll.edit');
             Route::delete('{payroll}', [PayrollController::class, 'destroy'])->middleware('permission:config.payroll.delete');
         });
 
-        // ------------------- Consultas -------------------
-        Route::prefix('consultations')->group(function () {
-            Route::get('/', [ConsultationController::class, 'index'])->middleware('permission:consultation.view');
-            Route::get('/active', [ConsultationController::class, 'active'])->middleware('permission:consultation.view');
-            Route::post('/', [ConsultationController::class, 'store'])->middleware('permission:config.consultation.create');
-            Route::put('{consultation}', [ConsultationController::class, 'update'])->middleware('permission:config.consultation.edit');
-            Route::delete('{consultation}', [ConsultationController::class, 'destroy'])->middleware('permission:config.consultation.delete');
+        // ------------------- Consultas Afiliados -------------------
+        Route::prefix('consultations-afiliados')->group(function () {
+            Route::get('/', [AfiliadosConsultationController::class, 'index'])->middleware('permission:consultation.view');
+            Route::get('/active', [AfiliadosConsultationController::class, 'active'])->middleware('permission:consultation.view');
+            Route::get('/{id}', [AfiliadosConsultationController::class, 'show'])->middleware('permission:consultation.view');
+            Route::post('/', [AfiliadosConsultationController::class, 'store'])->middleware('permission:config.consultation.create');
+            Route::put('{consultation}', [AfiliadosConsultationController::class, 'update'])->middleware('permission:config.consultation.edit');
+            Route::delete('{consultation}', [AfiliadosConsultationController::class, 'destroy'])->middleware('permission:config.consultation.delete');
         });
 
-        // ------------------- Consultas Específicas -------------------
-        Route::prefix('consultationspecifics')->group(function () {
-            Route::get('/', [ConsultationSpecificController::class, 'index'])->middleware('permission:specific.view');
-            Route::get('/active', [ConsultationSpecificController::class, 'active'])->middleware('permission:specific.view');
-            Route::post('/', [ConsultationSpecificController::class, 'store'])->middleware('permission:config.specific.create');
-            Route::put('{consultationspecific}', [ConsultationSpecificController::class, 'update'])->middleware('permission:config.specific.edit');
-            Route::delete('{consultationspecific}', [ConsultationSpecificController::class, 'destroy'])->middleware('permission:config.specific.delete');
+        // ------------------- Consultas Aliados -------------------
+        Route::prefix('consultations-aliados')->group(function () {
+            Route::get('/', [AliadosConsultationController::class, 'index'])->middleware('permission:consultation.view');
+            Route::get('/active', [AliadosConsultationController::class, 'active'])->middleware('permission:consultation.view'); // <-- MOVER PRIMERO
+            Route::get('/{id}', [AliadosConsultationController::class, 'show'])->middleware('permission:consultation.view'); // <-- DESPUÉS
+            Route::post('/', [AliadosConsultationController::class, 'store'])->middleware('permission:config.consultation.create');
+            Route::put('{consultation}', [AliadosConsultationController::class, 'update'])->middleware('permission:config.consultation.edit');
+            Route::delete('{consultation}', [AliadosConsultationController::class, 'destroy'])->middleware('permission:config.consultation.delete');
+        });
+
+        // ------------------- Consultas Específicas Afiliados -------------------
+        Route::prefix('consultationspecifics-afiliados')->group(function () {
+            Route::get('/', [AfiliadosSpecificController::class, 'index'])->middleware('permission:specific.view');
+            Route::get('/active', [AfiliadosSpecificController::class, 'active'])->middleware('permission:specific.view');
+            Route::get('/{id}', [AfiliadosSpecificController::class, 'show'])->middleware('permission:specific.view');
+            Route::post('/', [AfiliadosSpecificController::class, 'store'])->middleware('permission:config.specific.create');
+            Route::put('{consultationspecific}', [AfiliadosSpecificController::class, 'update'])->middleware('permission:config.specific.edit');
+            Route::delete('{consultationspecific}', [AfiliadosSpecificController::class, 'destroy'])->middleware('permission:config.specific.delete');
+        });
+
+        // ------------------- Consultas Específicas Aliados -------------------
+        Route::prefix('consultationspecifics-aliados')->group(function () {
+            Route::get('/', [AliadosSpecificController::class, 'index'])->middleware('permission:specific.view');
+            Route::get('/active', [AliadosSpecificController::class, 'active'])->middleware('permission:specific.view');
+            Route::get('/{id}', [AliadosSpecificController::class, 'show'])->middleware('permission:specific.view');
+            Route::post('/', [AliadosSpecificController::class, 'store'])->middleware('permission:config.specific.create');
+            Route::put('{consultationspecific}', [AliadosSpecificController::class, 'update'])->middleware('permission:config.specific.edit');
+            Route::delete('{consultationspecific}', [AliadosSpecificController::class, 'destroy'])->middleware('permission:config.specific.delete');
         });
 
         // ------------------- Tipos de Gestiones -------------------
         Route::prefix('typemanagements')->group(function () {
             Route::get('/', [TypeManagementController::class, 'index'])->middleware('permission:typeManagement.view');
+            Route::get('/{id}', [TypeManagementController::class, 'show'])->middleware('permission:typeManagement.view');
             Route::get('/active', [TypeManagementController::class, 'active'])->middleware('permission:typeManagement.view');
             Route::post('/', [TypeManagementController::class, 'store'])->middleware('permission:config.typeManagement.create');
             Route::put('{typemanagement}', [TypeManagementController::class, 'update'])->middleware('permission:config.typeManagement.edit');
@@ -82,6 +118,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // ------------------- Seguimientos -------------------
         Route::prefix('monitorings')->group(function () {
             Route::get('/', [MonitoringController::class, 'index'])->middleware('permission:monitoring.view');
+            Route::get('/{id}', [MonitoringController::class, 'show'])->middleware('permission:monitoring.view');
             Route::post('/', [MonitoringController::class, 'store'])->middleware('permission:config.monitoring.create');
             Route::put('{id}', [MonitoringController::class, 'update'])->middleware('permission:config.monitoring.edit');
             Route::delete('{id}', [MonitoringController::class, 'destroy'])->middleware('permission:config.monitoring.delete');
@@ -110,6 +147,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // ------------------- Contactos -------------------
     Route::get('/contacts', [ContactController::class, 'index'])->middleware('permission:contact.view');
+    Route::get('/contacts/{id}', [ContactController::class, 'show'])->middleware('permission:contact.view');
     Route::get('/contacts/active', [ContactController::class, 'active'])->middleware('permission:contact.view');
     Route::post('/contacts', [ContactController::class, 'store'])->middleware('permission:contact.create');
     Route::put('/contacts/{contact}', [ContactController::class, 'update'])->middleware('permission:contact.edit');
@@ -121,13 +159,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // ------------------- Seguimientos -------------------
     Route::get('/monitorings/active', [MonitoringController::class, 'active'])->middleware('permission:monitoring.view');
+    Route::get('/monitorings', [MonitoringController::class, 'index'])->middleware('permission:monitoring.view');
+    Route::get('/monitorings/{id}', [MonitoringController::class, 'show'])->middleware('permission:monitoring.view');
 
-    // ------------------- Gestiones -------------------
-    Route::get('/management', [ManagementController::class, 'index'])->middleware('permission:management.view');
-    Route::post('/management', [ManagementController::class, 'store'])->middleware('permission:management.create');
-    Route::put('/management/{id}', [ManagementController::class, 'update'])->middleware('permission:management.edit');
-    Route::put('/managementmonitoring/{id}', [ManagementController::class, 'updateMonitoring'])->middleware('permission:management.edit');
-    Route::delete('/management/{id}', [ManagementController::class, 'destroy'])->middleware('permission:management.delete');
+    // ------------------- Gestiones - AFILIADOS -------------------
+    Route::get('/management-afiliados', [AfiliadosManagementController::class, 'index'])->middleware('permission:management.view');
+    Route::get('/management-afiliados/{id}', [AfiliadosManagementController::class, 'show'])->middleware('permission:management.view');
+    Route::post('/management-afiliados', [AfiliadosManagementController::class, 'store'])->middleware('permission:management.create');
+    Route::put('/management-afiliados/{id}', [AfiliadosManagementController::class, 'update'])->middleware('permission:management.edit');
+    Route::put('/managementmonitoring-afiliados/{id}', [AfiliadosManagementController::class, 'updateMonitoring'])->middleware('permission:management.edit');
+    Route::delete('/management-afiliados/{id}', [AfiliadosManagementController::class, 'destroy'])->middleware('permission:management.delete');
+    
+    // ------------------- Gestiones -ALIADOS -------------------
+    Route::get('/management-aliados', [AliadosManagementController::class, 'index'])->middleware('permission:management.view');
+    Route::get('/management-aliados/{id}', [AliadosManagementController::class, 'show'])->middleware('permission:management.view');
+    Route::post('/management-aliados', [AliadosManagementController::class, 'store'])->middleware('permission:management.create');
+    Route::put('/management-aliados/{id}', [AliadosManagementController::class, 'update'])->middleware('permission:management.edit');
+    Route::put('/managementmonitoring-aliados/{id}', [AliadosManagementController::class, 'updateMonitoring'])->middleware('permission:management.edit');
+    Route::delete('/management-aliados/{id}', [AliadosManagementController::class, 'destroy'])->middleware('permission:management.delete');
     
     // -------------- Enviar a camapaña de wolkvox ----------------------
     Route::post('/send-sms', [SendToWolkvoxController::class, 'sendSMS'])->middleware('permission:management.create');
@@ -135,9 +184,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // ------------------- Casos Especiales -------------------
     Route::get('/specialcases', [SpecialCasesController::class, 'index'])->middleware('permission:special_cases.view');
+    Route::get('/specialcases/{id}', [SpecialCasesController::class, 'show'])->middleware('permission:special_cases.view');
     Route::post('/specialcases', [SpecialCasesController::class, 'store'])->middleware('permission:special_cases.create');
     Route::put('/specialcases/{id}', [SpecialCasesController::class, 'update'])->middleware('permission:special_cases.edit');
     Route::delete('/specialcases/{id}', [SpecialCasesController::class, 'destroy'])->middleware('permission:special_cases.delete');
+
+    // ------------------- Campañas -------------------
+    Route::prefix('campaign')->group(function () {
+        Route::get('/', [CampaignController::class, 'index']);
+    });
 
     // ------------------- Conteos -------------------
     Route::get('/management/count', [ManagementController::class, 'count'])->middleware('permission:management.view');

@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Afiliados;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Payroll;
 
-class ConsultationSpecific extends Model
+class Specific extends Model
 {
     use HasFactory;
 
+    protected $table = 'specifics_afiliados';
     protected $fillable = [
         'name',
         'consultation_id',
@@ -17,8 +19,16 @@ class ConsultationSpecific extends Model
 
     public function consultation()
     {
-        return $this->belongsTo(Consultation::class, 'consultation_id');
+        return $this->belongsTo(\App\Models\Afiliados\Consultation::class, 'consultation_id');
     }
+
+
+    public function payroll()
+    {
+        return $this->belongsToMany(Payroll::class, 'payroll_consultations_afiliados')
+                    ->withTimestamps();
+    }
+
 
     // Scope para traer solo registros activos
     public function scopeActive($query)

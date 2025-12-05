@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('consultation_specifics', function (Blueprint $table) {
+        Schema::create('payroll_consultations_aliados', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->default('');
-            $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
-            $table->boolean('is_active')->default(1);
+            $table->foreignId('consultation_id')->constrained('consultations_aliados')->cascadeOnDelete();
+            $table->foreignId('payroll_id')->constrained('payrolls')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('consultation_specifics');
+        Schema::dropIfExists('payroll_consultations_aliados');
     }
 };

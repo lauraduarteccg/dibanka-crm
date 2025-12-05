@@ -26,7 +26,7 @@ class PayrollResource extends JsonResource
             'i_phone' => $this->i_phone,
             'i_email' => $this->i_email,
             'is_active' => $this->is_active,
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

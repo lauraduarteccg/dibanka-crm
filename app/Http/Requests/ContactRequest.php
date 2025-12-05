@@ -32,7 +32,7 @@ class ContactRequest extends FormRequest
 
         $contactID = $this->route('contacts')?->id;
         return [
-            'campaign'      => 'required|string|max:255',
+            'campaign_id'      => 'required',
             'payroll_id'    => 'required|numeric',
             'payroll_id.*'  => 'integer|exists:payrolls,id',
             'name'          => 'required|string|max:255',
@@ -47,9 +47,7 @@ class ContactRequest extends FormRequest
     public function messages()
     {
         return [
-            'campaign.required'     => 'El campo campaña es obligatorio.',
-            'campaign.string'       => 'El campo campaña debe ser una cadena de texto.',
-            'campaign.max'          => 'El campo campaña no debe exceder los 255 caracteres.',
+            'campaign_id.required'     => 'El campo campaña es obligatorio.',
 
             'payroll_id.required'   => 'Debe seleccionar al menos una pagaduría',
             'payroll_id.*.exists'   => 'La pagaduría seleccionada no existe',

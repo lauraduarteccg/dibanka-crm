@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Aliados;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Consultation;
+use App\Models\Aliados\Consultation;
 use Illuminate\Validation\Rule;
 
 class ConsultationRequest extends FormRequest
@@ -23,11 +23,11 @@ class ConsultationRequest extends FormRequest
      */
     public function rules(): array
     {
-        $consultID = $this->route('consultations') ?->id;
+        $consultID = $this->route('consultations_aliados') ?->id;
 
         return [
             'name'          => 'required|string|max:255|min:1',
-            'payroll_id'    => 'required|integer|exists:payrolls,id'
+            'payroll_ids'    => 'required|array|exists:payrolls,id'
         ];
     }
 
@@ -38,8 +38,8 @@ class ConsultationRequest extends FormRequest
             'name.string'   => 'El campo motivo de consulta debe ser una cadena de texto.',
             'name.max'      => 'El campo motivo de consulta no debe exceder los 255 caracteres.',
 
-            'payroll_id.required' => 'La pagaduria es obligatoria.',
-            'payroll_id.exists' => 'La pagaduria seleccionada no existe.'
+            'payroll_ids.required' => 'La pagaduria es obligatoria.',
+            'payroll_ids.exists' => 'La pagaduria seleccionada no existe.'
         ];
     }
 }

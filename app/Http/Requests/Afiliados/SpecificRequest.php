@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Afiliados;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\ConsultationSpecific;
+use App\Models\Afiliados\Specific;
 use Illuminate\Validation\Rule;
 
-class SpecificConsultRequest extends FormRequest
+class SpecificRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,10 +23,10 @@ class SpecificConsultRequest extends FormRequest
      */
     public function rules(): array
     {
-        $specificConsultID = $this->route('consultation_specifics') ?->id;
+        $specificConsultID = $this->route('specifics_afiliados') ?->id;
         return [
             'name'              => 'required|string|max:255',
-            'consultation_id'   => 'required|integer|exists:consultations,id'
+            'consultation_id'   => 'required|integer|exists:consultations_afiliados,id'
         ];
     }
 

@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('management', function (Blueprint $table) {
+        Schema::create('management_aliados', function (Blueprint $table) {
             $table->id();
             $table->text('wolkvox_id');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('payroll_id')->constrained('payrolls')->onDelete('cascade');
             $table->foreignId('contact_id')->constrained('contacts')->onDelete('cascade');
             $table->boolean('solution')->default(1);
-            $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
-            $table->foreignId('specific_id')->constrained('consultation_specifics')->onDelete('cascade');
+            $table->foreignId('consultation_id')->constrained('consultations_aliados')->onDelete('cascade');
+            $table->foreignId('specific_id')->constrained('specifics_aliados')->onDelete('cascade');
             $table->foreignId('type_management_id')->constrained('type_management')->onDelete('cascade');
             $table->text('comments')->nullable();
             $table->date('solution_date')->nullable();
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('management');
+        Schema::dropIfExists('management_aliados');
     }
 };
