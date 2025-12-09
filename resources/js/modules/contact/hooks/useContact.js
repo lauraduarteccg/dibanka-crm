@@ -42,7 +42,7 @@ export const useContact = () => {
     // ====================== Formulario ======================
     const [formData, setFormData] = useState({
         id: null,
-        campaign: "",
+        campaign_id: "",
         payroll_id: "",
         name: "",
         identification_type: "",
@@ -92,7 +92,7 @@ export const useContact = () => {
     const handleEdit = (item) => {
         setFormData({
             id: item.id,
-            campaign: item.campaign,
+            campaign_id: item?.campaign?.id,
             payroll_id: item.payroll.id,
             name: item.name,
             email: item.email,

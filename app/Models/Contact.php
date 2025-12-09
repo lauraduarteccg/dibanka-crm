@@ -27,4 +27,27 @@ class Contact extends Model
     {
         return $this->belongsTo(Payroll::class, 'payroll_id');
     }
+
+    public function scopeSearch($query, $term)
+    {
+        return $query->where(function ($q) use ($term) {
+            $q->where('name', 'LIKE', "%{$term}%")
+                ->orWhere('phone', 'LIKE', "%{$term}%")
+                ->orWhere('update_phone', 'LIKE', "%{$term}%")
+                ->orWhere('email', 'LIKE', "%{$term}%")
+                ->orWhere('identification_type', 'LIKE', "%{$term}%")
+                ->orWhere('identification_number', 'LIKE', "%{$term}%")
+                ->orWhereHas('payroll', function ($payrollQuery) use ($term) {
+                    $payrollQuery->where('name', 'LIKE', "%{$term}%");
+                })
+                ->orWhereHas('campaign', function ($campaignQuery) use ($term) {
+                    $campaignQuery->where('name', 'LIKE', "%{$term}%");
+                });
+        });
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
+    }
 }

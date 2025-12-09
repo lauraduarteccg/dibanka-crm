@@ -26,33 +26,43 @@ export const ManagementStaticDataProvider = ({ children }) => {
    * Carga todos los datos estáticos en paralelo
    * Solo se ejecuta una vez
    */
-  const fetchStaticData = useCallback(async () => {
-    if (isLoaded) return; // Evitar cargas duplicadas
+const fetchStaticData = useCallback(async () => {
+  if (isLoaded) return;
 
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    try {
-      const [payrollData, typeManagementData, consultationData, specificData] =
-        await Promise.all([
-          getActivePayrolls(),
-          getActiveTypeManagements(),
-          getActiveConsultations(),
-          getActiveSpecificConsultations(),
-        ]);
+  try {
+    // Hacer peticiones con manejo de errores individual
+    const results = await Promise.allSettled([
+      getActivePayrolls(),
+      getActiveTypeManagements(),
+      getActiveConsultations(),
+      getActiveSpecificConsultations(),
+    ]);
 
-      setPayroll(payrollData || []);
-      setTypeManagement(typeManagementData || []);
-      setConsultation(consultationData || []);
-      setSpecific(specificData || []);
-      setIsLoaded(true);
-    } catch (err) {
-      console.error("Error al cargar datos estáticos:", err);
-      setError("Error al obtener los datos iniciales.");
-    } finally {
-      setLoading(false);
-    }
-  }, [isLoaded]);
+    console.log("payroll", results[0].status === 'fulfilled' ? results[0].value : []);
+    
+    setPayroll(results[0].status === 'fulfilled' ? results[0].value : []);
+    setTypeManagement(results[1].status === 'fulfilled' ? results[1].value : []);
+    setConsultation(results[2].status === 'fulfilled' ? results[2].value : []);
+    setSpecific(results[3].status === 'fulfilled' ? results[3].value : []);
+    
+    // Log errores individuales
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(`Error en petición ${index}:`, result.reason);
+      }
+    });
+    
+    setIsLoaded(true);
+  } catch (err) {
+    console.error("Error al cargar datos estáticos:", err);
+    setError("Error al obtener los datos iniciales.");
+  } finally {
+    setLoading(false);
+  }
+}, [isLoaded]);
 
   // Cargar datos estáticos solo una vez al montar
   useEffect(() => {

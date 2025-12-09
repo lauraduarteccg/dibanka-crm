@@ -15,32 +15,19 @@ class ContactController extends Controller
     public function index(Request $request)
     {
         $query = Contact::query();
+
         // 🔎 Buscar directamente por identification_number si viene en el request
-        if ($request->has('identification_number') && !empty($request->identification_number)) {
+        if ($request->filled('identification_number')) {
             $query->where('identification_number', $request->identification_number);
         }
 
         // 🔎 Búsqueda general con search
-        if ($request->has('search') && !empty($request->search)) {
-            $searchTerm = $request->search;
-
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('update_phone', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('email', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('identification_type', 'LIKE', "%{$searchTerm}%")
-                    // 👇 exacto para identification_number dentro del search
-                    ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%");
-
-                // Para buscar en relaciones
-                $q->orWhereHas('payroll', function ($payrollQuery) use ($searchTerm) {
-                    $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%");
-                });
-            });
+        if ($request->filled('search')) {
+            $query->search($request->search);
         }
 
         $contacts = $query->with('payroll', 'campaign')->paginate(10);
+        
         log_activity('ver_listado', 'Contactos', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de contactos.",
             'criterios' => [
@@ -61,37 +48,50 @@ class ContactController extends Controller
         ], Response::HTTP_OK);
     }
 
-    // Obtener contactos activos sin paginación
+    // Listar solo contactos ACTIVOS con paginación
     public function active(Request $request)
     {
-        $query = Contact::where('is_active', 1);
+        $query = Contact::query()
+            ->where('is_active', 1); // 🔥 Filtrar solo activos
 
-        // 🔎 Filtrar por pagaduría si viene en el request
-        if ($request->has('payroll') && !empty($request->payroll)) {
-            $payrollTerm = $request->payroll;
-            
-            $query->whereHas('payroll', function ($payrollQuery) use ($payrollTerm) {
-                $payrollQuery->where('name', 'LIKE', "%{$payrollTerm}%");
+        // 🔎 Filtrar por pagaduría (nombre)
+        if ($request->filled('payroll')) {
+            $query->whereHas('payroll', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->payroll . '%');
             });
         }
 
-        $contacts = $query->with('payroll')->paginate(10);
-        
-        log_activity('ver_listado', 'Contactos', [
+        // 🔎 Buscar directamente por identificación
+        if ($request->filled('identification_number')) {
+            $query->where('identification_number', $request->identification_number);
+        }
+
+        // 🔎 Búsqueda general
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+
+        // Cargar relaciones + paginar
+        $contacts = $query->with('payroll', 'campaign')->paginate(10);
+
+        // Registro de actividad
+        log_activity('ver_listado', 'Contactos Activos', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de contactos activos.",
             'criterios' => [
-                'pagaduría' => $request->payroll ?? 'Sin filtro aplicado'
+                'búsqueda' => $request->search ?? 'Sin filtro aplicado',
+                'número_identificación' => $request->identification_number ?? 'No especificado',
+                'pagaduría' => $request->payroll ?? 'No especificado'
             ]
         ], $request);
-        
+
         return response()->json([
-            'message' => 'Contactos activos obtenidos con éxito',
-            'contacts' => ContactResource::collection($contacts),
-            'pagination'        => [
-                'current_page'      => $contacts->currentPage(),
-                'total_pages'       => $contacts->lastPage(),
-                'per_page'          => $contacts->perPage(),
-                'total_contacts'    => $contacts->total(),
+            'message'    => 'Contactos activos obtenidos con éxito',
+            'contacts'   => ContactResource::collection($contacts),
+            'pagination' => [
+                'current_page'   => $contacts->currentPage(),
+                'total_pages'    => $contacts->lastPage(),
+                'per_page'       => $contacts->perPage(),
+                'total_contacts' => $contacts->total(),
             ]
         ], Response::HTTP_OK);
     }

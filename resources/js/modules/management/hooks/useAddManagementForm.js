@@ -2,7 +2,12 @@ import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "@context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAddManagement } from "@modules/management/hooks/useAddManagement";
-import { sendSms, sendWhatsApp } from "@modules/management/services/managementService";
+import { 
+  sendSms, 
+  sendWhatsApp,
+  getActiveConsultationsByCampaign,
+  getActiveSpecificConsultationsByCampaign
+} from "@modules/management/services/managementService";
 
 export const useAddManagementForm = () => {
   const navigate = useNavigate();
@@ -14,9 +19,6 @@ export const useAddManagementForm = () => {
     setModal,
     payroll,
     contact,
-    consultation,
-    typeManagement,
-    specific,
     handleSubmit,
     validationErrors,
     clearValidationError,
@@ -37,6 +39,51 @@ export const useAddManagementForm = () => {
   const [selectedSpecificConsultation, setSelectedSpecificConsultation] = useState(null);
   const [wolkvox_id, setWolkvox_id] = useState("");
   const [comments, setObservations] = useState("");
+
+  // Estados para consultas dinámicas
+  const [consultation, setConsultation] = useState([]);
+  const [specific, setSpecific] = useState([]);
+  const [loadingConsultations, setLoadingConsultations] = useState(false);
+
+  // ==========================
+  // CARGAR CONSULTAS SEGÚN CAMPAÑA
+  // ==========================
+  useEffect(() => {
+    const loadConsultationsByCampaign = async () => {
+      if (!campaign) {
+        setConsultation([]);
+        setSpecific([]);
+        return;
+      }
+
+      setLoadingConsultations(true);
+      try {
+        const [consultationsData, specificsData] = await Promise.all([
+          getActiveConsultationsByCampaign(campaign),
+          getActiveSpecificConsultationsByCampaign(campaign)
+        ]);
+
+        setConsultation(consultationsData);
+        setSpecific(specificsData);
+
+        // Resetear las selecciones si ya no son válidas
+        if (selectedConsultation && !consultationsData.find(c => c.id === selectedConsultation.id)) {
+          setSelectedConsultation(null);
+        }
+        if (selectedSpecificConsultation && !specificsData.find(s => s.id === selectedSpecificConsultation.id)) {
+          setSelectedSpecificConsultation(null);
+        }
+      } catch (error) {
+        console.error("Error al cargar consultas:", error);
+        setConsultation([]);
+        setSpecific([]);
+      } finally {
+        setLoadingConsultations(false);
+      }
+    };
+
+    loadConsultationsByCampaign();
+  }, [campaign]);
 
   // ==========================
   // FUNCIONES LÓGICAS
@@ -102,7 +149,6 @@ export const useAddManagementForm = () => {
     }
   };
 
-
   // Capitaliza palabras
   const capitalizeWords = (str) =>
     str
@@ -115,13 +161,15 @@ export const useAddManagementForm = () => {
   // ==========================
   // FILTROS
   // ==========================
+  const { typeManagement } = useAddManagement();
+
   const filteredTypeManagement = selectedPayroll
     ? typeManagement.filter((item) => item?.payrolls?.id === selectedPayroll?.id)
     : typeManagement;
 
   const filteredConsultation = selectedPayroll
-  ? consultation.filter((item) => item?.payrolls?.id === selectedPayroll?.id)
-  : consultation;
+    ? consultation.filter((item) => item?.payrolls?.id === selectedPayroll?.id)
+    : consultation;
 
   const filteredSpecific = selectedConsultation
     ? specific.filter((item) => item?.consultation?.id === selectedConsultation?.id)
@@ -136,7 +184,6 @@ export const useAddManagementForm = () => {
   // ==========================
   // AUTO LLENADO POR URL
   // ==========================
-  // Ejemplo de URL: http://localhost:8000/gestiones/a%C3%B1adir?campaign=aliados&payroll=educame&identification_number=12345678&wolkvox_id=8465416524132355456
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     setCampaign(capitalizeWords(params.get("campaign")));
@@ -153,15 +200,13 @@ export const useAddManagementForm = () => {
     }
 
     setWolkvox_id(capitalizeWords(params.get("wolkvox_id")));
-  }, [location.search, payroll, typeManagement, contact]);
+  }, [location.search, payroll, contact]);
 
-    const [openSections, setOpenSections] = useState({});
-    const optionsWithIndex = filteredConsultation.map((item, i) => ({
-      ...item,
-      index: i + 1, // 👈 empezamos desde 1
-    }));
-
-
+  const [openSections, setOpenSections] = useState({});
+  const optionsWithIndex = filteredConsultation.map((item, i) => ({
+    ...item,
+    index: i + 1,
+  }));
 
   // ==========================
   // RETORNO DEL HOOK
@@ -173,6 +218,7 @@ export const useAddManagementForm = () => {
     payroll,
     campaign,
     consultation,
+    specific,
     sms,
     wsp,
     selectedPayroll,
@@ -185,6 +231,7 @@ export const useAddManagementForm = () => {
     comments,
     modal,
     validationErrors,
+    loadingConsultations,
 
     // Setters
     setCampaign,

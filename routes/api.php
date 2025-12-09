@@ -108,8 +108,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // ------------------- Tipos de Gestiones -------------------
         Route::prefix('typemanagements')->group(function () {
             Route::get('/', [TypeManagementController::class, 'index'])->middleware('permission:typeManagement.view');
-            Route::get('/{id}', [TypeManagementController::class, 'show'])->middleware('permission:typeManagement.view');
             Route::get('/active', [TypeManagementController::class, 'active'])->middleware('permission:typeManagement.view');
+            Route::get('/{id}', [TypeManagementController::class, 'show'])->middleware('permission:typeManagement.view');
             Route::post('/', [TypeManagementController::class, 'store'])->middleware('permission:config.typeManagement.create');
             Route::put('{typemanagement}', [TypeManagementController::class, 'update'])->middleware('permission:config.typeManagement.edit');
             Route::delete('{typemanagement}', [TypeManagementController::class, 'destroy'])->middleware('permission:config.typeManagement.delete');
@@ -147,8 +147,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // ------------------- Contactos -------------------
     Route::get('/contacts', [ContactController::class, 'index'])->middleware('permission:contact.view');
-    Route::get('/contacts/{id}', [ContactController::class, 'show'])->middleware('permission:contact.view');
     Route::get('/contacts/active', [ContactController::class, 'active'])->middleware('permission:contact.view');
+    Route::get('/contacts/{id}', [ContactController::class, 'show'])->middleware('permission:contact.view');
     Route::post('/contacts', [ContactController::class, 'store'])->middleware('permission:contact.create');
     Route::put('/contacts/{contact}', [ContactController::class, 'update'])->middleware('permission:contact.edit');
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->middleware('permission:contact.delete');

@@ -72,7 +72,7 @@ class TypeManagementController extends Controller
         ], $request);
 
         return response()->json([
-            'message'    => 'Gestiones activas obtenidas con éxito',
+            'message'    => 'Tipos de gestiones activas obtenidas con éxito',
             'typeManagement'       => TypeManagementResource::collection($managements)
         ], Response::HTTP_OK);
     }

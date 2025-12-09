@@ -2,12 +2,12 @@ import * as yup from "yup";
 
 export const fields = [
     {
-        name: "campaign",
+        name: "campaign_id",
         label: "Campaña",
         type: "select",
         options: [
-            { value: "Aliados", label: "Aliados" },
-            { value: "Afiliados", label: "Afiliados" },
+            { value: 1, label: "Aliados" },
+            { value: 2, label: "Afiliados" },
         ],
     },
     { name: "payroll_id", label: "Pagaduría", type: "select", options: [] },
@@ -34,7 +34,7 @@ export const fields = [
 ];
 
 export const userSchema = yup.object().shape({
-    campaign: yup.string().required("La campaña es obligatorio"),
+    campaign_id: yup.string().required("La campaña es obligatorio"),
     payroll_id: yup.string().required("La pagaduría es obligatorio"),
     name: yup
         .string()
@@ -52,7 +52,7 @@ export const userSchema = yup.object().shape({
 
 export const columns = [
     { header: "ID", key: "id" },
-    { header: "Campaña", key: "campaign" },
+    { header: "Campaña", key: "campaign.name" },
     { header: "Pagaduría", key: "payroll.name" },
     { header: "Nombre", key: "name" },
     { header: "Correo", key: "email" },

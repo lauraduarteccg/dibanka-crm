@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCan } from "@hooks/useCan";
 import Table from "@components/tables/Table";
@@ -35,18 +35,37 @@ const Contact = ({addContact, searchContact, viewManagementContact, editContact,
 
     // Efecto para cambiar automáticamente el tipo de identificación
     useEffect(() => {
-        if (formData.campaign === "Aliados") {
+        if (Number(formData.campaign_id) === 1) { // Aliados
             setFormData((prev) => ({
                 ...prev,
                 identification_type: "NIT",
             }));
-        } else if (formData.campaign === "Afiliados") {
+        } else if (Number(formData.campaign_id) === 2) { // Afiliados
             setFormData((prev) => ({
                 ...prev,
                 identification_type: "CEDULA DE CIUDADANIA",
             }));
         }
-    }, [formData.campaign, setFormData]);
+    }, [formData.campaign_id, setFormData]);
+
+    const formFields = useMemo(() => {
+        return fields.map((field) => {
+            if (field.name === "payroll_id") {
+                return {
+                    ...field,
+                    options: payroll.map((p) => ({
+                        value: p.id,
+                        label: p.name,
+                    })),
+                };
+            }
+            return field;
+        });
+    }, [payroll]);
+
+    const handleNavigateManagement = useCallback((row) => {
+        navigate(`/gestiones?search=${encodeURIComponent(row.identification_number)}`);
+    }, [navigate]);
 
     return (
         <>
@@ -79,18 +98,7 @@ const Contact = ({addContact, searchContact, viewManagementContact, editContact,
                 handleSubmit={handleSubmit}
                 loading={loading}
                 validationErrors={validationErrors}
-                fields={fields.map((field) => {
-                    if (field.name === "payroll_id") {
-                        return {
-                            ...field,
-                            options: payroll.map((p) => ({
-                                value: p.id,
-                                label: p.name,
-                            })),
-                        };
-                    }
-                    return field;
-                })}
+                fields={formFields}
                 schema={userSchema}
 
                 /*  */
@@ -111,9 +119,7 @@ const Contact = ({addContact, searchContact, viewManagementContact, editContact,
                     actions={true}
                     onEdit={handleEdit}
                     management={true}
-                    onManagement={(row) => {
-                        navigate(`/gestiones?search=${encodeURIComponent(row.identification_number)}`);
-                    }}
+                    onManagement={handleNavigateManagement}
                     //IDS
                     idManagement={viewManagementContact}  
                     idEdit={editContact}

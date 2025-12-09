@@ -58,11 +58,30 @@ export const getActivePayrolls = async () => {
 };
 
 /**
- * Lista de contactos.
+ * Lista de contactos con paginación, búsqueda y filtro por pagaduría.
  */
-export const getContacts = async () => {
-  const { data } = await api.get("/contacts");
-  return data.contacts || [];
+export const getContacts = async (page = 1, search = "", payrollName = "") => {
+  let url = `/contacts/active?page=${page}`;
+  
+  if (search) {
+    url += `&search=${encodeURIComponent(search)}`;
+  }
+  
+  if (payrollName) {
+    url += `&payroll=${encodeURIComponent(payrollName)}`;
+  }
+  
+  const { data } = await api.get(url);
+  
+  return {
+    contacts: data.contacts || [],
+    pagination: {
+      current_page: data.pagination.current_page || 1,
+      total_pages: data.pagination.last_page || 1,
+      per_page: data.pagination.per_page || 10,
+      total_contacts: data.pagination.total_contacts || 0,
+    },
+  };
 };
 
 /**
