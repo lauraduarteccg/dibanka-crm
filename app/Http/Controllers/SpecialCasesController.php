@@ -141,4 +141,17 @@ class SpecialCasesController extends Controller
             'special_case' => new SpecialCasesResource($specialcase)
         ], Response::HTTP_OK);
     }
+    
+    // Contar casos especiales
+    public function count()
+    {
+        // Contar todo
+        $total = SpecialCases::count();
+
+        // Retornar respuesta JSON
+        return response()->json([
+            'count' => $total
+        ], Response::HTTP_OK);
+    }
+
 }

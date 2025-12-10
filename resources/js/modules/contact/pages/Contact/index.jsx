@@ -64,7 +64,8 @@ const Contact = ({addContact, searchContact, viewManagementContact, editContact,
     }, [payroll]);
 
     const handleNavigateManagement = useCallback((row) => {
-        navigate(`/gestiones?search=${encodeURIComponent(row.identification_number)}`);
+        const campaignName = row.campaign?.name || (row.campaign_id === 1 ? "Aliados" : "Afiliados");
+        navigate(`/gestiones?search=${encodeURIComponent(row.identification_number)}&campaign=${campaignName}`);
     }, [navigate]);
 
     return (

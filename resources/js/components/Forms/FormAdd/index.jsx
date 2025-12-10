@@ -167,7 +167,39 @@ const FormAdd = ({
                     )}
                   />
 
+                ) : field.type === "multiselect" ? (
+                  <Autocomplete
+                    multiple
+                    id={`multiselect-${field.name}`}
+                    options={field.options || []}
+                    value={
+                      (formData[field.name] || [])
+                        .map((id) => field.options?.find((opt) => opt.value === id))
+                        .filter(Boolean)
+                    }
+                    getOptionLabel={(option) => option.label || ""}
+                    isOptionEqualToValue={(option, value) =>
+                      option.value === value.value
+                    }
+                    onChange={(_, newValue) => {
+                      // Guardamos un array de IDs
+                      const selectedIds = newValue.map((item) => item.value);
+                      setFormData({ ...formData, [field.name]: selectedIds });
+                      validateField(field.name, selectedIds);
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="outlined"
+                        label={field.label}
+                        placeholder="Seleccione una o más opciones..."
+                      />
+                    )}
+                    disabled={loading || admin}
+                  />
+
                 ) : field.type === "select" ? (
+
                   <>
                     <FormControl fullWidth disabled={field.disabled || false}>
                       <InputLabel id="demo-simple-select-standard-label">{field.label}</InputLabel>

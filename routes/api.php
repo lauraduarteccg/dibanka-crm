@@ -25,9 +25,6 @@ use App\Http\Controllers\Afiliados\SpecificController as AfiliadosSpecificContro
 use App\Http\Controllers\Aliados\ManagementController as AliadosManagementController;
 use App\Http\Controllers\Afiliados\ManagementController as AfiliadosManagementController;
 
-use App\Http\Controllers\Aliados\PayrollConsultationController as AliadosPayrollConsultationController;
-use App\Http\Controllers\Afiliados\PayrollConsultationController as AfiliadosPayrollConsultationController;
-
 
 // ==========================================================
 //  RUTAS PÚBLICAS
@@ -141,6 +138,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->middleware('permission:config.role.view');
     });
 
+    
+    // ------------------- Conteos -------------------
+    Route::get('/specialcases/count', [SpecialCasesController::class, 'count'])->middleware('permission:special_cases.view');
+    Route::get('/contacts/count', [ContactController::class, 'count'])->middleware('permission:contact.view');
+    Route::get('/payrolls/count', [PayrollController::class, 'count'])->middleware('permission:payroll.view');
+    Route::get('/consultations-aliados/count', [AliadosConsultationController::class, 'count'])->middleware('permission:consultation.view');
+
+
     // ==========================================================
     //  MÓDULOS OPERATIVOS
     // ==========================================================
@@ -174,7 +179,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/management-aliados', [AliadosManagementController::class, 'index'])->middleware('permission:management.view');
     Route::get('/management-aliados/{id}', [AliadosManagementController::class, 'show'])->middleware('permission:management.view');
     Route::post('/management-aliados', [AliadosManagementController::class, 'store'])->middleware('permission:management.create');
-    Route::put('/management-aliados/{id}', [AliadosManagementController::class, 'update'])->middleware('permission:management.edit');
     Route::put('/managementmonitoring-aliados/{id}', [AliadosManagementController::class, 'updateMonitoring'])->middleware('permission:management.edit');
     Route::delete('/management-aliados/{id}', [AliadosManagementController::class, 'destroy'])->middleware('permission:management.delete');
     
@@ -193,12 +197,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('campaign')->group(function () {
         Route::get('/', [CampaignController::class, 'index']);
     });
-
-    // ------------------- Conteos -------------------
-    Route::get('/management/count', [ManagementController::class, 'count'])->middleware('permission:management.view');
-    Route::get('/contacts/count', [ContactController::class, 'count'])->middleware('permission:contact.view');
-    Route::get('/payrolls/count', [PayrollController::class, 'count'])->middleware('permission:payroll.view');
-    Route::get('/consultations/count', [ConsultationController::class, 'count'])->middleware('permission:consultation.view');
 
     // ------------------- Sesión / Perfil -------------------
     Route::get('/me', [AuthController::class, 'me']);

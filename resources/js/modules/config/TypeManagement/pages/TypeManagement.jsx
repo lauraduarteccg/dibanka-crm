@@ -11,15 +11,15 @@ import { useTypeManagement } from "@modules/config/TypeManagement/hooks/useTypeM
  *  FORMULARIO Y VALIDACIÓN
  * =========================================================== */
 const fields = [
-  { name: "payroll_id", label: "Pagaduría", type: "select", options: [] },
+  { name: "payrolls", label: "Pagadurías", type: "multiselect", options: [] },
   { name: "name", label: "Tipo de gestión", type: "text" },
 ];
 
 const typeManagementSchema = yup.object().shape({
-  payroll_id: yup
-    .number()
-    .required("La pagaduría es obligatoria")
-    .typeError("Debes seleccionar una pagaduría"),
+  payrolls: yup
+    .array()
+    .min(1, "Debe seleccionar al menos una pagaduría")
+    .required("Las pagadurías son obligatorias"),
   name: yup
     .string()
     .required("El nombre es obligatorio")
@@ -56,7 +56,18 @@ const TypeManagement = () => {
 
   const columns = [
     { header: "ID", key: "id" },
-    { header: "Pagaduría", key: "payrolls.name" },
+    { header: "Pagadurías", key: "payrolls", render: (row) => {
+        if (!row.payrolls || (Array.isArray(row.payrolls) && row.payrolls.length === 0)) return "Sin relaciones";
+        
+        // Si es un array de pagadurías
+        if (Array.isArray(row.payrolls)) {
+          return row.payrolls.map(p => p.name).join(", ");
+        }
+        
+        // Si es un objeto único
+        return row.payrolls.name || "—";
+      }
+    },
     { header: "Tipo de gestión", key: "name" },
   ];
 
@@ -81,7 +92,7 @@ const TypeManagement = () => {
       {/* Botón + */}
       <ButtonAdd
         onClickButtonAdd={() => {
-          setFormData({ id: null, name: "", payroll_id: "", is_active: true });
+          setFormData({ id: null, name: "", payrolls: [], is_active: true });
           setIsOpenADD(true);
         }}
         text="Agregar tipo de gestión"
@@ -103,7 +114,7 @@ const TypeManagement = () => {
         loading={loading}
         validationErrors={validationErrors}
         fields={fields.map((field) =>
-          field.name === "payroll_id"
+          field.name === "payrolls"
             ? {
                 ...field,
                 options: payroll.map((p) => ({

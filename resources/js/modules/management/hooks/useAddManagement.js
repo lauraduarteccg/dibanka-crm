@@ -8,13 +8,11 @@ import {
 import { useManagementStaticData } from "@modules/management/context/ManagementStaticDataContext";
 import { useDebounce } from "@modules/management/hooks/useDebounce";
 
-export const useAddManagement = (selectedPayroll = null) => {
+export const useAddManagement = (selectedPayroll = null, campaign = "") => {
     // Usar datos estáticos del contexto compartido
     const {
         payroll,
         typeManagement,
-        consultation,
-        specific,
         loading: staticDataLoading,
     } = useManagementStaticData();
 
@@ -72,7 +70,7 @@ export const useAddManagement = (selectedPayroll = null) => {
         isFetchingContacts.current = true;
         try {
             const payrollName = selectedPayroll?.name || "";
-            const contactData = await getContacts(page, search, payrollName);
+            const contactData = await getContacts(page, search, payrollName, campaign);
             setContact(contactData.contacts || []);
             setCurrentPageContact(contactData.pagination?.current_page || 1);
             setTotalPagesContact(
@@ -87,7 +85,7 @@ export const useAddManagement = (selectedPayroll = null) => {
         } finally {
             isFetchingContacts.current = false;
         }
-    }, [selectedPayroll]);
+    }, [selectedPayroll, campaign]);
 
     // Cargar contactos solo cuando cambie la página o búsqueda (con debounce)
     useEffect(() => {
@@ -98,11 +96,12 @@ export const useAddManagement = (selectedPayroll = null) => {
      *  CREAR / ACTUALIZAR GESTIÓN
      * =========================================================== */
     const handleSubmit = useCallback(
-        async (payload) => {
+        async (payload, campaign = "") => {
             setLoading(true);
             setValidationErrors({});
             try {
-                await saveManagement(payload);
+                // Pasar la campaña al servicio
+                await saveManagement(payload, campaign);
 
                 Swal.fire({
                     title: "Gestión guardada",
@@ -176,9 +175,7 @@ export const useAddManagement = (selectedPayroll = null) => {
             // Datos
             management,
             payroll,
-            consultation,
             typeManagement,
-            specific,
             contact,
 
             // Estados (combinar loading estático con loading local)
@@ -214,9 +211,7 @@ export const useAddManagement = (selectedPayroll = null) => {
         [
             management,
             payroll,
-            consultation,
             typeManagement,
-            specific,
             contact,
             loading,
             staticDataLoading,

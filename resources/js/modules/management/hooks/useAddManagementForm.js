@@ -62,6 +62,7 @@ export const useAddManagementForm = () => {
           getActiveConsultationsByCampaign(campaign),
           getActiveSpecificConsultationsByCampaign(campaign)
         ]);
+        console.log("specificsData", specificsData);
 
         setConsultation(consultationsData);
         setSpecific(specificsData);
@@ -125,7 +126,18 @@ export const useAddManagementForm = () => {
   // Envía la gestión
   const onSave = async () => {
     const payload = buildPayload();
-    const success = await handleSubmit(payload);
+    
+    // Validar que se haya seleccionado una campaña
+    if (!campaign) {
+      setValidationErrors(prev => ({
+        ...prev,
+        campaign: ["Debes seleccionar una campaña"]
+      }));
+      return;
+    }
+    
+    // Pasar la campaña al handleSubmit
+    const success = await handleSubmit(payload, campaign);
 
     if (success) {
       if (wsp || sms) {
@@ -164,13 +176,15 @@ export const useAddManagementForm = () => {
   const { typeManagement } = useAddManagement();
 
   const filteredTypeManagement = selectedPayroll
-    ? typeManagement.filter((item) => item?.payrolls?.id === selectedPayroll?.id)
+    ? typeManagement.filter((item) =>
+        item?.payrolls?.some((p) => p.id === selectedPayroll?.id)
+      )
     : typeManagement;
 
-  const filteredConsultation = selectedPayroll
-    ? consultation.filter((item) => item?.payrolls?.id === selectedPayroll?.id)
-    : consultation;
-
+  // Las consultas ya están filtradas por campaña en el useEffect (líneas 51-86)
+  // No es necesario filtrar por payroll aquí
+  const filteredConsultation = consultation;
+  
   const filteredSpecific = selectedConsultation
     ? specific.filter((item) => item?.consultation?.id === selectedConsultation?.id)
     : specific;

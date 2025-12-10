@@ -9,11 +9,12 @@ class TypeManagement extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'is_active', 'payroll_id']; 
+    protected $fillable = ['name', 'is_active']; 
 
-    public function payroll()
+    public function payrolls()
     {
-        return $this->belongsTo(Payroll::class, 'payroll_id');
+        return $this->belongsToMany(Payroll::class, 'type_management_payroll')
+                    ->withTimestamps();
     }
 
     // Extrae solo registros activos

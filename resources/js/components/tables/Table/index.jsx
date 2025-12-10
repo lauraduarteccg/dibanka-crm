@@ -151,6 +151,9 @@ const MuiTable = ({
                       ) : (
                         "—"
                       )
+                    ) : col.render ? (
+                      // Si la columna tiene una función render personalizada
+                      col.render(row)
                     ) : (
                       getNestedValue(row, col.key)
                     )}

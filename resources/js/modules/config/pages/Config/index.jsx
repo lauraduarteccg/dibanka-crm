@@ -46,7 +46,7 @@ const MODULES = [
   },
   {
     id: "tipos-consultas",
-    label: "Tipos de Consultas",
+    label: "Consultas",
     permission: "config.consultation.edit",
     component: Consultation,
     icon: FaListAlt,

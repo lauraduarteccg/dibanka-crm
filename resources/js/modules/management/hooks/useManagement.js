@@ -57,16 +57,28 @@ export const useManagement = () => {
   });
 
   /* ===========================================================
+   *  Campaign State
+   * =========================================================== */
+  /* ===========================================================
+   *  Campaign State
+   * =========================================================== */
+  const [campaign, setCampaign] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("campaign") || "Aliados";
+  });
+
+  /* ===========================================================
    *  Fetch principal de gestiones (optimizado)
    * =========================================================== */
   const fetchManagement = useCallback(
-    async (page = 1, search = "") => {
+    async (page = 1, search = "", currentCampaign = campaign) => {
       if (isFetching.current) return; // Evitar peticiones simultáneas
       
       isFetching.current = true;
       setLoading(true);
       try {
-        const data = await getManagements(page, search);
+        const data = await getManagements(page, search, currentCampaign);
+        console.log(data)
         setManagement(data.managements || []);
         setCurrentPage(data.pagination?.current_page || 1);
         setTotalPages(data.pagination?.last_page || 1);
@@ -80,20 +92,20 @@ export const useManagement = () => {
         isFetching.current = false;
       }
     },
-    []
+    [campaign]
   );
 
   // Cargar gestiones cuando cambie la página o búsqueda (con debounce)
   useEffect(() => {
-    fetchManagement(currentPage, debouncedSearchTerm);
-  }, [currentPage, debouncedSearchTerm, fetchManagement]);
+    fetchManagement(currentPage, debouncedSearchTerm, campaign);
+  }, [currentPage, debouncedSearchTerm, campaign, fetchManagement]);
 
   /* ===========================================================
    *  Paginación y búsqueda
    * =========================================================== */
   const fetchPage = useCallback(
-    (page) => fetchManagement(page, debouncedSearchTerm),
-    [fetchManagement, debouncedSearchTerm]
+    (page) => fetchManagement(page, debouncedSearchTerm, campaign),
+    [fetchManagement, debouncedSearchTerm, campaign]
   );
 
   const handleSearch = useCallback(
@@ -129,7 +141,7 @@ export const useManagement = () => {
         return;
       }
 
-      await updateManagementMonitoring(formData.id, payload);
+      await updateManagementMonitoring(formData.id, payload, campaign);
 
       Swal.fire({
         title: "Gestión actualizada",
@@ -262,5 +274,9 @@ export const useManagement = () => {
     setOnMonitoring,
     setView,
     setCurrentPage,
+    
+    // Campaign
+    campaign,
+    setCampaign,
   };
 };

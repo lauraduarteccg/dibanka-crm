@@ -1,15 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import { useContext } from "react"
+import { useContext, useState, useEffect } from "react";
 import { useCan } from "@hooks/useCan";
 import Drawer from '@mui/material/Drawer';
-import { TextField, FormControl, Autocomplete } from "@mui/material";
+import { TextField, FormControl, Autocomplete, Tabs, Tab, Box } from "@mui/material";
 import { useManagement } from "@modules/management/hooks/useManagement.js";
 import { AuthContext } from "@context/AuthContext";
 
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import Loader from "@components/ui/Loader";
-import Button from "@components/ui/Button"
+import Button from "@components/ui/Button";
 import SearchBar from "@components/forms/Search";
 
 const columns = [
@@ -23,15 +23,47 @@ const columns = [
   { header: "Fecha de creación", key: "created_at" },
 ];
 
+const P = ({ text1, text2 }) => {
+  let displayValue = text2;
 
-const P = ({ text1, text2 }) => (
-  <p className="text-gray-600 leading-relaxed">
-    <strong className="text-gray-700">{text1}</strong>
-    <span className="text-gray-900 ml-1">{text2}</span>
-  </p>
-);
+  if (typeof text2 === 'object' && text2 !== null) {
+    // Si recibe un objeto, intenta mostrar el nombre o stringify
+    displayValue = text2.name || JSON.stringify(text2);
+    console.warn("P component received object:", text1, text2);
+  }
 
-const Management = ({idView, idMonitoring, idSearchManagement, idAddManagement}) => {
+  return (
+    <p className="text-gray-600 leading-relaxed">
+      <strong className="text-gray-700">{text1}</strong>
+      <span className="text-gray-900 ml-1">{displayValue}</span>
+    </p>
+  );
+};
+
+/* ===========================================================
+ *  TAB PANEL
+ * =========================================================== */
+function TabPanel({ children, value, index }) {
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`tab-panel-${index}`}
+      aria-labelledby={`tab-${index}`}
+    >
+      {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
+    </div>
+  );
+}
+
+function a11yProps(index) {
+  return {
+    id: `tab-${index}`,
+    "aria-controls": `tab-panel-${index}`,
+  };
+}
+
+const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement }) => {
   const {
     handleSubmit,
     monitoring,
@@ -51,90 +83,178 @@ const Management = ({idView, idMonitoring, idSearchManagement, idAddManagement})
     handleSearch,
     searchTerm,
     handleClearSearch,
+    setCampaign,
+    campaign,
   } = useManagement();
 
-  const { can, canAny } = useCan();
+  const { can } = useCan();
+  const { user, user: authUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  
+  // Estado para tabs
+  const [tabValue, setTabValue] = useState(campaign === "Aliados" ? 0 : 1);
+
+  useEffect(() => {
+    setTabValue(campaign === "Aliados" ? 0 : 1);
+  }, [campaign]);
+
+  const handleTabChange = (_, newValue) => {
+    setTabValue(newValue);
+    setCampaign(newValue === 0 ? "Aliados" : "Afiliados");
+  };
+
   const handleView = (item) => {
     setFormData(item);
     setView(true);
   };
-  
+
   const handleMonitoring = (item) => {
     setFormData({
       ...item,
-      solution_date: item.solution_date || "", 
+      solution_date: item.solution_date || "",
       monitoring_id: item.monitoring?.id || "",
     });
     setOnMonitoring(true);
   };
 
-  const navigate = useNavigate();
-
-    const { user, user: authUser } = useContext(AuthContext);
-  const filteredManagement =
-    management?.filter((item) => item.user?.id === authUser?.id) || [];
-
-  const canViewFiltered =
-  user?.permissions?.includes("management.viewFiltred") &&
-  user?.permissions?.includes("management.view");
-
-const dataToShow = canViewFiltered ? filteredManagement : management;
+  // Determine active data (now fetched dynamically)
+  const activeData = management || [];
+  
+  // Totals
+  const currentTotal = totalItems;
 
   return (
     <>
-      {can("management.create") && (
 
-        <ButtonAdd
-          id={idAddManagement}
-          onClickButtonAdd={() => navigate("/gestiones/añadir")}
-          text="Agregar Gestión"
-        />)}
+      {/* Tabs */}
+      <Box sx={{ width: "90%", mb: 4, margin: "auto" }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            centered
+            aria-label="gestiones tabs"
+          >
+            <Tab label={`Gestiones de Aliados ${tabValue === 0 ? `(${currentTotal})` : ''}`} {...a11yProps(0)} />
+            <Tab label={`Gestiones de Afiliados ${tabValue === 1 ? `(${currentTotal})` : ''}`} {...a11yProps(1)} />
+          </Tabs>
+        </Box>
 
-      <div className="flex justify-end px-12 -mt-10 gap-2">
-        {searchTerm && (
-            <button
+        {/* Tab Panel - Aliados */}
+        <TabPanel value={tabValue} index={0}>
+          
+          {/* Botón Agregar Gestión */}
+          {can("management.create") && (
+            <ButtonAdd
+              id={idAddManagement}
+              onClickButtonAdd={() => navigate("/gestiones/añadir")}
+              text="Agregar Gestión"
+            />
+          )}
+
+          <div className="flex justify-end px-12 mb-4 gap-2 -mt-10">
+            {searchTerm && (
+              <button
                 onClick={handleClearSearch}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-            >
+              >
                 Limpiar filtro
-            </button>
-        )}
-        <SearchBar id={idSearchManagement} value={searchTerm} onSearch={handleSearch} placeholder="Buscar gestión..." />
-      </div>
+              </button>
+            )}
+            <SearchBar
+              id={idSearchManagement}
+              value={searchTerm}
+              onSearch={handleSearch}
+              placeholder="Buscar gestión de aliados..."
+            />
+          </div>
 
-      <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
-        Lista de gestiones
-      </h1>
+          <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
+            Lista de gestiones - Aliados
+          </h1>
 
-      {loading ? (
-        <Loader />
-      ) : (
-        <Table
-          columns={columns}
-          // DESCOMENTAR esta linea de codigo para que en la tabla aparezcan
-          // las gestones unicamente del usuario que ingreso
-          // 
-          //  data={user.id === 1 ? management : filteredManagement}
-          data={dataToShow}
+          {loading ? (
+            <Loader />
+          ) : (
+            <Table
+              columns={columns}
+              data={activeData}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              rowsPerPage={perPage}
+              totalItems={totalItems}
+              fetchPage={fetchPage}
+              actions={true}
+              view={true}
+              onView={(item) => handleView(item)}
+              edit={false}
+              monitoring={true}
+              onMonitoring={(item) => handleMonitoring(item)}
+              onActiveOrInactive={false}
+              idView={idView}
+              idMonitoring={idMonitoring}
+            />
+          )}
+        </TabPanel>
 
-          currentPage={currentPage}
-          totalPages={totalPages}
-          rowsPerPage={perPage}
-          totalItems={totalItems}
-          fetchPage={fetchPage} 
-          actions={true}
-          view={true}
-          onView={(item) => handleView(item)}
-          edit={false}
-          monitoring={true}
-          onMonitoring={(item) => handleMonitoring(item)}
-          onActiveOrInactive={false}
-          idView={idView}
-          idMonitoring={idMonitoring}
-        />
-      )}
+        {/* Tab Panel - Afiliados */}
+        <TabPanel value={tabValue} index={1}>
 
-      {/* Drawer de Vista (sin cambios) */}
+          {/* Botón Agregar Gestión */}
+          {can("management.create") && (
+            <ButtonAdd
+              id={idAddManagement}
+              onClickButtonAdd={() => navigate("/gestiones/añadir")}
+              text="Agregar Gestión"
+            />
+          )}
+          <div className="flex justify-end px-12 mb-4 gap-2 -mt-10">
+            {searchTerm && (
+              <button
+                onClick={handleClearSearch}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+              >
+                Limpiar filtro
+              </button>
+            )}
+            <SearchBar
+              id={idSearchManagement}
+              value={searchTerm}
+              onSearch={handleSearch}
+              placeholder="Buscar gestión de afiliados..."
+            />
+          </div>
+
+          <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
+            Lista de gestiones - Afiliados
+          </h1>
+
+          {loading ? (
+            <Loader />
+          ) : (
+            <Table
+              columns={columns}
+              data={activeData}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              rowsPerPage={perPage}
+              totalItems={totalItems}
+              fetchPage={fetchPage}
+              actions={true}
+              view={true}
+              onView={(item) => handleView(item)}
+              edit={false}
+              monitoring={true}
+              onMonitoring={(item) => handleMonitoring(item)}
+              onActiveOrInactive={false}
+              idView={idView}
+              idMonitoring={idMonitoring}
+            />
+          )}
+        </TabPanel>
+      </Box>
+
+      {/* Drawer de Vista */}
       <Drawer
         open={view}
         onClose={() => setView(false)}
@@ -172,7 +292,6 @@ const dataToShow = canViewFiltered ? filteredManagement : management;
             <P text1="Celular actualizado: " text2={formData.contact?.update_phone ?? "No tiene celular actualizado"} />
             <P text1="Correo: " text2={formData.contact?.email ?? "No tiene correo electronico"} />
           </div>
-
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
             <P text1="Consulta: " text2={formData.consultation?.name ?? "Sin consulta"} />
@@ -231,19 +350,18 @@ const dataToShow = canViewFiltered ? filteredManagement : management;
             <FormControl fullWidth>
               <Autocomplete
                 id="monitoring-select"
-                options={monitoring || []}            // Lista de opciones
-                getOptionLabel={(option) => option.name} // Cómo mostrar cada opción
-                value={monitoring?.find(m => m.id === formData.monitoring_id) || null} // Selección actual
+                options={monitoring || []}
+                getOptionLabel={(option) => option.name}
+                value={monitoring?.find(m => m.id === formData.monitoring_id) || null}
                 onChange={(event, newValue) => {
                   setFormData({
                     ...formData,
-                    monitoring_id: newValue ? newValue.id : "", // Guardar el id
+                    monitoring_id: newValue ? newValue.id : "",
                   });
                 }}
                 renderInput={(params) => <TextField {...params} label="Seguimiento" />}
               />
             </FormControl>
-
 
             <div>
               <Button type="submit" text="Guardar" />

@@ -56,19 +56,48 @@ class SpecificController extends Controller
         ], Response::HTTP_OK);
     }
 
-    // Trae solo consultas especificas activas sin paginacion
+    // Trae solo consultas específicas activas con paginación y búsqueda
     public function active(Request $request)
     {
-        $consultations = Specific::with('consultation.payrolls')->get();
+        $query = Specific::with(['consultation.payrolls'])
+            ->where('is_active', 1);
+
+        // Filtro de búsqueda
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%");
+
+                // Buscar dentro de la relación consultation
+                $q->orWhereHas('consultation', function ($consultationQuery) use ($searchTerm) {
+                    $consultationQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+
+        // Paginación
+        $consultations = $query->paginate(10);
 
         log_activity('ver_activas', 'Consultas Especificas', [
-            'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas especifica activas.",
+            'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas específicas activas.",
+            'criterios' => [
+                'búsqueda' => $request->search ?? 'Sin filtro aplicado'
+            ]
         ], $request);
+
         return response()->json([
-            'message'       => 'Consultas especificas activas obtenidas con éxito',
-            'consultationspecific' => SpecificResource::collection($consultations)
+            'message'       => 'Consultas específicas activas obtenidas con éxito',
+            'consultationspecific' => SpecificResource::collection($consultations),
+            'pagination'    => [
+                'current_page'        => $consultations->currentPage(),
+                'total_pages'         => $consultations->lastPage(),
+                'per_page'            => $consultations->perPage(),
+                'total_consultations' => $consultations->total(),
+            ],
         ], Response::HTTP_OK);
     }
+
 
     /**
      * Crear una nueva consulta específica

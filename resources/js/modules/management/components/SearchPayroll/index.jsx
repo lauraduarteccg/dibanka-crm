@@ -11,6 +11,7 @@ export default function SearchPayroll({
   setOpenSearchPayroll,
   onSelectContact,
   selectedPayroll,
+  campaign,
 }) {
   const {
     handleSearchContact,
@@ -20,7 +21,7 @@ export default function SearchPayroll({
     fetchPageContact,
     totalItemsContact,
     perPageContact,
-  } = useAddManagement(selectedPayroll);
+  } = useAddManagement(selectedPayroll, campaign);
 
   const columns = [
     { header: "Pagaduría", key: "payroll.name" },

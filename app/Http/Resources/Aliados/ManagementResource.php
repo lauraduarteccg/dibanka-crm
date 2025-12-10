@@ -53,7 +53,7 @@ class ManagementResource extends JsonResource
             }),
 
             // Consulta relacionada
-            'consultation' => $this->whenLoaded('consultations_aliados', function () {
+            'consultation' => $this->whenLoaded('consultation', function () {
                 return [
                     'id'        => $this->consultation->id,
                     'name'      => $this->consultation->name,

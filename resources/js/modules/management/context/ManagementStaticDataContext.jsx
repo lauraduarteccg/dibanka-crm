@@ -2,8 +2,6 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import {
   getActivePayrolls,
   getActiveTypeManagements,
-  getActiveConsultations,
-  getActiveSpecificConsultations,
 } from "@modules/management/services/managementService";
 
 const ManagementStaticDataContext = createContext(null);
@@ -15,8 +13,6 @@ const ManagementStaticDataContext = createContext(null);
 export const ManagementStaticDataProvider = ({ children }) => {
   const [payroll, setPayroll] = useState([]);
   const [typeManagement, setTypeManagement] = useState([]);
-  const [consultation, setConsultation] = useState([]);
-  const [specific, setSpecific] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,6 +21,9 @@ export const ManagementStaticDataProvider = ({ children }) => {
   /**
    * Carga todos los datos estáticos en paralelo
    * Solo se ejecuta una vez
+   * 
+   * NOTA: Las consultas (consultation y specific) ahora se cargan dinámicamente
+   * por campaña en useAddManagementForm, por lo que ya no se cargan aquí.
    */
 const fetchStaticData = useCallback(async () => {
   if (isLoaded) return;
@@ -33,20 +32,15 @@ const fetchStaticData = useCallback(async () => {
   setError(null);
 
   try {
-    // Hacer peticiones con manejo de errores individual
+    // Solo cargar datos verdaderamente estáticos (payroll y typeManagement)
+    // Las consultas ahora se cargan dinámicamente por campaña en useAddManagementForm
     const results = await Promise.allSettled([
       getActivePayrolls(),
       getActiveTypeManagements(),
-      getActiveConsultations(),
-      getActiveSpecificConsultations(),
     ]);
-
-    console.log("payroll", results[0].status === 'fulfilled' ? results[0].value : []);
     
     setPayroll(results[0].status === 'fulfilled' ? results[0].value : []);
     setTypeManagement(results[1].status === 'fulfilled' ? results[1].value : []);
-    setConsultation(results[2].status === 'fulfilled' ? results[2].value : []);
-    setSpecific(results[3].status === 'fulfilled' ? results[3].value : []);
     
     // Log errores individuales
     results.forEach((result, index) => {
@@ -73,8 +67,7 @@ const fetchStaticData = useCallback(async () => {
     // Datos
     payroll,
     typeManagement,
-    consultation,
-    specific,
+    // consultation y specific se eliminaron - ahora son dinámicos por campaña
 
     // Estados
     loading,
@@ -104,4 +97,3 @@ export const useManagementStaticData = () => {
   }
   return context;
 };
-

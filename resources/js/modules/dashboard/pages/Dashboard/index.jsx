@@ -40,8 +40,8 @@ function Dashboard() {
             icon: <FaUsers size={28} className="text-blue-500" />,
         },
         {
-            title: "Gestiones Realizadas",
-            value: dataCounts.management,
+            title: "Casos especiales",
+            value: dataCounts.specialcases,
             icon: <FaChartBar size={28} className="text-green-500" />,
         },
         {

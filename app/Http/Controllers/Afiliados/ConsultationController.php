@@ -56,19 +56,40 @@ class ConsultationController extends Controller
         ], Response::HTTP_OK);
     }
 
-    // Trae solo consultas aactivas sin paginacion
+    // Trae solo consultas activas con paginación y búsqueda
     public function active(Request $request)
     {
-        $consultations = Consultation::active()->get();
+        $query = Consultation::active()->with(['payrolls']);
+
+        // Búsqueda por nombre de consulta
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%");
+
+                // Buscar también en relaciones de pagaduría
+                $q->orWhereHas('payrolls', function ($payrollQuery) use ($searchTerm) {
+                    $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+
+        $consultations = $query->get();
+
         log_activity('ver_activas', 'Consultas', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas activas.",
+            'criterios' => [
+                'búsqueda' => $request->search ?? 'Sin filtro aplicado'
+            ]
         ], $request);
 
         return response()->json([
             'message'       => 'Consultas activas obtenidas con éxito',
-            'consultation' => ConsultationResource::collection($consultations)
+            'consultations' => ConsultationResource::collection($consultations)
         ], Response::HTTP_OK);
     }
+
 
     /**
      * Crear una nueva consulta

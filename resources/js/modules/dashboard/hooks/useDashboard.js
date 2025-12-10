@@ -10,7 +10,7 @@ const useDashboard = () => {
   const location = useLocation();
   const [dataCounts, setDataCounts] = useState({
     contacts: 0,
-    management: 0,
+    specialcases: 0,
     payrolls: 0,
     consultations: 0,
   });

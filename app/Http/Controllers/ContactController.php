@@ -61,6 +61,13 @@ class ContactController extends Controller
             });
         }
 
+        // 🔎 Filtrar por campaña (nombre)
+        if ($request->filled('campaign')) {
+            $query->whereHas('campaign', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->campaign . '%');
+            });
+        }
+
         // 🔎 Buscar directamente por identificación
         if ($request->filled('identification_number')) {
             $query->where('identification_number', $request->identification_number);

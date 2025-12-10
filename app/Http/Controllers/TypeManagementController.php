@@ -6,30 +6,30 @@ use App\Models\TypeManagement;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Resources\TypeManagementResource;
-use Illuminate\Support\Facades\DB;
 use App\Http\Requests\TypeManagementRequest;
 
 class TypeManagementController extends Controller
 {
-    // Consultar todos los tipos de gestión
+    // Listar tipos de gestión con paginación y búsqueda
     public function index(Request $request)
     {
-        $query = TypeManagement::with(('payroll'));
+        $query = TypeManagement::with('payrolls');
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->filled('search')) {
             $searchTerm = $request->search;
 
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', "%{$searchTerm}%");
 
-                // Para buscar en relaciones
-                $q->orWhereHas('payroll', function ($userQuery) use ($searchTerm) {
-                    $userQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                // Buscar también en payrolls
+                $q->orWhereHas('payrolls', function ($p) use ($searchTerm) {
+                    $p->where('name', 'LIKE', "%{$searchTerm}%");
                 });
             });
         }
 
         $typeManagement = $query->paginate(10);
+
         log_activity('ver_listado', 'Tipo de Gestión', [
             'mensaje' => "El usuario {$request->user()->name} visualizó el listado de tipos de gestión" .
                 ($request->filled('search') ? " con filtro '{$request->search}'" : ""),
@@ -48,98 +48,133 @@ class TypeManagementController extends Controller
         ], Response::HTTP_OK);
     }
 
-    //Crear tipo de gestion
+    // Crear tipo de gestión
     public function store(TypeManagementRequest $request)
     {
-        $typeManagement = TypeManagement::create($request->all());
-        log_activity('ver_activos', 'Tipo de Gestión', [
-            'mensaje' => "El usuario {$request->user()->name} consultó los tipos de gestión activos.",
+        $typeManagement = TypeManagement::create($request->validated());
+
+        // Si vienen payrolls, asociarlos
+        if ($request->has('payrolls')) {
+            $typeManagement->payrolls()->sync($request->payrolls);
+        }
+
+        log_activity('crear', 'Tipo de Gestión', [
+            'mensaje' => "El usuario {$request->user()->name} creó un tipo de gestión.",
             'typeManagement_id' => $typeManagement->id
         ], $request);
+
         return response()->json([
             'message' => 'Tipo de gestion creada con éxito',
             'typeManagement' => new TypeManagementResource($typeManagement)
         ], Response::HTTP_CREATED);
     }
 
-    // Trae solo tipos de gestion activos sin paginacion
+    // Tipos de gestión activos (sin paginación)
     public function active(Request $request)
     {
-        $managements = TypeManagement::where('is_active', 1)->get();
+        $managements = TypeManagement::with('payrolls')
+            ->where('is_active', 1)
+            ->get();
 
         log_activity('ver_activos', 'Tipo de Gestión', [
             'mensaje' => "El usuario {$request->user()->name} consultó los tipos de gestión activos."
         ], $request);
 
         return response()->json([
-            'message'    => 'Tipos de gestiones activas obtenidas con éxito',
-            'typeManagement'       => TypeManagementResource::collection($managements)
+            'message' => 'Tipos de gestiones activas obtenidas con éxito',
+            'typeManagement' => TypeManagementResource::collection($managements)
         ], Response::HTTP_OK);
     }
 
-
-    // Ver un tipo de gestion en especifico
+    // Mostrar un tipo de gestión específico
     public function show(Request $request, string $id)
     {
-        $management = TypeManagement::find($id);
+        $management = TypeManagement::with('payrolls')->find($id);
 
-        if (! $management) {
+        if (!$management) {
             return response()->json(['message' => 'Tipo de gestion no encontrado'], Response::HTTP_NOT_FOUND);
         }
+
         log_activity('ver_detalle', 'Tipo de Gestión', [
             'mensaje' => "El usuario {$request->user()->name} consultó el detalle del tipo de gestión ID {$management->id}.",
-            'management_id' => $management->id
+            'id' => $management->id
         ], $request);
 
         return response()->json([
             'message' => 'Tipo de gestion encontrada',
-            'specific' => new TypeManagementResource($management)
+            'typeManagement' => new TypeManagementResource($management)
         ], Response::HTTP_OK);
     }
 
-    // Actualizar tipo de gestion
-    public function update(TypeManagementRequest $request, string $id)
+    // Actualizar un tipo de gestión
+    public function update(Request $request, string $id)
     {
-        $management = TypeManagement::findOrFail($id);
-        $management->update($request->all());
-        $dataBefore = $management->toArray();
+        $management = TypeManagement::with('payrolls')->findOrFail($id);
+
+        // Estado antes de actualizar
+        $before = $management->toArray();
+
+        // Primero sincronizamos la tabla pivote si vienen payrolls
+        if ($request->has('payrolls')) {
+            $management->payrolls()->sync($request->payrolls);
+        }
+
+        // Actualizar los campos normales del modelo
+        $management->update($request->except('payrolls'));
+
+        // Estado completo después del update y sync
+        $after = $management->fresh()->load('payrolls')->toArray();
 
         log_activity('actualizar', 'Tipo de Gestión', [
             'mensaje' => "El usuario {$request->user()->name} actualizó el tipo de gestión ID {$management->id}.",
             'cambios' => [
-                'antes' => $dataBefore,
-                'después' => $management->toArray()
-            ]
+                'antes' => $before,
+                'después' => $after
+            ],
+            'type_management_id' => $management->id
         ], $request);
+
         return response()->json([
-            'succes' => true,
-            'message' => 'Consults especifica actualizada con exito',
-            'specific' => new TypeManagementResource($management)
+            'success' => true,
+            'message' => 'Tipo de gestión actualizada con éxito',
+            'typeManagement' => new TypeManagementResource($management->fresh())
         ], Response::HTTP_OK);
     }
 
-    // Desactivar un tipo de gestion
-    public function destroy(Request $request,string $id)
+    // Activar / desactivar tipo de gestión
+    public function destroy(Request $request, string $id)
     {
-        $management = TypeManagement::find($id);
+        $management = TypeManagement::findOrFail($id);
 
+        // Nuevo estado (toggle)
+        $newState = $management->is_active ? 0 : 1;
 
-        if (!$management) {
-            return response()->json(['message' => 'Gestión no encontrada'], Response::HTTP_NOT_FOUND);
+        // Actualizar estado
+        $management->update(['is_active' => $newState]);
+
+        // Si se DESACTIVA → eliminar relaciones de la tabla pivote
+        if ($newState === 0) {
+            \DB::table('type_management_payroll')
+                ->where('type_management_id', $management->id)
+                ->delete();
         }
+
         log_activity(
-            $management->is_active ? 'activar' : 'desactivar',
+            $newState ? 'activar tipo gestión' : 'desactivar tipo gestión',
             'Tipo de Gestión',
             [
-                'mensaje' => "El usuario {$request->user()->name} " .
-                    ($management->is_active ? 'activó' : 'desactivó') .
-                    " el tipo de gestión ID {$management->id}.",
-                'tipo_gestión_id' => $id,
-
+                "mensaje" => "Se ha " . ($newState ? "activado" : "desactivado") . " un tipo de gestión",
+                "type_management_id" => $management->id
             ],
             $request
         );
-        $management->update(['is_active' => $management->is_active ? false : true]);
-        return response()->json(['message' => 'Tipo de gestión desactivado correctamente'], Response::HTTP_OK);
+
+        return response()->json([
+            'message' => $newState
+                ? 'Tipo de gestión activado correctamente'
+                : 'Tipo de gestión desactivado correctamente (relaciones eliminadas)',
+            'typeManagement' => new TypeManagementResource($management)
+        ], Response::HTTP_OK);
     }
+
 }

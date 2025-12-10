@@ -4,7 +4,7 @@ const ConfigMenu = ({ id, onSelect, selected, menuItems = [] }) => {
     };
 
     return (
-        <div id={id} className="bg-white shadow-md rounded-xl p-4 mx-12">
+        <div id={id} className="bg-white shadow-md rounded-xl p-4 w-[75%] mx-auto">
             <ul className="flex flex-row space-x-2 justify-center flex-wrap">
                 {menuItems.map((item) => {
                     const isActive = selected === item.id;

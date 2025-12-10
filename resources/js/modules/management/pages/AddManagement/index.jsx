@@ -463,6 +463,7 @@ const AddManagement = () => {
         setOpenSearchPayroll={setOpenSearchPayroll}
         onSelectContact={setSelectedContact}
         selectedPayroll={selectedPayroll}
+        campaign={campaign}
       />
 
       {/* Snackbar para alertar al agente que hay errores en el formulario */}
