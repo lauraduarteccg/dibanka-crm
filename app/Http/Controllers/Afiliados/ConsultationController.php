@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Afiliados;
 
 use App\Http\Controllers\Controller;
 use App\Models\Afiliados\Consultation;
+use App\Models\Afiliados\Specific;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -189,11 +190,15 @@ class ConsultationController extends Controller
         // Actualizar consulta
         $consultation->update(['is_active' => $newState]);
 
-        // Si se DESACTIVA → borrar relaciones
+        // Si se DESACTIVA → borrar relaciones y desactivar consultas específicas
         if ($newState === 0) {
             \DB::table('payroll_consultations_afiliados')
                 ->where('consultation_id', $consultation->id)
                 ->delete();
+
+            // Desactivar consultas específicas relacionadas
+            Specific::where('consultation_id', $consultation->id)
+                ->update(['is_active' => 0]);
         }
 
         log_activity(
