@@ -223,7 +223,13 @@ const AddManagement = () => {
                 {...params}
                 label="Tipo de gesiton"
                 error={!!validationErrors.type_management_id}
-                helperText={validationErrors.type_management_id ? validationErrors.type_management_id[0] : ""}
+                helperText={
+                  !campaign 
+                    ? "Selecciona un contacto primero"
+                    : validationErrors.type_management_id 
+                    ? validationErrors.type_management_id[0] 
+                    : ""
+                }
               />
             )}
           />
@@ -251,6 +257,16 @@ const AddManagement = () => {
             {validationErrors.solution && (
               <FormHelperText>{validationErrors.solution[0]}</FormHelperText>
             )}
+             <FormHelperText>
+              {
+              !campaign 
+                ? "Selecciona un contacto primero"
+                : validationErrors.solution 
+                ? validationErrors.solution[0] 
+                : ""
+              }
+             </FormHelperText>
+            
           </FormControl>
         </div>
       </div>
@@ -279,7 +295,7 @@ const AddManagement = () => {
                 error={!!validationErrors.consultation_id}
                 helperText={
                   !campaign 
-                    ? "Selecciona una campaña primero"
+                    ? "Selecciona un contacto primero"
                     : validationErrors.consultation_id 
                     ? validationErrors.consultation_id[0] 
                     : ""
@@ -320,10 +336,10 @@ const AddManagement = () => {
                 label="Consulta específica"
                 error={!!validationErrors.specific_id}
                 helperText={
-                  !campaign
-                    ? "Selecciona una campaña primero"
-                    : validationErrors.specific_id 
-                    ? validationErrors.specific_id[0] 
+                  !campaign 
+                    ? "Selecciona un contacto primero"
+                    : validationErrors.consultation_id 
+                    ? validationErrors.consultation_id[0] 
                     : ""
                 }
                 InputProps={{

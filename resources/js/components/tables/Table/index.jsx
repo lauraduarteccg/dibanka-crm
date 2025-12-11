@@ -64,6 +64,7 @@ const MuiTable = ({
   fetchPage,
   paginationSection = true,
   selectRecord,
+  width = "90%",
 
   //ID de los botones
   idSelectRecord,
@@ -99,7 +100,7 @@ const MuiTable = ({
   return (
     <Paper
    
-      sx={{ width: "90%", overflow: "hidden", borderRadius: 3, mx: "auto", marginRight: 6 }}
+      sx={{ width, overflow: "hidden", borderRadius: 3, mx: "auto", marginRight: 6 }}
       className="mt-6"
     >
       <TableContainer>

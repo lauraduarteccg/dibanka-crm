@@ -29,7 +29,6 @@ export default function SearchPayroll({
     { header: "Pagaduría", key: "payroll.name" },
     { header: "Nombre", key: "name" },
     { header: "Correo", key: "email" },
-    { header: "Teléfono", key: "phone" },
     { header: "Celular", key: "update_phone" },
     { header: "Identificación", key: "identification_number" },
   ];
@@ -87,16 +86,17 @@ export default function SearchPayroll({
 
         {/* Barra de búsqueda */}
         <div className="flex justify-center mb-6">
-          <div className="w-full ml-[6%]">
+          <div className="w-full ml-[0%]">
             <Search
               onSearch={handleSearchContact}
               placeholder="Buscar contacto o cliente..."
             />
           </div>
         </div>
-
+            
         {/* Tabla */}
         <Table
+          width="100%"
           columns={columns}
           data={contact}
           paginationSection={true}
