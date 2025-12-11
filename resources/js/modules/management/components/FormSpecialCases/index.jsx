@@ -68,43 +68,6 @@ export default function FormSpecialCases({openSpecialCases,setOpenSpecialCases})
 
         <DialogContent dividers className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
-            {/* AGENTE */}
-            <TextField
-              label="Agente"
-              value={user?.name || ""}
-              fullWidth
-              disabled
-            />
-
-            {/* PAGADURÍA */}
-            <Autocomplete
-              options={payrollSpecial || []}
-              getOptionLabel={(option) => option?.name || ""}
-              value={selectedPayrollSpecial || null}
-              onChange={(e, value) => {
-                setSelectedPayrollSpecial(value);
-                clearFieldError("payroll_id");
-                setFormData((prev) => ({
-                  ...prev,
-                  payroll_id: value?.id || "",
-                  contact_id: "",
-                }));
-                setSelectedContactSpecial(null);
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Pagaduría"
-                  error={!!validationErrorsSpecial?.payroll_id}
-                  helperText={
-                    validationErrorsSpecial?.payroll_id
-                      ? validationErrorsSpecial.payroll_id[0]
-                      : ""
-                  }
-                  fullWidth
-                />
-              )}
-            />
 
             {/* CLIENTE */}
             <div className="flex gap-2 items-start">

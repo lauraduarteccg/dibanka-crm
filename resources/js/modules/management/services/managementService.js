@@ -54,12 +54,16 @@ export const saveManagement = async (payload, campaign = "") => {
   }
   
   // Para nuevas gestiones, determinar endpoint según campaña
-  const campaignLower = campaign.toLowerCase();
-  let endpoint = "/management"; // endpoint por defecto (fallback)
+  let campaignName = campaign;
+
+  if (!campaignName && payload.contact?.campaign?.name) {
+    campaignName = payload.contact.campaign.name;
+  }
+
+  const campaignLower = campaignName.toLowerCase();
+  let endpoint = "/management-aliados"; // Por defecto Aliados
   
-  if (campaignLower === "aliados") {
-    endpoint = "/management-aliados";
-  } else if (campaignLower === "afiliados") {
+  if (campaignLower === "afiliados") {
     endpoint = "/management-afiliados";
   }
   
@@ -108,7 +112,6 @@ export const getActiveConsultationsByCampaign = async (campaign = "") => {
   }
   
   const campaignLower = campaign.toLowerCase();
-  console.log("campaignLower", campaignLower);
   const endpoint = `/config/consultations-${campaignLower}/active`;
   
   try {
@@ -135,7 +138,6 @@ export const getActiveSpecificConsultationsByCampaign = async (campaign = "") =>
   
   try {
     const { data } = await api.get(endpoint);
-    console.log("data", data);
     return data.consultationspecific || [];
   } catch (error) {
     console.error(`Error al obtener consultas específicas de ${campaign}:`, error);
@@ -157,6 +159,27 @@ export const getActiveMonitorings = async () => {
 };
 
 /* ===========================================================
+ *  CONTEO DE GESTIONES ALIADOS Y AFILIADOS
+ * =========================================================== */
+
+/**
+ * Obtiene todos los conteos de gestiones activos.
+ */
+export const getCountManagementsAliados = async () => {
+  const { data } = await api.get("/management-aliados/count");
+  return data.count || [];
+};
+
+/**
+ * Obtiene todos los conteos de gestiones activos.
+ */
+export const getCountManagementsAfiliados = async () => {
+  const { data } = await api.get("/management-afiliados/count");
+  return data.count || [];
+};
+
+
+/* ===========================================================
  *  LISTAS PARA FORMULARIO
  * =========================================================== */
 
@@ -171,8 +194,8 @@ export const getActivePayrolls = async () => {
 /**
  * Contactos.
  */
-export const getContacts = async (page = 1, search = "", payroll = "", campaign = "") => {
-  const { data } = await api.get(`/contacts/active?search=${encodeURIComponent(search)}&payroll=${encodeURIComponent(payroll)}&campaign=${encodeURIComponent(campaign)}&page=${page}`);
+export const getContacts = async (page = 1, search = "") => {
+  const { data } = await api.get(`/contacts/active?search=${encodeURIComponent(search)}&page=${page}`);
   return data || [];
 };
 

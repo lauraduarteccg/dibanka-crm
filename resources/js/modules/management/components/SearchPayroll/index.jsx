@@ -24,6 +24,8 @@ export default function SearchPayroll({
   } = useAddManagement(selectedPayroll, campaign);
 
   const columns = [
+    { header: "ID", key: "id" },
+    { header: "Campaña", key: "campaign.name" },
     { header: "Pagaduría", key: "payroll.name" },
     { header: "Nombre", key: "name" },
     { header: "Correo", key: "email" },

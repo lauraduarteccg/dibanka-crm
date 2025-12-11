@@ -4,7 +4,6 @@ namespace App\Models\Afiliados;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Payroll;
 use App\Models\User;
 use App\Models\Contact;
 use App\Models\TypeManagement;
@@ -17,7 +16,7 @@ class Management extends Model
     protected $table = 'management_afiliados';
 
     protected $fillable = [
-        'user_id', 'payroll_id', 'contact_id', 'solution', 'consultation_id', 'specific_id', 'comments',
+        'user_id', 'contact_id', 'solution', 'consultation_id', 'specific_id', 'comments',
         'solution_date', 'monitoring_id', 'sms', 'wsp', 'type_management_id', 'wolkvox_id'
     ];
 
@@ -29,12 +28,6 @@ class Management extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
-    public function payroll()
-    {
-        return $this->belongsTo(Payroll::class, 'payroll_id');
-    }
-
     public function consultation()
     {
         return $this->belongsTo(\App\Models\Afiliados\Consultation::class, 'consultation_id');

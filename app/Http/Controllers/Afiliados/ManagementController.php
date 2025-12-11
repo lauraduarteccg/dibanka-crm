@@ -16,56 +16,66 @@ class ManagementController extends Controller
     /**
      * Obtener todas las gestiones con información relacionada (paginado).
      */
-
     public function index(Request $request)
     {
-        $query = Management::with(['user', 'payroll', 'consultation', 
-        'contact', 'specific', 'monitoring', 'type_management']);
+        $query = Management::with(['user', 'consultation', 
+            'contact', 'specific', 'monitoring', 'type_management']);
 
         // 🔎 Buscar directamente por identification_number en la relación contact
-        if ($request->has('identification_number') && !empty($request->identification_number)) {
+        if ($request->filled('identification_number')) {
             $query->whereHas('contact', function ($q) use ($request) {
                 $q->where('identification_number', $request->identification_number);
             });
         }
 
+        // 🔎 Búsqueda general
         if ($request->filled('search')) {
             $searchTerm = $request->search;
 
             $query->where(function ($q) use ($searchTerm) {
-                // Búsqueda en campos principales
+                // Búsqueda en campos principales de Management
                 $q->where('id', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('wolkvox_id', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('solution_date', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('sms', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('wsp', 'LIKE', "%{$searchTerm}%");
 
-                // Búsqueda en relaciones usando un array para evitar repetición
-                $relations = [
-                    'user' => ['id', 'name', 'email'],
-                    'payroll' => ['name'],
-                    'consultation' => ['name'],
-                    'specific' => ['name'],
-                    'type_management' => ['name'],
-                    'contact' => [
-                        'name',
-                        'phone',
-                        'update_phone',
-                        'email',
-                        'identification_type',
-                        'identification_number'
-                    ]
-                ];
+                // Búsqueda en relación: user
+                $q->orWhereHas('user', function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('id', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+                });
 
-                foreach ($relations as $relation => $fields) {
-                    $q->orWhereHas($relation, function ($subQuery) use ($searchTerm, $fields) {
-                        $subQuery->where(function ($innerQuery) use ($searchTerm, $fields) {
-                            foreach ($fields as $field) {
-                                $innerQuery->orWhere($field, 'LIKE', "%{$searchTerm}%");
-                            }
-                        });
-                    });
-                }
+                // Búsqueda en relación: contact
+                $q->orWhereHas('contact', function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('update_phone', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('identification_type', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Búsqueda en relación: consultation
+                $q->orWhereHas('consultation', function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Búsqueda en relación: specific
+                $q->orWhereHas('specific', function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Búsqueda en relación: type_management
+                $q->orWhereHas('type_management', function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Si tienes la relación payroll, descomenta esto:
+                // $q->orWhereHas('payroll', function ($subQuery) use ($searchTerm) {
+                //     $subQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                // });
             });
         }
 
@@ -81,13 +91,13 @@ class ManagementController extends Controller
         ], $request);
 
         return response()->json([
-            'message'       => 'Gestiones obtenidas con éxito',
-            'managements'   => ManagementResource::collection($management),
-            'pagination'    => [
-                'current_page'          => $management->currentPage(),
-                'total_pages'           => $management->lastPage(),
-                'per_page'              => $management->perPage(),
-                'total_management'   => $management->total(),
+            'message' => 'Gestiones obtenidas con éxito',
+            'managements' => ManagementResource::collection($management),
+            'pagination' => [
+                'current_page' => $management->currentPage(),
+                'total_pages' => $management->lastPage(),
+                'per_page' => $management->perPage(),
+                'total_management' => $management->total(),
             ]
         ]);
     }
@@ -98,7 +108,6 @@ class ManagementController extends Controller
     {
         $management = Management::with([
             'user', 
-            'payroll', 
             'consultation', 
             'contact', 
             'specific', 
@@ -131,7 +140,7 @@ class ManagementController extends Controller
         $management = Management::create($request->all());
 
         // Carga relaciones para devolverlas en el resource
-        $management->load(['user', 'payroll', 'consultation', 'contact', 'specific', 'monitoring']);
+        $management->load(['user', 'consultation', 'contact', 'specific', 'monitoring']);
 
         log_activity('crear', 'Gestiones', [
             'mensaje' => "El usuario {$request->user()->name} creó una nueva gestión.",
@@ -160,7 +169,7 @@ class ManagementController extends Controller
         $management->update($request->all());
 
         // Recargar relaciones para devolver la info actualizada
-        $management->load(['user', 'payroll', 'consultation', 'specific', 'contact', 'monitoring']);
+        $management->load(['user', 'consultation', 'specific', 'contact', 'monitoring']);
         
         log_activity('actualizar', 'Gestiones', [
             'mensaje' => "El usuario {$request->user()->name} actualizó una gestión.",

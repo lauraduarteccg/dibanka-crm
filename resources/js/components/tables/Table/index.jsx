@@ -160,75 +160,89 @@ const MuiTable = ({
                   </TableCell>
                 ))}
                 {actions && (
-                  <TableCell align="center">
-                    <div className="flex justify-center gap-4">
+                  <TableCell
+                    align="center"
+                    sx={{
+                      padding: "16px 12px",
+                      borderBottom: "1px solid #f1f5f9",
+                    }}
+                  >
+                    <div className="flex justify-center items-center gap-2">
                       {management && (
-                        <Tooltip title="Ver gestión" arrow>
+                        <Tooltip title="Ver gestión" arrow placement="top">
                           <button
                             id={idManagement}
                             onClick={() => onManagement(row)}
-                            className="text-blue-500 hover:text-blue-700"
+                            className="p-2 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 hover:from-blue-100 hover:to-blue-200 hover:shadow-md transition-all duration-300 hover:scale-110"
                           >
-                            <CiBoxList size={25} />
+                            <CiBoxList size={20} />
                           </button>
                         </Tooltip>
                       )}
                       {edit && (
-                        <Tooltip title="Editar" arrow>
+                        <Tooltip title="Editar" arrow placement="top">
                           <button
                             id={idEdit}
                             onClick={() => onEdit(row)}
-                            className="text-blue-500 hover:text-blue-700"
+                            className="p-2 rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 hover:from-indigo-100 hover:to-indigo-200 hover:shadow-md transition-all duration-300 hover:scale-110"
                           >
-                            <CiEdit size={25} />
+                            <CiEdit size={20} />
                           </button>
                         </Tooltip>
                       )}
                       {view && (
-                        <Tooltip title="Ver" arrow>
+                        <Tooltip title="Ver" arrow placement="top">
                           <button
                             id={idView}
                             onClick={() => onView(row)}
-                            className="text-blue-500 hover:text-blue-700"
+                            className="p-2 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600 hover:from-purple-100 hover:to-purple-200 hover:shadow-md transition-all duration-300 hover:scale-110"
                           >
-                            <GoEye size={20} />
+                            <GoEye size={18} />
                           </button>
                         </Tooltip>
                       )}
                       {monitoring && (
-                        <Tooltip title="Seguimiento" arrow>
+                        <Tooltip title="Seguimiento" arrow placement="top">
                           <button
                             id={idMonitoring}
                             onClick={() => onMonitoring(row)}
-                            className="text-blue-500 hover:text-blue-700"
+                            className="p-2 rounded-lg bg-gradient-to-br from-teal-50 to-teal-100 text-teal-600 hover:from-teal-100 hover:to-teal-200 hover:shadow-md transition-all duration-300 hover:scale-110"
                           >
-                            <IoFootstepsOutline size={20} />
+                            <IoFootstepsOutline size={18} />
                           </button>
                         </Tooltip>
                       )}
                       {onActiveOrInactive && (
-                        <Tooltip title="Activar o desactivar" arrow>
+                        <Tooltip
+                          title={row.is_active === 1 ? "Desactivar" : "Activar"}
+                          arrow
+                          placement="top"
+                        >
                           <button
                             id={idOnActiveOrInactive}
                             onClick={() => onDelete(row.id, row.is_active)}
-                            className="text-red-500 hover:text-red-700"
+                            className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-md ${
+                              row.is_active === 1
+                                ? "bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200"
+                                : "bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200"
+                            }`}
                           >
                             {row.is_active === 1 ? (
-                              <FaToggleOn size={20} color="green" />
+                              <FaToggleOn size={20} color="#10b981" />
                             ) : (
-                              <FaToggleOff size={20} color="red" />
+                              <FaToggleOff size={20} color="#ef4444" />
                             )}
                           </button>
                         </Tooltip>
                       )}
                       {selectRecord && (
-                        <Tooltip title="Seleccionar registro" arrow>
+                        <Tooltip title="Seleccionar registro" arrow placement="top">
                           <button
                             id={idSelectRecord}
                             onClick={() => onSelectRecord(row.id)}
-                            className="text-blue-500 hover:text-blue-700"
+                            className="p-2 rounded-lg bg-gradient-to-br from-cyan-50 to-cyan-100 text-cyan-600 hover:from-cyan-100 hover:to-cyan-200 hover:shadow-md transition-all duration-300 hover:scale-110"
                           >
-                              <MdPersonAddAlt1 size={20} />
+                            <MdPersonAddAlt1 size={18} />
                           </button>
                         </Tooltip>
                       )}

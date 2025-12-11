@@ -74,43 +74,6 @@ export default function FormSpecialCasesDrawer({
 
         <DialogContent dividers className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
-            {/* AGENTE */}
-            <TextField
-              label="Agente"
-              value={user?.name || ""}
-              fullWidth
-              disabled
-            />
-
-            {/* PAGADURÍA */}
-            <Autocomplete
-              options={payroll || []}
-              getOptionLabel={(option) => option?.name || ""}
-              value={selectedPayroll || null}
-              onChange={(e, value) => {
-                setSelectedPayroll(value);
-                clearFieldError("payroll_id");
-                setFormData((prev) => ({
-                  ...prev,
-                  payroll_id: value?.id || "",
-                  contact_id: "",
-                }));
-                setSelectedContact(null);
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Pagaduría"
-                  error={!!validationErrors?.payroll_id}
-                  helperText={
-                    validationErrors?.payroll_id
-                      ? validationErrors.payroll_id[0]
-                      : ""
-                  }
-                  fullWidth
-                />
-              )}
-            />
 
             {/* CLIENTE */}
             <div className="flex gap-2 items-start">

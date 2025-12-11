@@ -12,7 +12,7 @@ const useDashboard = () => {
     contacts: 0,
     specialcases: 0,
     payrolls: 0,
-    consultations: 0,
+    typeManagement: 0,
   });
 
   useEffect(() => {
@@ -23,6 +23,7 @@ const useDashboard = () => {
       const fetchData = async () => {
         try {
           const counts = await getDashboardCounts();
+          // console.log(counts);
           if (isMounted) setDataCounts(counts);
         } catch (error) {
           console.error("Error al obtener datos del Dashboard:", error);

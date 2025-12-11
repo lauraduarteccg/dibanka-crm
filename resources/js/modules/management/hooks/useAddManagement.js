@@ -69,8 +69,7 @@ export const useAddManagement = (selectedPayroll = null, campaign = "") => {
 
         isFetchingContacts.current = true;
         try {
-            const payrollName = selectedPayroll?.name || "";
-            const contactData = await getContacts(page, search, payrollName, campaign);
+            const contactData = await getContacts(page, search);
             setContact(contactData.contacts || []);
             setCurrentPageContact(contactData.pagination?.current_page || 1);
             setTotalPagesContact(
@@ -85,7 +84,7 @@ export const useAddManagement = (selectedPayroll = null, campaign = "") => {
         } finally {
             isFetchingContacts.current = false;
         }
-    }, [selectedPayroll, campaign]);
+    }, []);
 
     // Cargar contactos solo cuando cambie la página o búsqueda (con debounce)
     useEffect(() => {
@@ -96,7 +95,7 @@ export const useAddManagement = (selectedPayroll = null, campaign = "") => {
      *  CREAR / ACTUALIZAR GESTIÓN
      * =========================================================== */
     const handleSubmit = useCallback(
-        async (payload, campaign = "") => {
+        async (payload) => {
             setLoading(true);
             setValidationErrors({});
             try {

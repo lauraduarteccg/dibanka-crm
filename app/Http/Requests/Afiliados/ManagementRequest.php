@@ -23,7 +23,6 @@ class ManagementRequest extends FormRequest
     {
         return [
             'user_id'           => 'required|integer|exists:users,id',
-            'payroll_id'        => 'required|integer|exists:payrolls,id',
             'contact_id'        => 'required|integer|exists:contacts,id',
             'consultation_id'   => 'required|integer|exists:consultations_afiliados,id',
             'specific_id'       => 'required|integer|exists:specifics_afiliados,id',
@@ -46,11 +45,6 @@ class ManagementRequest extends FormRequest
             'user_id.required'  => 'El agente es requerido',
             'user_id.exists'    => 'El agente seleccionado no existe',
             'user_id_.integer'  => 'El agente debe ser un numero',
-            
-            // Validaciones pagadurias
-            'payroll_id.required'  => 'La pagaduria es requerida',
-            'payroll_id.exists'    => 'La pagaduria seleccionada no existe',
-            'payroll_id_.integer'  => 'La pagaduria debe ser un numero',
             
             // Validaciones contacto/cliente
             'contact_id.required'  => 'El cliente es requerido',

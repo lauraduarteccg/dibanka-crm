@@ -105,6 +105,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // ------------------- Tipos de Gestiones -------------------
         Route::prefix('typemanagements')->group(function () {
             Route::get('/', [TypeManagementController::class, 'index'])->middleware('permission:typeManagement.view');
+            Route::get('/count', [TypeManagementController::class, 'count'])->middleware('permission:typeManagement.view');
             Route::get('/active', [TypeManagementController::class, 'active'])->middleware('permission:typeManagement.view');
             Route::get('/{id}', [TypeManagementController::class, 'show'])->middleware('permission:typeManagement.view');
             Route::post('/', [TypeManagementController::class, 'store'])->middleware('permission:config.typeManagement.create');
@@ -143,7 +144,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/specialcases/count', [SpecialCasesController::class, 'count'])->middleware('permission:special_cases.view');
     Route::get('/contacts/count', [ContactController::class, 'count'])->middleware('permission:contact.view');
     Route::get('/payrolls/count', [PayrollController::class, 'count'])->middleware('permission:payroll.view');
-    Route::get('/consultations-aliados/count', [AliadosConsultationController::class, 'count'])->middleware('permission:consultation.view');
+    Route::get('/management-afiliados/count', [AfiliadosManagementController::class, 'count'])->middleware('permission:management.view');
+    Route::get('/management-aliados/count', [AliadosManagementController::class, 'count'])->middleware('permission:management.view');
 
 
     // ==========================================================

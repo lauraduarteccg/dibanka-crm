@@ -6,12 +6,16 @@ import {
   getManagements,
   getActiveMonitorings,
   updateManagementMonitoring,
+  getCountManagementsAliados,
+  getCountManagementsAfiliados
 } from "@modules/management/services/managementService";
 import { useDebounce } from "@modules/management/hooks/useDebounce";
 
 export const useManagement = () => {
   const [management, setManagement] = useState([]);
   const [monitoring, setMonitoring] = useState([]);
+  const [managementCountAfiliados, setManagementCountAfiliados] = useState([]);
+  const [managementCountAliados, setManagementCountAliados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -49,16 +53,12 @@ export const useManagement = () => {
   const [formData, setFormData] = useState({
     id: null,
     user_id: "",
-    payroll_id: "",
     consultation_id: "",
     contact_id: "",
     solution_date: "",
     monitoring_id: "",
   });
 
-  /* ===========================================================
-   *  Campaign State
-   * =========================================================== */
   /* ===========================================================
    *  Campaign State
    * =========================================================== */
@@ -78,7 +78,6 @@ export const useManagement = () => {
       setLoading(true);
       try {
         const data = await getManagements(page, search, currentCampaign);
-        console.log(data)
         setManagement(data.managements || []);
         setCurrentPage(data.pagination?.current_page || 1);
         setTotalPages(data.pagination?.last_page || 1);
@@ -155,7 +154,6 @@ export const useManagement = () => {
       setFormData({
         id: null,
         user_id: "",
-        payroll_id: "",
         consultation_id: "",
         contact_id: "",
         solution_date: "",
@@ -201,6 +199,34 @@ export const useManagement = () => {
   }, [fetchMonitoring]);
 
   /* ===========================================================
+   *  Fetch Management Count
+   * =========================================================== */
+  const fetchManagementCountAliados = useCallback(async () => {
+    try {
+      const data = await getCountManagementsAliados();
+      setManagementCountAliados(data);
+    } catch (err) {
+      console.error("Error al obtener managementCountAliados:", err);
+      setError("Error al obtener los managementCountAliados.");
+    }
+  }, []);
+
+  const fetchManagementCountAfiliados = useCallback(async () => {
+    try {
+      const data = await getCountManagementsAfiliados();
+      setManagementCountAfiliados(data);
+    } catch (err) {
+      console.error("Error al obtener managementCountAfiliados:", err);
+      setError("Error al obtener los managementCountAfiliados.");
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchManagementCountAliados();
+    fetchManagementCountAfiliados();
+  }, [fetchManagementCountAliados, fetchManagementCountAfiliados]);
+
+  /* ===========================================================
    *  Validar monitoring_id actual
    * =========================================================== */
   useEffect(() => {
@@ -214,9 +240,6 @@ export const useManagement = () => {
     }
   }, [monitoring]);
 
-  /* ===========================================================
-   *  Sincronizar URL con searchTerm
-   * =========================================================== */
   /* ===========================================================
    *  Sincronizar URL con searchTerm
    * =========================================================== */
@@ -248,6 +271,8 @@ export const useManagement = () => {
     formData,
     validationErrors,
     searchTerm,
+    managementCountAliados,
+    managementCountAfiliados,
 
     // Estados UI
     loading,

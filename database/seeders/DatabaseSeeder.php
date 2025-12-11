@@ -184,11 +184,11 @@ class DatabaseSeeder extends Seeder
         // -----------------------------
         // 7) CONTACT (crear o tomar)
         // -----------------------------
-        $existingContact = DB::table('contacts')->where('identification_number', '12345678')->first();
-        if ($existingContact) {
-            $contactId = $existingContact->id;
+        $existingContactAliados = DB::table('contacts')->where('identification_number', '12345678')->first();
+        if ($existingContactAliados) {
+            $contactIdAliados = $existingContactAliados->id;
         } else {
-            $contactId = DB::table('contacts')->insertGetId([
+            $contactIdAliados = DB::table('contacts')->insertGetId([
                 'campaign_id'           => $aliadosId,
                 'payroll_id'            => $payrollIds[1] ?? null,
                 'name'                  => 'Juan Pérez',
@@ -197,6 +197,24 @@ class DatabaseSeeder extends Seeder
                 'identification_number' => '12345678',
                 'update_phone'          => '3123456789',
                 'email'                 => 'juan@example.com',
+                'created_at'            => now(),
+                'updated_at'            => now(),
+            ]);
+        }
+
+        $existingContactAfiliados = DB::table('contacts')->where('identification_number', '5948984')->first();
+        if ($existingContactAfiliados) {
+            $contactIdAfiliados = $existingContactAfiliados->id;
+        } else {
+            $contactIdAfiliados = DB::table('contacts')->insertGetId([
+                'campaign_id'           => $afiliadosId,
+                'payroll_id'            => $payrollIds[1] ?? null,
+                'name'                  => 'Julio Perez',
+                'identification_type'   => 'Cédula',
+                'phone'                 => '3123456789',
+                'identification_number' => '5948984',
+                'update_phone'          => '3123456789',
+                'email'                 => 'julio@example.com',
                 'created_at'            => now(),
                 'updated_at'            => now(),
             ]);
@@ -238,7 +256,7 @@ class DatabaseSeeder extends Seeder
         if (! $existsSpecial) {
             DB::table('special_cases')->insert([
                 'user_id'          => $userIds[0] ?? 1,
-                'contact_id'       => $contactId,
+                'contact_id'       => $contactIdAliados,
                 'management_messi' => 'Nota Creada',
                 'id_call'          => '68b871ae742f0866f0010a1d',
                 'id_messi'         => 'CTR-881585',
@@ -268,8 +286,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id'            => $userIds[0] ?? 1,
                 'wolkvox_id'         => '68d44d8b6f25ca6591073f43a33',
-                'payroll_id'         => $payrollIds[0] ?? null,
-                'contact_id'         => $contactId,
+                'contact_id'         => $contactIdAfiliados,
                 'solution'           => 2,
                 'consultation_id'    => $consultationIdAFIL,
                 'specific_id'        => $specificIAFILId,
@@ -285,8 +302,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id'            => $userIds[1] ?? 2,
                 'wolkvox_id'         => '68d44d8b6f25ca6591073f43as',
-                'payroll_id'         => $payrollIds[1] ?? null,
-                'contact_id'         => $contactId,
+                'contact_id'         => $contactIdAfiliados,
                 'solution'           => 1,
                 'consultation_id'    => $consultationIdAFIL,
                 'specific_id'        => $specificIAFILId,
@@ -305,8 +321,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id'            => $userIds[0] ?? 1,
                 'wolkvox_id'         => '68d44d8b6f25ca6591073f43a33',
-                'payroll_id'         => $payrollIds[0] ?? null,
-                'contact_id'         => $contactId,
+                'contact_id'         => $contactIdAliados,
                 'solution'           => 2,
                 'consultation_id'    => $consultationIdALI,
                 'specific_id'        => $specificIALIId,
@@ -322,8 +337,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id'            => $userIds[1] ?? 2,
                 'wolkvox_id'         => '68d44d8b6f25ca6591073f43as',
-                'payroll_id'         => $payrollIds[1] ?? null,
-                'contact_id'         => $contactId,
+                'contact_id'         => $contactIdAliados,
                 'solution'           => 1,
                 'consultation_id'    => $consultationIdALI,
                 'specific_id'        => $specificIALIId,

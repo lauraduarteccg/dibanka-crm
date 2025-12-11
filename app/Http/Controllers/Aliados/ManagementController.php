@@ -19,7 +19,7 @@ class ManagementController extends Controller
 
     public function index(Request $request)
     {
-        $query = Management::with(['user', 'payroll', 'consultation', 'contact', 'specific', 'monitoring', 'type_management']);
+        $query = Management::with(['user', 'consultation', 'contact', 'specific', 'monitoring', 'type_management']);
 
         // 🔎 Buscar directamente por identification_number en la relación contact
         if ($request->has('identification_number') && !empty($request->identification_number)) {
@@ -42,7 +42,6 @@ class ManagementController extends Controller
                 // Búsqueda en relaciones usando un array para evitar repetición
                 $relations = [
                     'user' => ['id', 'name', 'email'],
-                    'payroll' => ['name'],
                     'monitoring' => ['name'],
                     'consultation' => ['name'],
                     'specific' => ['name'],
@@ -99,7 +98,6 @@ class ManagementController extends Controller
     {
         $management = Management::with([
             'user', 
-            'payroll', 
             'consultation', 
             'contact', 
             'specific', 
@@ -132,7 +130,7 @@ class ManagementController extends Controller
         $management = Management::create($request->all());
 
         // Carga relaciones para devolverlas en el resource
-        $management->load(['user', 'payroll', 'consultation', 'contact', 'specific', 'monitoring']);
+        $management->load(['user', 'consultation', 'contact', 'specific', 'monitoring']);
 
         log_activity('crear', 'Gestiones', [
             'mensaje' => "El usuario {$request->user()->name} creó una nueva gestión.",
@@ -161,7 +159,7 @@ class ManagementController extends Controller
         $management->update($request->all());
 
         // Recargar relaciones para devolver la info actualizada
-        $management->load(['user', 'payroll', 'consultation', 'specific', 'contact', 'monitoring']);
+        $management->load(['user', 'consultation', 'specific', 'contact', 'monitoring']);
         
         log_activity('actualizar', 'Gestiones', [
             'mensaje' => "El usuario {$request->user()->name} actualizó una gestión.",

@@ -19,18 +19,14 @@ import SpeedDialButton from "@components/ui/SpeedDialButton";
 import seleccione_imagen from "@assets/seleccione_imagen.png";
 import { useAddManagementForm } from "@modules/management/hooks/useAddManagementForm";
 import { useSpecialCasesForm } from "@modules/management/hooks/useSpecialCasesForm";
+import InfoField from "@modules/management/components/InfoField";
 import FormSpecialCases from "@modules/management/components/FormSpecialCases";
-import PopupLittlePayroll from "@modules/management/components/PopupLittlePayroll";
 import SearchPayroll from "@modules/management/components/SearchPayroll";
 import { IoMdSearch } from "react-icons/io";
 import Agent from "@modules/management/components/agent";
 
 const AddManagement = () => {
   const {
-    isPopupOpen,
-    setIsPopupOpen,
-    payroll,
-    consultation,
     campaign,
     sms,
     wsp,
@@ -77,15 +73,19 @@ const AddManagement = () => {
     setOpenSearchPayroll,
   } = useSpecialCasesForm();
 
+  const parsedDescription = selectedContact?.payroll?.description
+  ?.replace(/{{agente}}/g, user?.name || "");
+
   const handleOpenInfoPopup = () => {
     const payrollId = selectedPayroll?.id || "";
     
     window.open(
-      `http://localhost:8000/informacion?payroll_id=${encodeURIComponent(payrollId)}`,
+      `/informacion?payroll_id=${encodeURIComponent(payrollId)}`,
       "_blank",
       "width=1000,height=700,scrollbars=yes,resizable=yes"
     );
   };
+
 
   const actions = [
     { icon: <MdOutlineFolderSpecial className="w-6 h-auto" />, name: "Caso especial", click: () => setOpenSpecialCases(true) },
@@ -108,152 +108,109 @@ const AddManagement = () => {
       </div>
       <div className="h-0.5 bg-gray-300 rounded"></div>
 
-      {/* Bloque de campaña y pagaduria con imagen */}
-      <div className="flex gap-1 ">
-        <div className="w-11/12 grid gap-10">
-          {/* Selector de campaña */}
-          <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <h2 className="text-xl font-semibold">Campaña</h2>
-            <FormControl fullWidth>
-              <InputLabel id="campania-label">Campaña</InputLabel>
-              <Select
-                labelId="campania-label"
-                id="campania"
-                value={campaign}
-                label="Campaña"
-                onChange={(event) => {
-                  setCampaign(event.target.value);
-                  // Resetear consultas cuando cambia la campaña
-                  setSelectedConsultation(null);
-                  setSelectedSpecificConsultation(null);
-                }}
-              >
-                <MenuItem value="Aliados">Aliados</MenuItem>
-                <MenuItem value="Afiliados">Afiliados</MenuItem>
-              </Select>
-            </FormControl>
-            {loadingConsultations && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <CircularProgress size={16} />
-                <span>Cargando consultas...</span>
-              </div>
-            )}
+      {/* Bloque de elegir cliente y mostrar imagen */}
+      <div className="w-full flex gap-6 ">
+        {/* Información del Cliente */}
+        <div className="flex-1 bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+          {/* Header */}
+          <div className="mb-6 pb-4 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-800">Información del cliente</h2>
           </div>
 
-          {/* Autocompletado de Pagaduría */}
-          <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <h2 className="text-xl font-semibold">Pagaduría</h2>
+          {/* Autocomplete */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-500">Buscar Cliente</label>
             <Autocomplete
-              options={payroll || []}
-              getOptionLabel={(option) => option?.name || ""}
-              value={selectedPayroll}
+              disabled
+              options={filteredContact}
+              getOptionLabel={(option) =>
+                `${option?.identification_number || ""} | ${option?.name || ""}`
+              }
+              value={selectedContact}
               onChange={(event, value) => {
-                setSelectedPayroll(value);
-                clearValidationError("payroll_id");
+                setSelectedContact(value)
+                clearValidationError("contact_id");
               }}
               renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Pagaduría"
-                  error={!!validationErrors.payroll_id}
-                  helperText={validationErrors.payroll_id ? validationErrors.payroll_id[0] : ""}
-                />
+                <div className="flex items-stretch rounded-lg overflow-hidden border border-gray-300 hover:border-blue-400 transition-all duration-200 bg-white shadow-sm">
+                  <TextField
+                    {...params}
+                    error={!!validationErrors.contact_id}
+                    helperText={validationErrors.contact_id ? validationErrors.contact_id[0] : ""}
+                    className="flex-1"
+                  />
+                  <button
+                    onClick={() => setOpenSearchPayroll(true)}
+                    className="px-5 bg-blue-50 hover:bg-blue-100 border-l border-gray-300 transition-all duration-200 group"
+                  >
+                    <IoMdSearch className="text-blue-600 w-6 h-6 group-hover:scale-110 transition-transform" />
+                  </button>
+                </div>
               )}
             />
           </div>
+
+          {/* Grid de Información */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InfoField label="Campaña" value={selectedContact?.campaign.name ?? "—"} fieldName="campaign" />
+            <InfoField label="Pagaduría" value={selectedContact?.payroll.name ?? "—"} fieldName="payroll" />
+            <InfoField label="Nombre" value={selectedContact?.name ?? "—"} fieldName="name" />
+            <InfoField label="Correo electrónico" value={selectedContact?.email ?? "—"} fieldName="email" />
+            <InfoField label="Teléfono" value={selectedContact?.phone ?? "—"} fieldName="phone" />
+            <InfoField label="Celular actualizado" value={selectedContact?.update_phone ?? "—"} fieldName="update_phone" />
+            <InfoField label="Tipo de identificación" value={selectedContact?.identification_type ?? "—"} fieldName="identification_type" />
+            <InfoField label="Número de identificación" value={selectedContact?.identification_number ?? "—"} fieldName="identification_number" />
+            {loadingConsultations && (
+              <div className="col-span-2 flex items-center justify-center gap-3 py-4 bg-blue-50 rounded-lg">
+                <CircularProgress size={20} className="text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">Cargando consultas...</span>
+              </div>
+            )}
+          </div>
         </div>
-        {/* Imagen */}
-        <button
-          className="relative ml-5"
-          onClick={() => setModal(true)}
-        >
-          <BsInfoCircle className="absolute top-6 left-6 text-2xl text-primary-strong z-10" />
-          {selectedPayroll?.img_payroll ? (
-            <img
-              src={selectedPayroll.img_payroll}
-              alt={selectedPayroll.name}
-              className="w-[390px] bg-white shadow-xl rounded-xl p-8"
-            />
-          ) : (
-            <img
-              src={seleccione_imagen}
-              alt="Sin imagen"
-              className="w-[390px] bg-white shadow-xl rounded-xl p-8"
-            />
-          )}
-        </button>
-      </div>
 
-      {/* Autocompletado de Cliente/Contacto */}
-      <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-        <h2 className="text-xl font-semibold">Información del cliente</h2>
-        <Autocomplete
-          disabled
-          options={filteredContact}
-          getOptionLabel={(option) =>
-            `${option?.identification_number || ""} | ${option?.name || ""}`
-          }
-          value={selectedContact}
-          onChange={(event, value) => {
-            setSelectedContact(value)
-            clearValidationError("contact_id");
-          }}
-          renderInput={(params) => (
-            <div className="flex items-center w-full bg-gray-50 border border-gray-200  overflow-hidden shadow-sm">
-              <TextField
-                {...params}
-                label="Cliente"
-                error={!!validationErrors.contact_id}
-                helperText={validationErrors.contact_id ? validationErrors.contact_id[0] : ""}
+        {/* Imagen con información */}
+        <div className="relative">          
+          <div className="w-[320px] h-full bg-white shadow-xl rounded-2xl p-8">
+            {selectedContact?.payroll?.img_payroll ? (
+              <>
+              <img
+                src={selectedContact?.payroll?.img_payroll}
+                alt={selectedContact?.payroll?.name}
+                className="w-full h-64 object-contain"
               />
-              <button
-                onClick={() => setOpenSearchPayroll(true)}
-                className="px-4 border-l border-gray-200 hover:bg-gray-100 transition-colors duration-200"
-              >
-                <IoMdSearch className="text-primary-strong w-6 h-6" />
-              </button>
-            </div>
-          )}
-        />
-        {/* Información del cliente */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-          <div className="flex flex-col">
-            <p className="text-sm font-medium text-gray-500">Nombre:</p>
-            <p className="text-lg font-normal text-gray-800">{selectedContact?.name ?? "—"}</p>
-          </div>
-
-          <div className="flex flex-col">
-            <p className="text-sm font-medium text-gray-500">Correo:</p>
-            <p className="text-lg font-normal text-gray-800">{selectedContact?.email ?? "—"}</p>
-          </div>
-
-          <div className="flex flex-col">
-            <p className="text-sm font-medium text-gray-500">Teléfono:</p>
-            <p className="text-lg font-normal text-gray-800">{selectedContact?.phone ?? "—"}</p>
-          </div>
-
-          <div className="flex flex-col">
-            <p className="text-sm font-medium text-gray-500">Celular actualizado:</p>
-            <p className="text-lg font-normal text-gray-800">{selectedContact?.update_phone ?? "—"}</p>
-          </div>
-
-          <div className="flex flex-col">
-            <p className="text-sm font-medium text-gray-500">Tipo de identificación:</p>
-            <p className="text-lg font-normal text-gray-800">{selectedContact?.identification_type ?? "—"}</p>
-          </div>
-
-          <div className="flex flex-col">
-            <p className="text-sm font-medium text-gray-500">Número de identificación:</p>
-            <p className="text-lg font-normal text-gray-800">{selectedContact?.identification_number ?? "—"}</p>
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {parsedDescription}
+                </p>
+              </div>
+              </>
+            ) : (
+              <>
+                <div className="w-full h-64 flex items-center justify-center">
+                  <img
+                    src={seleccione_imagen}
+                    alt="Sin imagen"
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Selecciona un contacto para ver la imagen y la descripción.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
         
       <div className="grid grid-cols-2 gap-4">
         {/* Autocompletado de Tipo de gestión */}
-        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Tipo de gestión</h2>
+        <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 flex flex-col gap-3">
+          <h2 className="text-2xl font-bold text-gray-800">Tipo de gestión</h2>
           <Autocomplete
+            disabled={!selectedContact}
             options={filteredTypeManagement}
             getOptionLabel={(option) => option?.name || ""}
             value={selectedTypeManagement}
@@ -273,11 +230,12 @@ const AddManagement = () => {
         </div>
 
         {/* Selector de solución en primer contacto */}
-        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Solución en el primer contacto</h2>
+        <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 flex flex-col gap-3">
+          <h2 className="text-2xl font-bold text-gray-800">Solución en el primer contacto</h2>
           <FormControl fullWidth error={!!validationErrors.solution}>
             <InputLabel id="solucion-label">Solución</InputLabel>
             <Select
+              disabled={!selectedContact}
               labelId="solucion-label"
               id="solucion"
               value={selectedSolution}
@@ -299,8 +257,8 @@ const AddManagement = () => {
       
       <div className="grid grid-cols-2 gap-4">
         {/* Autocompletado de motivo de consulta */}
-        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Motivo de consulta</h2>
+        <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 flex flex-col gap-3">
+          <h2 className="text-2xl font-bold text-gray-800">Motivo de consulta</h2>
           <Autocomplete
             options={optionsWithIndex}
             getOptionLabel={(option) =>
@@ -313,7 +271,7 @@ const AddManagement = () => {
               // Resetear consulta específica cuando cambia la consulta principal
               setSelectedSpecificConsultation(null);
             }}
-            disabled={!campaign || loadingConsultations}
+            disabled={!selectedContact || loadingConsultations}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -341,8 +299,8 @@ const AddManagement = () => {
         </div>
 
         {/* Autocompletado de motivo de consulta específica */}
-        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Motivo específico de consulta</h2>
+        <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 flex flex-col gap-3">
+          <h2 className="text-2xl font-bold text-gray-800">Motivo específico de consulta</h2>
           <Autocomplete
             options={filteredSpecific}
             getOptionLabel={(option, index) => {
@@ -355,7 +313,7 @@ const AddManagement = () => {
               setSelectedSpecificConsultation(value);
               clearValidationError("specific_id");
             }}
-            disabled={!campaign || loadingConsultations}
+            disabled={!selectedContact || !campaign || loadingConsultations}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -386,9 +344,10 @@ const AddManagement = () => {
       {/* Swichs para enviar sms y wsp */}
       <div className="grid grid-cols-3 gap-4">
         {/* SMS */}
-        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Enviar SMS de canal de WhatsApp</h2>
+        <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 flex flex-col gap-3">
+          <h2 className="text-xl font-bold text-gray-800">Enviar SMS de canal de WhatsApp</h2>
           <Switch 
+            disabled={!selectedContact} 
             checked={sms} 
             onChange={(e) => setSms(e.target.checked)} 
             inputProps={{ 'aria-label': 'Checkbox demo' }} 
@@ -396,8 +355,8 @@ const AddManagement = () => {
         </div>
           
         {/* Wolkvox id de la gestión */}
-        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <p className="text-xl font-semibold pb-3">Wolkvox_id de la gestión:</p>
+        <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 flex flex-col gap-3">
+          <p className="text-xl font-bold text-gray-800">Wolkvox_id de la gestión:</p>
           <TextField
             fullWidth
             id="wolkvox_id"
@@ -410,13 +369,15 @@ const AddManagement = () => {
             multiline
             error={!!validationErrors.wolkvox_id}
             helperText={validationErrors.wolkvox_id ? validationErrors.wolkvox_id[0] : ""}
+            disabled={!selectedContact}
           />
         </div>
 
         {/* WHATSAPP */}
-        <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Enviar WhatsApp de recuperar contraseña</h2>
+        <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 flex flex-col gap-3">
+          <h2 className="text-xl font-bold text-gray-800">Enviar WhatsApp de recuperar contraseña</h2>
           <Switch
+            disabled={!selectedContact}
             checked={wsp}                            
             onChange={(e) => setWsp(e.target.checked)} 
             inputProps={{ 'aria-label': 'Checkbox demo' }}
@@ -425,8 +386,8 @@ const AddManagement = () => {
       </div>
 
       {/* Observaciones */}
-      <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-        <h2 className="text-xl font-semibold">Observaciones</h2>
+      <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 flex flex-col gap-3">
+        <h2 className="text-2xl font-bold text-gray-800">Observaciones</h2>
         <TextField
           id="standard-multiline-static"
           label="Escriba aquí"
@@ -434,18 +395,16 @@ const AddManagement = () => {
           onChange={(e) => setObservations(e.target.value)}
           multiline
           rows={4}
+          disabled={!selectedContact}
         />
       </div>
 
       {/* Botón Guardar */}
       <div className="flex items-center justify-center mt-10">
-        <Button variant="contained" onClick={onSave}>
+        <Button variant="contained" onClick={onSave} disabled={!selectedContact}>
           Guardar
         </Button>
       </div>
-
-      {/* Popup para mostrar la descripcion de la pagaduria */}
-      <PopupLittlePayroll modal={modal} setModal={setModal} selectedPayroll={selectedPayroll} user={user} />
       
       {/* Boton flotante */}
       <div className="fixed bottom-20 right-10 z-50">

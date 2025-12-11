@@ -6,6 +6,7 @@ import Loader from "@components/ui/Loader";
 import useDashboard from "@modules/dashboard/hooks/useDashboard";
 import callie_3 from "@assets/callie_3.webp";
 import { useManagement } from "@modules/management/hooks/useManagement.js";
+
 import {
     FaUserCircle,
     FaUsers,
@@ -13,6 +14,7 @@ import {
     FaUniversity,
     FaQuestionCircle,
 } from "react-icons/fa";
+import { BiSolidContact } from "react-icons/bi";
 
 function Dashboard() {
     const { user, loading, dataCounts } = useDashboard();
@@ -50,9 +52,9 @@ function Dashboard() {
             icon: <FaUniversity size={28} className="text-purple-500" />,
         },
         {
-            title: "Tipos de Consultas",
-            value: dataCounts.consultations,
-            icon: <FaQuestionCircle size={28} className="text-yellow-500" />,
+            title: "Tipos de Gestiones",
+            value: dataCounts.typeManagement,
+            icon: <BiSolidContact size={28} className="text-yellow-500" />,
         },
     ];
 
@@ -123,7 +125,6 @@ function Dashboard() {
                                     </th>
                                 </tr>
                             </thead>
-
                             <tbody>
                                 {filteredManagement.slice(0, 5).map((item) => (
                                     <tr
@@ -141,7 +142,7 @@ function Dashboard() {
                                             {item.user.name}
                                         </th>
                                         <td className="px-6 py-4">
-                                            {item.payroll.name}
+                                            {item.contact.payroll.name}
                                         </td>
                                         <td className="px-6 py-4">
                                             {item.type_management.name}

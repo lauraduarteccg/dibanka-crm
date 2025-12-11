@@ -27,8 +27,8 @@ export const getPayrollsCount = async () => {
 /**
  * Obtiene el conteo de tipos de consulta.
  */
-export const getConsultationsCount = async () => {
-  const { data } = await api.get("/consultations-aliados/count");
+export const getTypeManagementCount = async () => {
+  const { data } = await api.get("/config/typemanagements/count");
 
   return data.count;
 };
@@ -37,12 +37,12 @@ export const getConsultationsCount = async () => {
  * Obtiene todos los conteos del dashboard en paralelo.
  */
 export const getDashboardCounts = async () => {
-  const [contacts, specialcases, payrolls, consultations] = await Promise.all([
+  const [contacts, specialcases, payrolls, typeManagement] = await Promise.all([
     getContactsCount(),
     getSpecialCasesCount(),
     getPayrollsCount(),
-    getConsultationsCount(),
+    getTypeManagementCount(),
   ]);
 
-  return { contacts, specialcases, payrolls, consultations };
+  return { contacts, specialcases, payrolls, typeManagement };
 };

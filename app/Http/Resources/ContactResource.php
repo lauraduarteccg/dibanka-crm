@@ -28,6 +28,16 @@ class ContactResource extends JsonResource
                 return [
                     'id'    => $this->payroll->id,
                     'name'  => $this->payroll->name,
+                    'description' => $this->payroll->description,
+                    'img_payroll' => $this->payroll->img_payroll 
+                        ? asset('storage/' . $this->payroll->img_payroll) 
+                        : null,
+                    'i_title' => $this->payroll->i_title,
+                    'i_description' => $this->payroll->i_description,
+                    'i_phone' => $this->payroll->i_phone,
+                    'i_email' => $this->payroll->i_email,
+                    'is_active' => $this->payroll->is_active,
+                    'created_at' => $this->payroll->created_at?->format('Y-m-d H:i:s'),
                 ];
             }),
             'name' => $this->name,

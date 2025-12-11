@@ -177,4 +177,17 @@ class TypeManagementController extends Controller
         ], Response::HTTP_OK);
     }
 
+    // Contar tipos de gestiones
+    public function count()
+    {
+        // Contar solo las tipos de gestiones activas
+        $total = TypeManagement::where('is_active', 1)->count();
+
+
+        // Retornar respuesta JSON
+        return response()->json([
+            'count' => $total
+        ], Response::HTTP_OK);
+    }
+
 }

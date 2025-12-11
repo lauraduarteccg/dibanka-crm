@@ -15,7 +15,7 @@ import SearchBar from "@components/forms/Search";
 const columns = [
   { header: "ID", key: "id" },
   { header: "Agente", key: "user.name" },
-  { header: "Pagaduría", key: "payroll.name" },
+  { header: "Pagaduría", key: "contact.payroll.name" },
   { header: "Consulta", key: "consultation.name" },
   { header: "Nombre de cliente", key: "contact.name" },
   { header: "Identificación", key: "contact.identification_number" },
@@ -27,7 +27,6 @@ const P = ({ text1, text2 }) => {
   let displayValue = text2;
 
   if (typeof text2 === 'object' && text2 !== null) {
-    // Si recibe un objeto, intenta mostrar el nombre o stringify
     displayValue = text2.name || JSON.stringify(text2);
     console.warn("P component received object:", text1, text2);
   }
@@ -40,9 +39,6 @@ const P = ({ text1, text2 }) => {
   );
 };
 
-/* ===========================================================
- *  TAB PANEL
- * =========================================================== */
 function TabPanel({ children, value, index }) {
   return (
     <div
@@ -85,13 +81,13 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
     handleClearSearch,
     setCampaign,
     campaign,
+    managementCountAliados,
+    managementCountAfiliados,
   } = useManagement();
 
   const { can } = useCan();
-  const { user, user: authUser } = useContext(AuthContext);
   const navigate = useNavigate();
   
-  // Estado para tabs
   const [tabValue, setTabValue] = useState(campaign === "Aliados" ? 0 : 1);
 
   useEffect(() => {
@@ -117,16 +113,11 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
     setOnMonitoring(true);
   };
 
-  // Determine active data (now fetched dynamically)
   const activeData = management || [];
-  
-  // Totals
-  const currentTotal = totalItems;
 
   return (
     <>
-
-      {/* Tabs */}
+      {/* Tabs con totales separados */}
       <Box sx={{ width: "90%", mb: 4, margin: "auto" }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
@@ -135,15 +126,14 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
             centered
             aria-label="gestiones tabs"
           >
-            <Tab label={`Gestiones de Aliados ${tabValue === 0 ? `(${currentTotal})` : ''}`} {...a11yProps(0)} />
-            <Tab label={`Gestiones de Afiliados ${tabValue === 1 ? `(${currentTotal})` : ''}`} {...a11yProps(1)} />
+            <Tab label={`Gestiones de Aliados (${managementCountAliados})`} {...a11yProps(0)} />
+            <Tab label={`Gestiones de Afiliados (${managementCountAfiliados})`} {...a11yProps(1)} />
           </Tabs>
         </Box>
 
         {/* Tab Panel - Aliados */}
         <TabPanel value={tabValue} index={0}>
           
-          {/* Botón Agregar Gestión */}
           {can("management.create") && (
             <ButtonAdd
               id={idAddManagement}
@@ -200,7 +190,6 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
         {/* Tab Panel - Afiliados */}
         <TabPanel value={tabValue} index={1}>
 
-          {/* Botón Agregar Gestión */}
           {can("management.create") && (
             <ButtonAdd
               id={idAddManagement}
@@ -280,7 +269,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
           </div>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
-            <P text1="Pagaduría: " text2={formData.payroll?.name ?? "Sin pagaduría"} />
+            <P text1="Pagaduría: " text2={formData.contact?.payroll?.name ?? "Sin pagaduría"} />
             <P text1="Campaña: " text2={formData.contact?.campaign ?? "Sin campaña"} />
           </div>
 

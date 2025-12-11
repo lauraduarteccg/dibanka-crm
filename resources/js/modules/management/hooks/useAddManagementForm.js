@@ -62,7 +62,6 @@ export const useAddManagementForm = () => {
           getActiveConsultationsByCampaign(campaign),
           getActiveSpecificConsultationsByCampaign(campaign)
         ]);
-        console.log("specificsData", specificsData);
 
         setConsultation(consultationsData);
         setSpecific(specificsData);
@@ -91,21 +90,38 @@ export const useAddManagementForm = () => {
   // ==========================
 
   // Construye el payload
-  const buildPayload = () => ({
-    user_id: user?.id,
-    payroll_id: selectedPayroll?.id ?? null,
-    type_management_id: selectedTypeManagement?.id ?? null,
-    contact_id: selectedContact?.id ?? null,
-    solution: selectedSolution,
-    consultation_id: selectedConsultation?.id ?? null,
-    specific_id: selectedSpecificConsultation?.id ?? null,
-    wolkvox_id: wolkvox_id ?? null,
-    comments,
-    monitoring_id: null,
-    solution_date: null,
-    wsp: wsp ? 1 : 0,
-    sms: sms ? 1 : 0,
-  });
+  const buildPayload = () => {
+    const payload = {
+      user_id: user?.id,
+      type_management_id: selectedTypeManagement?.id ?? null,
+      contact_id: selectedContact?.id ?? null,
+      solution: selectedSolution,
+      consultation_id: selectedConsultation?.id ?? null,
+      specific_id: selectedSpecificConsultation?.id ?? null,
+      wolkvox_id: wolkvox_id ?? null,
+      comments,
+      monitoring_id: null,
+      solution_date: null,
+      wsp: wsp ? 1 : 0,
+      sms: sms ? 1 : 0,
+    };
+
+    return payload;
+  };
+
+  // ==========================
+  // EFECTO: AL SELECCIONAR CONTACTO
+  // ==========================
+  useEffect(() => {
+    if (selectedContact) {
+      if (selectedContact.payroll) {
+        setSelectedPayroll(selectedContact.payroll);
+      }
+      if (selectedContact.campaign) {
+        setCampaign(selectedContact.campaign.name);
+      }
+    }
+  }, [selectedContact]);
 
   // Limpia el formulario
   const handleClear = () => {
@@ -248,7 +264,6 @@ export const useAddManagementForm = () => {
     loadingConsultations,
 
     // Setters
-    setCampaign,
     setSms,
     setWsp,
     setSelectedPayroll,
