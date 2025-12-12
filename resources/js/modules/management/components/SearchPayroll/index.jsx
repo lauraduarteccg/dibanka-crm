@@ -2,9 +2,20 @@ import React from "react";
 import { Dialog, IconButton } from "@mui/material";
 import { motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
-import Search from "@components/forms/Search";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate
+import FilterSearch from "@components/ui/FilterSearch";
 import Table from "@components/tables/Table";
 import { useAddManagement } from "@modules/management/hooks/useAddManagement";
+
+// Opciones de filtro para búsqueda de contactos
+const filterOptions = [
+  { value: "identification_number", label: "Número de identificación" },
+  { value: "name", label: "Nombre" },
+  { value: "email", label: "Correo" },
+  { value: "phone", label: "Teléfono" },
+  { value: "payroll", label: "Pagaduría" },
+  { value: "campaign", label: "Campaña" },
+];
 
 export default function SearchPayroll({
   openSearchPayroll,
@@ -13,6 +24,7 @@ export default function SearchPayroll({
   selectedPayroll,
   campaign,
 }) {
+  const navigate = useNavigate(); // Hook de navegación
   const {
     handleSearchContact,
     contact,
@@ -21,6 +33,7 @@ export default function SearchPayroll({
     fetchPageContact,
     totalItemsContact,
     perPageContact,
+    searchTermContact, // Obtener término de búsqueda
   } = useAddManagement(selectedPayroll, campaign);
 
   const columns = [
@@ -39,6 +52,29 @@ export default function SearchPayroll({
       onSelectContact(selected);
       setOpenSearchPayroll(false);
     }
+  };
+
+  const handleEdit = (record) => {
+      // Redirigir a Contactos filtrando por identificación
+      navigate(
+          `/contactos?search=${encodeURIComponent(
+              record.identification_number
+          )}&column=identification_number`
+      );
+  };
+
+  const handleFilterSearch = (searchValue, filterColumn) => {
+    // Normalizar filtros para backend (igual que en Contact)
+    let column = filterColumn;
+    
+    if (filterColumn === "payroll.name") column = "payroll";
+    if (filterColumn === "campaign.name") column = "campaign";
+
+    handleSearchContact(searchValue, column);
+  };
+
+  const handleClearSearch = () => {
+    handleSearchContact("", "");
   };
 
   return (
@@ -84,13 +120,26 @@ export default function SearchPayroll({
           </IconButton>
         </div>
 
-        {/* Barra de búsqueda */}
+        {/* Barra de búsqueda con filtros */}
         <div className="flex justify-center mb-6">
-          <div className="w-full ml-[0%]">
-            <Search
-              onSearch={handleSearchContact}
-              placeholder="Buscar contacto o cliente..."
-            />
+          <div className="w-full flex justify-end gap-2">
+            <div className="w-full">
+            </div>
+                <FilterSearch
+                className=""
+                onFilter={handleFilterSearch}
+                placeholder="Buscar contacto o cliente..."
+                filterOptions={filterOptions}
+                initialSearchValue={searchTermContact}
+                />
+            {searchTermContact && (
+              <button
+                onClick={handleClearSearch}
+                className="bg-red-500 text-white w-[300px] h-[100%] px-4 py-2 rounded hover:bg-red-600 transition-colors"
+              >
+                Limpiar filtro
+              </button>
+            )}
           </div>
         </div>
             
@@ -101,7 +150,8 @@ export default function SearchPayroll({
           data={contact}
           paginationSection={true}
           actions={true}
-          edit={false}
+          edit={true}
+          onEdit={handleEdit}
           currentPage={currentPageContact}
           totalPages={totalPagesContact}
           rowsPerPage={perPageContact}

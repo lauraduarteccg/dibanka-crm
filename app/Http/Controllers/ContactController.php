@@ -11,39 +11,94 @@ use App\Http\Requests\ContactRequest;
 
 class ContactController extends Controller
 {
-    //Listar todos los contactos con paginación
+    
+    // Listar todos los contactos con paginación y filtros específicos
     public function index(Request $request)
     {
         $query = Contact::query();
 
-        // 🔎 Buscar directamente por identification_number si viene en el request
+        // 🔎 Filtro por número de identificación
         if ($request->filled('identification_number')) {
-            $query->where('identification_number', $request->identification_number);
+            $query->where('identification_number', 'LIKE', '%' . $request->identification_number . '%');
         }
 
-        // 🔎 Búsqueda general con search
-        if ($request->filled('search')) {
+        // 🔎 Filtro por nombre
+        if ($request->filled('name')) {
+            $query->where('name', 'LIKE', '%' . $request->name . '%');
+        }
+
+        // 🔎 Filtro por email
+        if ($request->filled('email')) {
+            $query->where('email', 'LIKE', '%' . $request->email . '%');
+        }
+
+        // 🔎 Filtro por teléfono
+        if ($request->filled('phone')) {
+            $query->where(function($q) use ($request) {
+                $q->where('phone', 'LIKE', '%' . $request->phone . '%')
+                ->orWhere('update_phone', 'LIKE', '%' . $request->phone . '%');
+            });
+        }
+
+        // 🔎 Filtro por payroll.name (pagaduría)
+        if ($request->filled('payroll')) {
+            $query->whereHas('payroll', function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->payroll . '%');
+            });
+        }
+
+        // 🔎 Filtro por campaign.name
+        if ($request->filled('campaign')) {
+            $query->whereHas('campaign', function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->campaign . '%');
+            });
+        }
+
+        // 🔎 Búsqueda general si no hay filtros específicos
+        if (
+            $request->filled('search') &&
+            !$request->filled('identification_number') &&
+            !$request->filled('name') &&
+            !$request->filled('email') &&
+            !$request->filled('phone') &&
+            !$request->filled('payroll') &&
+            !$request->filled('campaign')
+        ) {
             $query->search($request->search);
         }
 
+        // Cargar relaciones y paginar
         $contacts = $query->with('payroll', 'campaign')->paginate(10);
-        
+
+        // Construcción criterios para logs
+        $searchCriteria = [];
+        foreach ([
+            'search' => 'búsqueda_general',
+            'identification_number' => 'número_identificación',
+            'name' => 'nombre',
+            'email' => 'email',
+            'phone' => 'teléfono',
+            'payroll' => 'pagaduría',
+            'campaign' => 'campaña'
+        ] as $field => $label) {
+            if ($request->filled($field)) {
+                $searchCriteria[$label] = $request->$field;
+            }
+        }
+
         log_activity('ver_listado', 'Contactos', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de contactos.",
-            'criterios' => [
-                'búsqueda' => $request->search ?? 'Sin filtro aplicado',
-                'número_identificación' => $request->identification_number ?? 'No especificado'
-            ]
+            'criterios' => empty($searchCriteria) ? 'Sin filtro aplicado' : $searchCriteria
         ], $request);
 
         return response()->json([
-            'message'           => 'Consultas obtenidas con éxito',
-            'contacts'          => ContactResource::collection($contacts),
-            'pagination'        => [
-                'current_page'      => $contacts->currentPage(),
-                'total_pages'       => $contacts->lastPage(),
-                'per_page'          => $contacts->perPage(),
-                'total_contacts'    => $contacts->total(),
+            'message'    => 'Consultas obtenidas con éxito',
+            'contacts'   => ContactResource::collection($contacts),
+            'pagination' => [
+                'current_page'   => $contacts->currentPage(),
+                'total_pages'    => $contacts->lastPage(),
+                'per_page'       => $contacts->perPage(),
+                'total_contacts' => $contacts->total(),
             ]
         ], Response::HTTP_OK);
     }

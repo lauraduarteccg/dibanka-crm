@@ -61,3 +61,13 @@ export const columns = [
     //{ header: "Tipo de identificación", key: "identification_type" },
     { header: "Número de identificación", key: "identification_number" },
 ];
+
+// Opciones de filtro para el componente FilterSearch
+export const filterOptions = [
+    { value: "identification_number", label: "Número de identificación" },
+    { value: "name", label: "Nombre" },
+    { value: "email", label: "Correo" },
+    { value: "phone", label: "Teléfono" },
+    { value: "payroll", label: "Pagaduría" },
+    { value: "campaign", label: "Campaña" },
+];

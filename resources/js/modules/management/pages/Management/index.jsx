@@ -10,7 +10,7 @@ import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import Loader from "@components/ui/Loader";
 import Button from "@components/ui/Button";
-import SearchBar from "@components/forms/Search";
+import FilterSearch from "@components/ui/FilterSearch";
 
 const columns = [
   { header: "ID", key: "id" },
@@ -21,6 +21,16 @@ const columns = [
   { header: "Identificación", key: "contact.identification_number" },
   { header: "Celular", key: "contact.phone" },
   { header: "Fecha de creación", key: "created_at" },
+];
+
+// Opciones de filtro para Management
+const filterOptions = [
+  { value: "identification_number", label: "Número de identificación" },
+  { value: "name", label: "Nombre de cliente" },
+  { value: "phone", label: "Celular" },
+  { value: "payroll", label: "Pagaduría" },
+  { value: "consultation", label: "Consulta" },
+  { value: "user", label: "Agente" },
 ];
 
 const P = ({ text1, text2 }) => {
@@ -113,6 +123,20 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
     setOnMonitoring(true);
   };
 
+  const handleFilterSearch = (searchValue, filterColumn) => {
+    let column = filterColumn;
+
+    // Normalizar filtros para backend
+    if (filterColumn === "contact.payroll.name") column = "payroll";
+    if (filterColumn === "consultation.name") column = "consultation";
+    if (filterColumn === "user.name") column = "user";
+    if (filterColumn === "contact.name") column = "name";
+    if (filterColumn === "contact.identification_number") column = "identification_number";
+    if (filterColumn === "contact.phone") column = "phone";
+
+    handleSearch(searchValue, column);
+  };
+
   const activeData = management || [];
 
   return (
@@ -143,20 +167,20 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
           )}
 
           <div className="flex justify-end px-12 mb-4 gap-2 -mt-10">
+            <FilterSearch
+              id={idSearchManagement}
+              onFilter={handleFilterSearch}
+              placeholder="Buscar gestión de aliados..."
+              filterOptions={filterOptions}
+            />
             {searchTerm && (
               <button
                 onClick={handleClearSearch}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                className="bg-red-500 text-white h-[50%] px-4 py-2 rounded hover:bg-red-600 transition-colors"
               >
                 Limpiar filtro
               </button>
             )}
-            <SearchBar
-              id={idSearchManagement}
-              value={searchTerm}
-              onSearch={handleSearch}
-              placeholder="Buscar gestión de aliados..."
-            />
           </div>
 
           <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
@@ -198,20 +222,20 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
             />
           )}
           <div className="flex justify-end px-12 mb-4 gap-2 -mt-10">
+            <FilterSearch
+              id={idSearchManagement}
+              onFilter={handleFilterSearch}
+              placeholder="Buscar gestión de afiliados..."
+              filterOptions={filterOptions}
+            />
             {searchTerm && (
               <button
                 onClick={handleClearSearch}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                className="bg-red-500 h-[50%] text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
               >
                 Limpiar filtro
               </button>
             )}
-            <SearchBar
-              id={idSearchManagement}
-              value={searchTerm}
-              onSearch={handleSearch}
-              placeholder="Buscar gestión de afiliados..."
-            />
           </div>
 
           <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">

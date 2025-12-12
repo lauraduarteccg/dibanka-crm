@@ -6,9 +6,23 @@ import api from "@api/axios";
 
 /**
  * Obtiene la lista de contactos con paginación y búsqueda.
+ * @param {number} page - Número de página
+ * @param {string} search - Término de búsqueda general
+ * @param {string} filterColumn - Columna específica para filtrar
  */
-export const getContacts = async (page = 1, search = "") => {
-    const { data } = await api.get(`/contacts?page=${page}&search=${encodeURIComponent(search)}`);
+export const getContacts = async (page = 1, search = "", filterColumn = "") => {
+    let url = `/contacts?page=${page}`;
+    
+    // Si hay un filtro por columna específica
+    if (filterColumn && search) {
+        url += `&${filterColumn}=${encodeURIComponent(search)}`;
+    } 
+    // Si no hay filtro específico, usar búsqueda general
+    else if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
+    }
+    
+    const { data } = await api.get(url);
     return data;
 };
 
@@ -48,12 +62,10 @@ export const getPayrolls = async () => {
     return data.data;
 };
 
-
-
 /**
  * Consultas activas.
  */
 export const getActivePayrolls = async () => {
-  const { data } = await api.get("/payrolls/active");
-  return data.payrolls || [];
+    const { data } = await api.get("/payrolls/active");
+    return data.payrolls || [];
 };

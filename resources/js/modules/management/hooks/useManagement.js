@@ -26,16 +26,15 @@ export const useManagement = () => {
   const [totalItems, setTotalItems] = useState(1);
 
   // UI y búsqueda
-  /* ===========================================================
-   *  Extraer parámetros de la URL (optimizado)
-   * =========================================================== */
   const location = useLocation();
 
-  // Inicializar searchTerm desde la URL para evitar doble fetch
+  // Estado para el término de búsqueda y el filtro por columna
   const [searchTerm, setSearchTerm] = useState(() => {
     const params = new URLSearchParams(location.search);
     return params.get("search") || "";
   });
+  
+  const [filterColumn, setFilterColumn] = useState("");
 
   const [IsOpenADD, setIsOpenADD] = useState(false);
   const [view, setView] = useState(false);
@@ -71,13 +70,13 @@ export const useManagement = () => {
    *  Fetch principal de gestiones (optimizado)
    * =========================================================== */
   const fetchManagement = useCallback(
-    async (page = 1, search = "", currentCampaign = campaign) => {
-      if (isFetching.current) return; // Evitar peticiones simultáneas
+    async (page = 1, search = "", column = "", currentCampaign = campaign) => {
+      if (isFetching.current) return;
       
       isFetching.current = true;
       setLoading(true);
       try {
-        const data = await getManagements(page, search, currentCampaign);
+        const data = await getManagements(page, search, currentCampaign, column);
         setManagement(data.managements || []);
         setCurrentPage(data.pagination?.current_page || 1);
         setTotalPages(data.pagination?.last_page || 1);
@@ -94,23 +93,24 @@ export const useManagement = () => {
     [campaign]
   );
 
-  // Cargar gestiones cuando cambie la página o búsqueda (con debounce)
+  // Cargar gestiones cuando cambie la página, búsqueda o filtro
   useEffect(() => {
-    fetchManagement(currentPage, debouncedSearchTerm, campaign);
-  }, [currentPage, debouncedSearchTerm, campaign, fetchManagement]);
+    fetchManagement(currentPage, debouncedSearchTerm, filterColumn, campaign);
+  }, [currentPage, debouncedSearchTerm, filterColumn, campaign, fetchManagement]);
 
   /* ===========================================================
-   *  Paginación y búsqueda
+   *  Paginación y búsqueda con filtro
    * =========================================================== */
   const fetchPage = useCallback(
-    (page) => fetchManagement(page, debouncedSearchTerm, campaign),
-    [fetchManagement, debouncedSearchTerm, campaign]
+    (page) => fetchManagement(page, debouncedSearchTerm, filterColumn, campaign),
+    [fetchManagement, debouncedSearchTerm, filterColumn, campaign]
   );
 
   const handleSearch = useCallback(
-    (value) => {
+    (value, column = "") => {
       setSearchTerm(value);
-      setCurrentPage(1); // Resetear a página 1 cuando se busca
+      setFilterColumn(column);
+      setCurrentPage(1);
     },
     []
   );
@@ -150,7 +150,6 @@ export const useManagement = () => {
         showConfirmButton: false,
       });
 
-      // Limpia formulario
       setFormData({
         id: null,
         user_id: "",
@@ -162,7 +161,7 @@ export const useManagement = () => {
 
       setOnMonitoring(false);
       setIsOpenADD(false);
-      fetchManagement(currentPage, debouncedSearchTerm);
+      fetchManagement(currentPage, debouncedSearchTerm, filterColumn);
     } catch (error) {
       if (error.response?.status === 422) {
         setValidationErrors(error.response.data.errors);
@@ -257,6 +256,7 @@ export const useManagement = () => {
 
   const handleClearSearch = useCallback(() => {
     setSearchTerm("");
+    setFilterColumn("");
     setCurrentPage(1);
     navigate(location.pathname, { replace: true });
   }, [navigate, location.pathname]);
@@ -271,6 +271,7 @@ export const useManagement = () => {
     formData,
     validationErrors,
     searchTerm,
+    filterColumn,
     managementCountAliados,
     managementCountAfiliados,
 

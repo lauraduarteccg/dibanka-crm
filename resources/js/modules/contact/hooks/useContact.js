@@ -9,6 +9,7 @@ import {
     getPayrolls,
 } from "@modules/contact/services/contactService";
 import { getManagements } from "@modules/management/services/managementService";
+
 export const useContact = () => {
     const { token } = useContext(AuthContext);
 
@@ -23,6 +24,7 @@ export const useContact = () => {
     const [validationErrors, setValidationErrors] = useState({});
 
     const [searchTerm, setSearchTerm] = useState("");
+    const [filterColumn, setFilterColumn] = useState(""); // Nueva columna de filtro
     const [isOpenADD, setIsOpenADD] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
     const [selectedManagement, setSelectedManagement] = useState(null);
@@ -53,10 +55,10 @@ export const useContact = () => {
     });
 
     // ====================== Fetch Contactos ======================
-    const fetchContact = useCallback(async (page = 1, search = "") => {
+    const fetchContact = useCallback(async (page = 1, search = "", column = "") => {
         setLoading(true);
         try {
-            const data = await getContacts(page, search);
+            const data = await getContacts(page, search, column);
             setContact(data.contacts);
             setTotalPages(data.pagination.total_pages);
             setCurrentPage(data.pagination.current_page);
@@ -75,15 +77,16 @@ export const useContact = () => {
     }, [fetchContact]);
 
     const fetchPage = useCallback(
-        (page) => fetchContact(page, searchTerm),
-        [fetchContact, searchTerm]
+        (page) => fetchContact(page, searchTerm, filterColumn),
+        [fetchContact, searchTerm, filterColumn]
     );
 
     const handleSearch = useCallback(
-        (value) => {
+        (value, column = "") => {
             setSearchTerm(value);
+            setFilterColumn(column);
             setCurrentPage(1);
-            fetchContact(1, value);
+            fetchContact(1, value, column);
         },
         [fetchContact]
     );
@@ -139,7 +142,7 @@ export const useContact = () => {
             }
 
             setIsOpenADD(false);
-            fetchContact(currentPage);
+            fetchContact(currentPage, searchTerm, filterColumn);
         } catch (error) {
             if (error.response?.status === 422) {
                 setValidationErrors(error.response.data.errors);
@@ -183,7 +186,7 @@ export const useContact = () => {
                         timer: 1500,
                         showConfirmButton: false,
                     });
-                    fetchContact(currentPage);
+                    fetchContact(currentPage, searchTerm, filterColumn);
                 } catch (error) {
                     Swal.fire({
                         title: "Error",
@@ -219,10 +222,10 @@ export const useContact = () => {
         setLoading(true);
         try {
             const { managements, pagination } = await getManagements(
-                 page,
+                page,
                 identification_number
             );
-         
+
             setManagement(managements);
             setTotalPagesM(pagination.last_page);
             setCurrentPageM(pagination.current_page);
@@ -285,5 +288,9 @@ export const useContact = () => {
         formData,
         setFormData,
         setIsOpenADD,
+        
+        // Estado de búsqueda (Nuevo)
+        searchTerm,
+        filterColumn,
     };
 };

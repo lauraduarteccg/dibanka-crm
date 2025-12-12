@@ -5,15 +5,13 @@ import api from "@api/axios";
  * =========================================================== */
 
 /**
- * Obtiene la lista de gestiones con paginación y búsqueda.
- */
-/**
- * Obtiene la lista de gestiones con paginación y búsqueda.
+ * Obtiene la lista de gestiones con paginación, búsqueda y filtro por columna.
  * @param {number} page
- * @param {string} search
+ * @param {string} search - Término de búsqueda
  * @param {string} campaign - "Aliados" o "Afiliados"
+ * @param {string} filterColumn - Columna específica para filtrar (opcional)
  */
-export const getManagements = async (page = 1, search = "", campaign = "Aliados") => {
+export const getManagements = async (page = 1, search = "", campaign = "Aliados", filterColumn = "") => {
   const campaignLower = campaign.toLowerCase();
   let endpoint = "/management-aliados"; // Default
 
@@ -21,9 +19,18 @@ export const getManagements = async (page = 1, search = "", campaign = "Aliados"
     endpoint = "/management-afiliados";
   }
 
-  const { data } = await api.get(
-    `${endpoint}?page=${page}&search=${encodeURIComponent(search)}`
-  );
+  let url = `${endpoint}?page=${page}`;
+
+  // Si hay un filtro por columna específica, usar los parámetros que espera el backend
+  if (filterColumn && search) {
+    url += `&searchValue=${encodeURIComponent(search)}&filterColumn=${filterColumn}`;
+  } 
+  // Si no hay filtro específico, usar búsqueda general
+  else if (search) {
+    url += `&search=${encodeURIComponent(search)}`;
+  }
+
+  const { data } = await api.get(url);
 
   return {
     managements: data.managements || [],
@@ -107,7 +114,6 @@ export const updateManagementMonitoring = async (id, payload, campaign = "Aliado
  */
 export const getActiveConsultationsByCampaign = async (campaign = "") => {
   if (!campaign) {
-    // Si no hay campaña, retorna array vacío
     return [];
   }
   
@@ -129,7 +135,6 @@ export const getActiveConsultationsByCampaign = async (campaign = "") => {
  */
 export const getActiveSpecificConsultationsByCampaign = async (campaign = "") => {
   if (!campaign) {
-    // Si no hay campaña, retorna array vacío
     return [];
   }
   
@@ -192,10 +197,24 @@ export const getActivePayrolls = async () => {
 };
 
 /**
- * Contactos.
+ * Contactos con filtro por columna.
+ * @param {number} page - Número de página
+ * @param {string} search - Término de búsqueda
+ * @param {string} filterColumn - Columna específica para filtrar (opcional)
  */
-export const getContacts = async (page = 1, search = "") => {
-  const { data } = await api.get(`/contacts/active?search=${encodeURIComponent(search)}&page=${page}`);
+export const getContacts = async (page = 1, search = "", filterColumn = "") => {
+  let url = `/contacts/active?page=${page}`;
+  
+  // Si hay un filtro por columna específica
+  if (filterColumn && search) {
+    url += `&searchValue=${encodeURIComponent(search)}&filterColumn=${filterColumn}`;
+  } 
+  // Si no hay filtro específico, usar búsqueda general
+  else if (search) {
+    url += `&search=${encodeURIComponent(search)}`;
+  }
+  
+  const { data } = await api.get(url);
   return data || [];
 };
 

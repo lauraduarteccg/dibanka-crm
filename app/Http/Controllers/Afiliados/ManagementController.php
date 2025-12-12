@@ -18,89 +18,201 @@ class ManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Management::with(['user', 'consultation', 
-            'contact', 'specific', 'monitoring', 'type_management']);
+        $query = Management::with([
+            'user',
+            'consultation',
+            'contact',
+            'specific',
+            'monitoring',
+            'type_management',
+            'contact.payroll',
+            'contact.campaign'
+        ]);
 
-        // 🔎 Buscar directamente por identification_number en la relación contact
+        /*
+        |--------------------------------------------------------------------------
+        | 1. Filtro específico por columna
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('searchValue') && $request->filled('filterColumn')) {
+            $value = $request->searchValue;
+            $column = $request->filterColumn;
+
+            switch ($column) {
+
+                // Campos directos de la tabla management
+                case 'id':
+                    $query->where('id', 'LIKE', "%{$value}%");
+                    break;
+
+                case 'wolkvox_id':
+                    $query->where('wolkvox_id', 'LIKE', "%{$value}%");
+                    break;
+
+                case 'user':
+                    $query->whereHas('user', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                case 'solution_date':
+                    $query->where('solution_date', 'LIKE', "%{$value}%");
+                    break;
+
+                // Campos de contact.*
+                case 'identification_number':
+                    $query->whereHas('contact', function ($q) use ($value) {
+                        $q->where('identification_number', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                case 'name':
+                    $query->whereHas('contact', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                case 'email':
+                    $query->whereHas('contact', function ($q) use ($value) {
+                        $q->where('email', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                case 'phone':
+                    $query->whereHas('contact', function ($q) use ($value) {
+                        $q->where('phone', 'LIKE', "%{$value}%")
+                        ->orWhere('update_phone', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                // Filtro por contact.payroll.name
+                case 'payroll':
+                    $query->whereHas('contact.payroll', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                // Filtro por contact.campaign.name
+                case 'campaign':
+                    $query->whereHas('contact.campaign', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                // Filtro por relaciones principales
+                case 'specific':
+                    $query->whereHas('specific', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                case 'consultation':
+                    $query->whereHas('consultation', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                case 'type_management':
+                    $query->whereHas('type_management', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+
+                case 'monitoring':
+                    $query->whereHas('monitoring', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Filtro directo por identificación (si viene)
+        |--------------------------------------------------------------------------
+        */
         if ($request->filled('identification_number')) {
             $query->whereHas('contact', function ($q) use ($request) {
                 $q->where('identification_number', $request->identification_number);
             });
         }
 
-        // 🔎 Búsqueda general
-        if ($request->filled('search')) {
+        /*
+        |--------------------------------------------------------------------------
+        | 3. Búsqueda general (sin columna especificada)
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('search') && !$request->filled('filterColumn')) {
+
             $searchTerm = $request->search;
 
             $query->where(function ($q) use ($searchTerm) {
-                // Búsqueda en campos principales de Management
+
+                // Campos directos
                 $q->where('id', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('wolkvox_id', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('solution_date', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('sms', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('wsp', 'LIKE', "%{$searchTerm}%");
+                ->orWhere('wolkvox_id', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('solution_date', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('sms', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('wsp', 'LIKE', "%{$searchTerm}%");
 
-                // Búsqueda en relación: user
-                $q->orWhereHas('user', function ($subQuery) use ($searchTerm) {
-                    $subQuery->where('id', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+                // Relaciones múltiples
+                $relations = [
+                    'user' => ['id', 'name', 'email'],
+                    'monitoring' => ['name'],
+                    'consultation' => ['name'],
+                    'specific' => ['name'],
+                    'type_management' => ['name'],
+                    'contact' => [
+                        'name',
+                        'phone',
+                        'update_phone',
+                        'email',
+                        'identification_type',
+                        'identification_number'
+                    ]
+                ];
+
+                foreach ($relations as $relation => $fields) {
+                    $q->orWhereHas($relation, function ($sub) use ($searchTerm, $fields) {
+                        $sub->where(function ($inner) use ($searchTerm, $fields) {
+                            foreach ($fields as $field) {
+                                $inner->orWhere($field, 'LIKE', "%{$searchTerm}%");
+                            }
+                        });
+                    });
+                }
+
+                // payroll y campaign
+                $q->orWhereHas('contact.payroll', function ($sub) use ($searchTerm) {
+                    $sub->where('name', 'LIKE', "%{$searchTerm}%");
                 });
 
-                // Búsqueda en relación: contact
-                $q->orWhereHas('contact', function ($subQuery) use ($searchTerm) {
-                    $subQuery->where('name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('update_phone', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('email', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('identification_type', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%");
+                $q->orWhereHas('contact.campaign', function ($sub) use ($searchTerm) {
+                    $sub->where('name', 'LIKE', "%{$searchTerm}%");
                 });
 
-                // Búsqueda en relación: consultation
-                $q->orWhereHas('consultation', function ($subQuery) use ($searchTerm) {
-                    $subQuery->where('name', 'LIKE', "%{$searchTerm}%");
-                });
-
-                // Búsqueda en relación: specific
-                $q->orWhereHas('specific', function ($subQuery) use ($searchTerm) {
-                    $subQuery->where('name', 'LIKE', "%{$searchTerm}%");
-                });
-
-                // Búsqueda en relación: type_management
-                $q->orWhereHas('type_management', function ($subQuery) use ($searchTerm) {
-                    $subQuery->where('name', 'LIKE', "%{$searchTerm}%");
-                });
-
-                // Si tienes la relación payroll, descomenta esto:
-                // $q->orWhereHas('payroll', function ($subQuery) use ($searchTerm) {
-                //     $subQuery->where('name', 'LIKE', "%{$searchTerm}%");
-                // });
             });
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Paginación
+        |--------------------------------------------------------------------------
+        */
         $management = $query->paginate(10);
 
-        log_activity('ver_listado', 'Gestiones', [
-            'mensaje' => "El usuario {$request->user()->name} visualizó el listado de gestiones" .
-                ($request->filled('search') ? " aplicando el filtro: '{$request->search}'" : ""),
-            'criterios' => [
-                'búsqueda' => $request->search ?? null,
-                'identification_number' => $request->identification_number ?? null,
-            ]
-        ], $request);
-
         return response()->json([
-            'message' => 'Gestiones obtenidas con éxito',
+            'message'     => 'Gestiones obtenidas con éxito',
             'managements' => ManagementResource::collection($management),
-            'pagination' => [
+            'pagination'  => [
                 'current_page' => $management->currentPage(),
-                'total_pages' => $management->lastPage(),
-                'per_page' => $management->perPage(),
-                'total_management' => $management->total(),
+                'total_pages'  => $management->lastPage(),
+                'per_page'     => $management->perPage(),
+                'total_items'  => $management->total(),
             ]
         ]);
     }
+
     /**
      * Obtener una gestión específica con toda su información relacionada.
      */

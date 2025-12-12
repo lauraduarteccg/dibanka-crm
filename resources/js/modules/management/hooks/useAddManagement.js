@@ -206,6 +206,7 @@ export const useAddManagement = (selectedPayroll = null, campaign = "") => {
             totalItemsContact,
             fetchPageContact,
             handleSearchContact,
+            searchTermContact,
         }),
         [
             management,
@@ -232,6 +233,7 @@ export const useAddManagement = (selectedPayroll = null, campaign = "") => {
             clearValidationError,
             fetchPageContact,
             handleSearchContact,
+            searchTermContact, // Exponer término de búsqueda
         ]
     );
 
