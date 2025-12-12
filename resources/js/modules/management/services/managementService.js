@@ -36,9 +36,9 @@ export const getManagements = async (page = 1, search = "", campaign = "Aliados"
     managements: data.managements || [],
     pagination: {
       current_page: data.pagination?.current_page ?? 1,
-      last_page: data.pagination?.last_page ?? 1,
+      last_page: data.pagination?.last_page ?? data.pagination?.total_pages ?? 1,
       per_page: data.pagination?.per_page ?? 0,
-      total: data.pagination?.total_management ?? 0,
+      total: data.pagination?.total_management ?? data.pagination?.total_items ?? 0,
     },
   };
 };
