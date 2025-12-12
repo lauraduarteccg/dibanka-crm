@@ -77,6 +77,13 @@ export const useManagement = () => {
       setLoading(true);
       try {
         const data = await getManagements(page, search, currentCampaign, column);
+        // Update count based on current campaign and search results
+        const totalCount = data.pagination?.total ?? 0;
+        if (currentCampaign.toLowerCase() === 'afiliados') {
+          setManagementCountAfiliados(totalCount);
+        } else {
+          setManagementCountAliados(totalCount);
+        }
         setManagement(data.managements || []);
         setCurrentPage(data.pagination?.current_page || 1);
         setTotalPages(data.pagination?.last_page || 1);
@@ -197,33 +204,26 @@ export const useManagement = () => {
     fetchMonitoring();
   }, [fetchMonitoring]);
 
-  /* ===========================================================
-   *  Fetch Management Count
-   * =========================================================== */
-  const fetchManagementCountAliados = useCallback(async () => {
-    try {
-      const data = await getCountManagementsAliados();
-      setManagementCountAliados(data);
-    } catch (err) {
-      console.error("Error al obtener managementCountAliados:", err);
-      setError("Error al obtener los managementCountAliados.");
-    }
-  }, []);
 
-  const fetchManagementCountAfiliados = useCallback(async () => {
+  /* ===========================================================
+   *  Fetch Initial Counts (Aliados & Afiliados)
+   * =========================================================== */
+  const fetchCounts = useCallback(async () => {
     try {
-      const data = await getCountManagementsAfiliados();
-      setManagementCountAfiliados(data);
+      const [aliados, afiliados] = await Promise.all([
+        getCountManagementsAliados(),
+        getCountManagementsAfiliados(),
+      ]);
+      setManagementCountAliados(aliados);
+      setManagementCountAfiliados(afiliados);
     } catch (err) {
-      console.error("Error al obtener managementCountAfiliados:", err);
-      setError("Error al obtener los managementCountAfiliados.");
+      console.error("Error al obtener contadores:", err);
     }
   }, []);
 
   useEffect(() => {
-    fetchManagementCountAliados();
-    fetchManagementCountAfiliados();
-  }, [fetchManagementCountAliados, fetchManagementCountAfiliados]);
+    fetchCounts();
+  }, [fetchCounts]);
 
   /* ===========================================================
    *  Validar monitoring_id actual

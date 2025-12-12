@@ -7,10 +7,16 @@ import api from "@api/axios";
 /**
  * Obtiene todos los casos especiales con paginación y búsqueda.
  */
-export const getSpecialCases = async (page = 1, search = "") => {
-  const { data } = await api.get(
-    `/specialcases?page=${page}&search=${encodeURIComponent(search)}`
-  );
+export const getSpecialCases = async (page = 1, search = "", filterColumn = "") => {
+  let url = `/specialcases?page=${page}`;
+
+  if (filterColumn && search) {
+    url += `&searchValue=${encodeURIComponent(search)}&filterColumn=${filterColumn}`;
+  } else if (search) {
+    url += `&search=${encodeURIComponent(search)}`;
+  }
+
+  const { data } = await api.get(url);
 
   return {
     specialCases: data.specialcases || [],

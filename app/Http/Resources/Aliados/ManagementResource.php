@@ -10,25 +10,26 @@ class ManagementResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'        => $this->id,
-            'comments'  => $this->comments,
+            'id'            => $this->id,
+            'wolkvox_id'    => $this->wolkvox_id,
+            'solution'      => $this->solution,
+            'comments'      => $this->comments,
             'solution_date' => $this->solution_date,
-            'solution'  => $this->solution,
-            'wolkvox_id' => $this->wolkvox_id,
-            'sms'       => $this->sms,
-            'wsp'       => $this->wsp,
-            // Usuario relacionado 
+
+            'sms' => $this->sms,
+            'wsp' => $this->wsp,
+
+            // Usuario
             'user' => $this->whenLoaded('user', function () {
                 return [
-                    'id'    => $this->user->id,
-                    'name'  => $this->user->name,
-                    'email' => $this->user->email,
-                    'is_active' => $this->user->is_active
+                    'id'        => $this->user->id,
+                    'name'      => $this->user->name,
+                    'email'     => $this->user->email,
+                    'is_active' => $this->user->is_active,
                 ];
             }),
 
-
-            // Contacto relacionado
+            // Contacto
             'contact' => $this->whenLoaded('contact', function () {
                 return [
                     'id'                    => $this->contact->id,
@@ -40,45 +41,49 @@ class ManagementResource extends JsonResource
                     'email'                 => $this->contact->email,
                     'campaign'              => $this->contact->campaign,
                     'payroll'               => $this->contact->payroll,
-                    'is_active'             => $this->contact->is_active
+                    'is_active'             => $this->contact->is_active,
                 ];
             }),
 
-            // Consulta relacionada
+            // Consulta
             'consultation' => $this->whenLoaded('consultation', function () {
                 return [
                     'id'        => $this->consultation->id,
                     'name'      => $this->consultation->name,
-                    'is_active' => $this->consultation->is_active
+                    'is_active' => $this->consultation->is_active,
                 ];
             }),
 
-            // Consulta especifica relacionada
+            // Specific (opcional)
             'specific' => $this->whenLoaded('specific', function () {
-                return[
-                    'id'                => $this->specific->id,
-                    'name'              => $this->specific->name,
-                    'is_active'         => $this->specific->is_active
+                // Si es null, devolver null
+                if (!$this->specific) {
+                    return null;
+                }
+
+                return [
+                    'id'        => $this->specific->id,
+                    'name'      => $this->specific->name,
+                    'is_active' => $this->specific->is_active,
                 ];
             }),
-            
-            // tipo de gestion relacionada
-            'type_management' => $this->whenLoaded('type_management', function () {
-                return[
-                    'id'                => $this->specific->id,
-                    'name'              => $this->specific->name,
-                    'is_active'         => $this->specific->is_active
-                ];
-            }),            
 
-            // Seguimiento relacionada
-            'monitoring' => $this->whenLoaded('monitoring', function () {
+            // Type Management (corregido)
+            'type_management' => $this->whenLoaded('type_management', function () {
                 return [
-                    'id'            => $this->monitoring->id,
-                    'name'          => $this->monitoring->name,
-                    'solution_date' => $this->monitoring->solution_date,
-                    'is_active'     => $this->monitoring->is_active
+                    'id'        => $this->type_management->id,
+                    'name'      => $this->type_management->name,
+                    'is_active' => $this->type_management->is_active,
                 ];
+            }),
+
+            // Monitoring
+            'monitoring' => $this->whenLoaded('monitoring', function () {
+                return $this->monitoring ? [
+                    'id'        => $this->monitoring->id,
+                    'name'      => $this->monitoring->name,
+                    'is_active' => $this->monitoring->is_active,
+                ] : null;
             }),
 
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),

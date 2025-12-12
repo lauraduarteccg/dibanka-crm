@@ -110,7 +110,7 @@ const ConsultationSpecific = () => {
   const activeLoading = value === 0 ? loadingAliados : loadingAfiliados;
 
   const activeCount = activeData?.filter((c) => c.is_active === 1).length || 0;
-  const inactiveCount = (totalItems || 0) - activeCount;
+  const inactiveCount = (totalItems || 0) ;
 
   return (
     <>

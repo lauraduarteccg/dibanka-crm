@@ -13,37 +13,114 @@ class SpecialCasesController extends Controller
     // Obtener todos los casos especiales
     public function index(Request $request)
     {
-        $query = SpecialCases::with(['user', 'contact']);
+        $query = SpecialCases::with(['user', 'contact', 'contact.payroll']);
 
-        if ($request->has('search') && !empty($request->search)) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | 1. Filtro específico por columna
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('searchValue') && $request->filled('filterColumn')) {
+            $value = $request->searchValue;
+            $column = $request->filterColumn;
+
+            switch ($column) {
+                // Campos directos
+                case 'id':
+                    $query->where('id', 'LIKE', "%{$value}%");
+                    break;
+                case 'management_messi':
+                    $query->where('management_messi', 'LIKE', "%{$value}%");
+                    break;
+                case 'id_call':
+                    $query->where('id_call', 'LIKE', "%{$value}%");
+                    break;
+                case 'id_messi':
+                    $query->where('id_messi', 'LIKE', "%{$value}%");
+                    break;
+
+                // Relaciones
+                case 'user':
+                    $query->whereHas('user', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+                case 'contact':
+                    $query->whereHas('contact', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+                case 'identification_number':
+                    $query->whereHas('contact', function ($q) use ($value) {
+                        $q->where('identification_number', 'LIKE', "%{$value}%");
+                    });
+                    break;
+                case 'payroll':
+                    $query->whereHas('contact.payroll', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+                case 'campaign':
+                    $query->whereHas('contact.campaign', function ($q) use ($value) {
+                        $q->where('name', 'LIKE', "%{$value}%");
+                    });
+                    break;
+            }
+        }
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Búsqueda general
+        |--------------------------------------------------------------------------
+        */
+        else if ($request->filled('search')) {
             $searchTerm = $request->search;
 
             $query->where(function ($q) use ($searchTerm) {
+
+                // Búsqueda en campos propios del modelo
                 $q->where('id', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('management_messi', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('id_call', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('id_messi', 'LIKE', "%{$searchTerm}%");
 
-                // Para buscar en relaciones
-                $q->orWhereHas('user', function ($userQuery) use ($searchTerm) {
-                    $userQuery->where('name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+                // Relaciones estructuradas en arrays para evitar repetir código
+                $relations = [
+                    'user' => ['id', 'name', 'email'],
+                    'contact' => [
+                        'id',
+                        'campaign',
+                        'name',
+                        'identification_type',
+                        'identification_number',
+                        'phone',
+                        'update_phone',
+                        'email',
+                    ],
+                ];
+
+                // Busqueda por payroll.name usando un whereHas directo
+                $q->orWhereHas('contact.payroll', function ($payrollQuery) use ($searchTerm) {
+                    $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%");
                 });
 
-                $q->orWhereHas('contact', function ($contactQuery) use ($searchTerm) {
-                    $contactQuery->where('name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('email', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('identification_number', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('phone', 'LIKE', "%{$searchTerm}%")
-                        ->orWhereHas('payroll', function ($payrollQuery) use ($searchTerm) {
-                            $payrollQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                // Iteración genérica de relaciones
+                foreach ($relations as $relation => $fields) {
+                    $q->orWhereHas($relation, function ($subQuery) use ($searchTerm, $fields) {
+                        $subQuery->where(function ($innerQuery) use ($searchTerm, $fields) {
+                            foreach ($fields as $field) {
+                                $innerQuery->orWhere($field, 'LIKE', "%{$searchTerm}%");
+                            }
                         });
-                });
+                    });
+                }
             });
         }
 
+
         $specialcases = $query->paginate(10);
-        // 📝 Registrar acción
+
+        // Log
         log_activity('ver_listado', 'Casos Especiales', [
             'mensaje' => "El usuario {$request->user()->name} visualizó el listado de casos especiales" .
                 ($request->filled('search') ? " aplicando el filtro: '{$request->search}'" : ""),
@@ -54,7 +131,7 @@ class SpecialCasesController extends Controller
 
         return response()->json([
             'message'       => 'Casos especiales obtenidos con éxito',
-            'specialcases' => SpecialCasesResource::collection($specialcases),
+            'specialcases'  => SpecialCasesResource::collection($specialcases),
             'pagination'    => [
                 'current_page'          => $specialcases->currentPage(),
                 'total_pages'           => $specialcases->lastPage(),

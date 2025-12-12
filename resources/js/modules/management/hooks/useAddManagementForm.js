@@ -14,17 +14,7 @@ export const useAddManagementForm = () => {
   const location = useLocation();
   const { user } = useContext(AuthContext);
   const [isPopupOpen, setIsPopupOpen] = useState(true);
-  const {
-    modal,
-    setModal,
-    payroll,
-    contact,
-    handleSubmit,
-    validationErrors,
-    clearValidationError,
-    setValidationErrors,
-  } = useAddManagement();
-
+  
   // ==========================
   // ESTADOS LOCALES
   // ==========================
@@ -44,6 +34,18 @@ export const useAddManagementForm = () => {
   const [consultation, setConsultation] = useState([]);
   const [specific, setSpecific] = useState([]);
   const [loadingConsultations, setLoadingConsultations] = useState(false);
+  
+  const {
+    modal,
+    setModal,
+    payroll,
+    contact,
+    handleSubmit,
+    validationErrors,
+    clearValidationError,
+    setValidationErrors,
+  } = useAddManagement(selectedPayroll, campaign);
+
 
   // ==========================
   // CARGAR CONSULTAS SEGÚN CAMPAÑA
@@ -143,6 +145,8 @@ export const useAddManagementForm = () => {
   const onSave = async () => {
     const payload = buildPayload();
     
+    console.log('🔍 useAddManagementForm - onSave tiene campaign:', campaign);
+    
     // Validar que se haya seleccionado una campaña
     if (!campaign) {
       setValidationErrors(prev => ({
@@ -154,7 +158,6 @@ export const useAddManagementForm = () => {
     
     // Pasar la campaña al handleSubmit
     const success = await handleSubmit(payload, campaign);
-    console.log("Gestión guardada con éxito:", success);
 
     if (success) {
       if (wsp || sms) {

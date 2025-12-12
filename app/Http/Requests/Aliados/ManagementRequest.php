@@ -24,7 +24,7 @@ class ManagementRequest extends FormRequest
         return [
             'user_id'           => 'required|integer|exists:users,id',
             'consultation_id'   => 'required|integer|exists:consultations_aliados,id',
-            'specific_id'       => 'required|integer|exists:specifics_aliados,id',
+            'specific_id'       => 'nullable|integer|exists:specifics_aliados,id',
             'monitoring_id'     => 'nullable|integer|exists:monitoring,id',
             'type_management_id'=> 'required|integer|exists:type_management,id',
 
@@ -51,7 +51,6 @@ class ManagementRequest extends FormRequest
             'consultation_id_.integer'  => 'La consulta debe ser un numero',
             
             // Validaciones para consultas especificas
-            'specific_id.required'  => 'La consulta especifica es requerida',
             'specific_id.exists'    => 'La consulta especifica seleccionada no existe',
             'specific_id.integer'  => 'La consulta especifica debe ser un numero',
 

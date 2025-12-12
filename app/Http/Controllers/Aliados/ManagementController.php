@@ -58,6 +58,10 @@ class ManagementController extends Controller
                 case 'solution_date':
                     $query->where('solution_date', 'LIKE', "%{$value}%");
                     break;
+                    
+                case 'created_at':
+                    $query->where('created_at', 'LIKE', "%{$value}%");
+                    break;
 
                 // Campos de contact.*
                 case 'identification_number':
@@ -204,6 +208,7 @@ class ManagementController extends Controller
         return response()->json([
             'message'     => 'Gestiones obtenidas con éxito',
             'managements' => ManagementResource::collection($management),
+            'count'       => $management->count(),
             'pagination'  => [
                 'current_page' => $management->currentPage(),
                 'total_pages'  => $management->lastPage(),

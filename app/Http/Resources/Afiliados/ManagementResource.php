@@ -54,21 +54,27 @@ class ManagementResource extends JsonResource
                 ];
             }),
 
-            // Consulta especifica relacionada
+
+            // Specific (opcional)
             'specific' => $this->whenLoaded('specific', function () {
-                return[
-                    'id'                => $this->specific->id,
-                    'name'              => $this->specific->name,
-                    'is_active'         => $this->specific->is_active
+                // Si es null, devolver null
+                if (!$this->specific) {
+                    return null;
+                }
+
+                return [
+                    'id'        => $this->specific->id,
+                    'name'      => $this->specific->name,
+                    'is_active' => $this->specific->is_active,
                 ];
             }),
             
             // tipo de gestion relacionada
             'type_management' => $this->whenLoaded('type_management', function () {
                 return[
-                    'id'                => $this->specific->id,
-                    'name'              => $this->specific->name,
-                    'is_active'         => $this->specific->is_active
+                    'id'                => $this->type_management->id,
+                    'name'              => $this->type_management->name,
+                    'is_active'         => $this->type_management->is_active
                 ];
             }),
 

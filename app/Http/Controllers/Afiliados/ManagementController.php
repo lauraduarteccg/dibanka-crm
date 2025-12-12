@@ -204,6 +204,7 @@ class ManagementController extends Controller
         return response()->json([
             'message'     => 'Gestiones obtenidas con éxito',
             'managements' => ManagementResource::collection($management),
+            'count'       => $management->count(),
             'pagination'  => [
                 'current_page' => $management->currentPage(),
                 'total_pages'  => $management->lastPage(),

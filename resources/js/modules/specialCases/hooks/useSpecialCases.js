@@ -21,6 +21,7 @@ export const useSpecialCases = () => {
 
   // Paginación
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterColumn, setFilterColumn] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(1);
   const [totalItems, setTotalItems] = useState(1);
@@ -46,10 +47,10 @@ export const useSpecialCases = () => {
    *  Fetch principal
    * =========================================================== */
   const fetchSpecialCases = useCallback(
-    async (page = 1, search = "") => {
+    async (page = 1, search = "", column = filterColumn) => {
       setLoading(true);
       try {
-        const data = await getSpecialCases(page, search);
+        const data = await getSpecialCases(page, search, column);
         setSpecialCases(data.specialCases);
         setTotalPages(data.pagination.total_pages);
         setCurrentPage(data.pagination.current_page);
@@ -66,9 +67,10 @@ export const useSpecialCases = () => {
   );
 
   // 🔥 NUEVO: useEffect para buscar cuando cambie el searchTerm
+  // 🔥 NUEVO: useEffect para buscar cuando cambie el searchTerm
   useEffect(() => {
-    fetchSpecialCases(currentPage, searchTerm);
-  }, [searchTerm, currentPage, fetchSpecialCases]);
+    fetchSpecialCases(currentPage, searchTerm, filterColumn);
+  }, [searchTerm, currentPage, filterColumn, fetchSpecialCases]);
 
   const fetchPage = useCallback(
     (page) => {
@@ -77,9 +79,16 @@ export const useSpecialCases = () => {
     []
   );
 
-  const handleSearch = useCallback((value) => {
+  const handleSearch = useCallback((value, column = "") => {
     setSearchTerm(value);
+    setFilterColumn(column);
     setCurrentPage(1); // Resetear a la primera página al buscar
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm("");
+    setFilterColumn("");
+    setCurrentPage(1);
   }, []);
 
   /* ===========================================================
@@ -340,6 +349,8 @@ export const useSpecialCases = () => {
     payroll,
     users,
     contact,
+    searchTerm,
+    filterColumn,
 
     // Estado general
     loading,
@@ -374,6 +385,7 @@ export const useSpecialCases = () => {
     fetchPage,
     handleSearch,
     handleSubmit,
+    handleClearSearch,
     handleDelete,
     handleEdit,
     fetchUser,

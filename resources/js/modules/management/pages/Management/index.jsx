@@ -16,10 +16,12 @@ const columns = [
   { header: "ID", key: "id" },
   { header: "Agente", key: "user.name" },
   { header: "Pagaduría", key: "contact.payroll.name" },
-  { header: "Consulta", key: "consultation.name" },
   { header: "Nombre de cliente", key: "contact.name" },
   { header: "Identificación", key: "contact.identification_number" },
   { header: "Celular", key: "contact.phone" },
+  { header: "Consulta", key: "consultation.name" },
+  { header: "Consulta Especifica", key: "specific.name" },
+  { header: "Tipo de gestión", key: "type_management.name" },
   { header: "Fecha de creación", key: "created_at" },
 ];
 
@@ -31,6 +33,12 @@ const filterOptions = [
   { value: "payroll", label: "Pagaduría" },
   { value: "consultation", label: "Consulta" },
   { value: "user", label: "Agente" },
+  { value: "wolkvox_id", label: "Wolkvox_id" },
+  { value: "consultation", label: "Consulta" },
+  { value: "specific", label: "Consulta Especifica" },
+  { value: "type_management", label: "Tipo de gestión" },
+  { value: "solution_date", label: "Fecha de solución" },
+  { value: "created_at", label: "Fecha de creación" },
 ];
 
 const P = ({ text1, text2 }) => {
@@ -93,6 +101,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
     campaign,
     managementCountAliados,
     managementCountAfiliados,
+    filterColumn,
   } = useManagement();
 
   const { can } = useCan();
@@ -133,6 +142,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
     if (filterColumn === "contact.name") column = "name";
     if (filterColumn === "contact.identification_number") column = "identification_number";
     if (filterColumn === "contact.phone") column = "phone";
+    if (filterColumn === "wolkvox_id") column = "wolkvox_id";
 
     handleSearch(searchValue, column);
   };
@@ -142,7 +152,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
   return (
     <>
       {/* Tabs con totales separados */}
-      <Box sx={{ width: "90%", mb: 4, margin: "auto" }}>
+      <Box sx={{ width: "100%", mb: 4, margin: "auto" }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
             value={tabValue}
@@ -172,8 +182,10 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
               onFilter={handleFilterSearch}
               placeholder="Buscar gestión de aliados..."
               filterOptions={filterOptions}
+              initialSearchValue={searchTerm}
+              initialSelectedFilter={filterColumn}
             />
-            {searchTerm && (
+            {searchTerm  && (
               <button
                 onClick={handleClearSearch}
                 className="bg-red-500 text-white h-[50%] px-4 py-2 rounded hover:bg-red-600 transition-colors"
@@ -191,6 +203,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
             <Loader />
           ) : (
             <Table
+              width="90%"
               columns={columns}
               data={activeData}
               currentPage={currentPage}
@@ -227,6 +240,8 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
               onFilter={handleFilterSearch}
               placeholder="Buscar gestión de afiliados..."
               filterOptions={filterOptions}
+              initialSearchValue={searchTerm}
+              initialSelectedFilter={filterColumn}
             />
             {searchTerm && (
               <button

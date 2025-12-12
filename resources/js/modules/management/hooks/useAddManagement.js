@@ -100,6 +100,7 @@ export const useAddManagement = (selectedPayroll = null, campaign = "") => {
             setValidationErrors({});
             try {
                 // Pasar la campaña al servicio
+                console.log('🔍 useAddManagement - handleSubmit recibió campaign:', campaign);
                 await saveManagement(payload, campaign);
 
                 Swal.fire({
@@ -131,7 +132,7 @@ export const useAddManagement = (selectedPayroll = null, campaign = "") => {
                 setLoading(false);
             }
         },
-        [currentPage, searchTerm, fetchManagement]
+        [currentPage, searchTerm, fetchManagement, campaign]
     );
 
     /* ===========================================================

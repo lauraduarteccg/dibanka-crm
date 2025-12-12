@@ -32,6 +32,7 @@ export const useConsultSpecificsAliados = () => {
     setLoadingAliados(true);
     try {
       const data = await getSpecificAliados(page, search);
+      console.log(data.pagination.total_specifics)
       setSpecificAliados(data.specifics);
       setTotalPages(data.pagination.total_pages);
       setCurrentPage(data.pagination.current_page);

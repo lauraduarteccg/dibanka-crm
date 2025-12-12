@@ -6,7 +6,7 @@ import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormSpecialCasesDrawer from "@modules/specialCases/components/FormSpecialCasesDrawer";
 import Loader from "@components/ui/Loader";
-import Search from "@components/forms/Search";
+import FilterSearch from "@components/ui/FilterSearch";
 
 import { AuthContext } from "@context/AuthContext";
 
@@ -48,8 +48,23 @@ const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
     fetchContactsSearch,
     handleSearchContact,
     fetchPageContact,
+    searchTerm,
+    filterColumn,
+    handleClearSearch,
   } = useSpecialCases();
   const { can, canAny } = useCan();
+
+  const filterOptions = [
+    { value: "id", label: "ID" },
+    { value: "user", label: "Agente" },
+    { value: "campaign", label: "Campaña" },
+    { value: "payroll", label: "Pagaduría" },
+    { value: "identification_number", label: "Identificación" },
+    { value: "management_messi", label: "Gestión Messi" },
+    { value: "contact", label: "Cliente" },
+    { value: "id_call", label: "ID llamada" },
+    { value: "id_messi", label: "ID Messi" },
+  ];
 
   // Cuando se abre el modal, asigna el user actual como predeterminado
   useEffect(() => {
@@ -83,7 +98,21 @@ const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
         />
       )}
       <div className="flex justify-end px-12 -mt-10 ">
-        <Search id={idSearchSpecialCase} onSearch={handleSearch} placeholder="Buscar caso especial..." />
+        <FilterSearch 
+          onFilter={handleSearch} 
+          filterOptions={filterOptions}
+          initialSearchValue={searchTerm}
+          initialSelectedFilter={filterColumn}
+          placeholder="Buscar caso especial..."
+        />
+        {searchTerm && (
+          <button
+            onClick={handleClearSearch}
+            className="bg-red-500 text-white h-[50%] px-4 py-2 rounded hover:bg-red-600 transition-colors"
+          >
+            Limpiar filtro
+          </button>
+        )}
       </div>
 
       <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">

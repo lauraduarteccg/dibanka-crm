@@ -34,6 +34,7 @@ export const getManagements = async (page = 1, search = "", campaign = "Aliados"
 
   return {
     managements: data.managements || [],
+    count: data.count || 0,
     pagination: {
       current_page: data.pagination?.current_page ?? 1,
       last_page: data.pagination?.last_page ?? data.pagination?.total_pages ?? 1,
@@ -61,18 +62,15 @@ export const saveManagement = async (payload, campaign = "") => {
   }
   
   // Para nuevas gestiones, determinar endpoint según campaña
-  let campaignName = campaign;
-
-  if (!campaignName && payload.contact?.campaign?.name) {
-    campaignName = payload.contact.campaign.name;
-  }
-
-  const campaignLower = campaignName.toLowerCase();
+  const campaignLower = campaign.toLowerCase();
   let endpoint = "/management-aliados"; // Por defecto Aliados
   
-  if (campaignLower === "afiliados") {
+  if (campaignLower == "afiliados") {
     endpoint = "/management-afiliados";
   }
+  
+  console.log(`🎯 Creando gestión en: ${endpoint} (Campaña: "${campaign}")`);
+  console.log('📊 Tipo de campaign:', typeof campaign, 'Valor:', campaign);
   
   const { data } = await api.post(endpoint, payload);
   return data;

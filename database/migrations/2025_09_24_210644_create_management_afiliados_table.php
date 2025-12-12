@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('contact_id')->constrained('contacts')->onDelete('cascade');
             $table->boolean('solution')->default(1);
             $table->foreignId('consultation_id')->constrained('consultations_afiliados')->onDelete('cascade');
-            $table->foreignId('specific_id')->constrained('specifics_afiliados')->onDelete('cascade');
+            $table->foreignId('specific_id')->nullable()->constrained('specifics_afiliados')->nullOnDelete();
             $table->foreignId('type_management_id')->constrained('type_management')->onDelete('cascade');
             $table->text('comments')->nullable();
             $table->date('solution_date')->nullable();
