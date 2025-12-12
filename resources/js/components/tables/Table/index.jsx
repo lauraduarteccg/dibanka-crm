@@ -1,4 +1,4 @@
-import React, { useState,useContext } from "react";
+import React, { useState, useContext } from "react";
 import { AuthContext } from "@context/AuthContext";
 import {
   Table,
@@ -75,7 +75,7 @@ const MuiTable = ({
   idManagement,
 
 }) => {
-  
+
   const { user } = useContext(AuthContext);
 
   const [order, setOrder] = useState("asc");
@@ -88,7 +88,7 @@ const MuiTable = ({
   };
 
   const handleChangePage = (_, newPage) => {
-    fetchPage(newPage + 1); 
+    fetchPage(newPage + 1);
   };
 
   const sortedData = stableSort(data, getComparator(order, orderBy));
@@ -96,10 +96,10 @@ const MuiTable = ({
   const filteredData = !user.roles?.includes("Administrador")
     ? sortedData.filter((item) => item.roles !== 1)
     : sortedData;
-    
+
   return (
     <Paper
-   
+
       sx={{ width, overflow: "hidden", borderRadius: 3, mx: "auto", marginRight: 6 }}
       className="mt-6"
     >
@@ -169,6 +169,18 @@ const MuiTable = ({
                     }}
                   >
                     <div className="flex justify-center items-center gap-2">
+
+                      {selectRecord && (
+                        <Tooltip title="Seleccionar registro" arrow placement="top">
+                          <button
+                            id={idSelectRecord}
+                            onClick={() => onSelectRecord(row.id)}
+                            className="p-2 rounded-lg bg-gradient-to-br from-cyan-50 to-cyan-100 text-cyan-600 hover:from-cyan-100 hover:to-cyan-200 hover:shadow-md transition-all duration-300 hover:scale-110"
+                          >
+                            <MdPersonAddAlt1 size={18} />
+                          </button>
+                        </Tooltip>
+                      )}
                       {management && (
                         <Tooltip title="Ver gestión" arrow placement="top">
                           <button
@@ -222,28 +234,16 @@ const MuiTable = ({
                           <button
                             id={idOnActiveOrInactive}
                             onClick={() => onDelete(row.id, row.is_active)}
-                            className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-md ${
-                              row.is_active === 1
+                            className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-md ${row.is_active === 1
                                 ? "bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200"
                                 : "bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200"
-                            }`}
+                              }`}
                           >
                             {row.is_active === 1 ? (
                               <FaToggleOn size={20} color="#10b981" />
                             ) : (
                               <FaToggleOff size={20} color="#ef4444" />
                             )}
-                          </button>
-                        </Tooltip>
-                      )}
-                      {selectRecord && (
-                        <Tooltip title="Seleccionar registro" arrow placement="top">
-                          <button
-                            id={idSelectRecord}
-                            onClick={() => onSelectRecord(row.id)}
-                            className="p-2 rounded-lg bg-gradient-to-br from-cyan-50 to-cyan-100 text-cyan-600 hover:from-cyan-100 hover:to-cyan-200 hover:shadow-md transition-all duration-300 hover:scale-110"
-                          >
-                            <MdPersonAddAlt1 size={18} />
                           </button>
                         </Tooltip>
                       )}
@@ -263,16 +263,16 @@ const MuiTable = ({
           </TableBody>
         </Table>
       </TableContainer>
-      
-      {paginationSection && 
-      <TablePagination
-        rowsPerPageOptions={[]}
-        component="div"
-        count={totalItems}
-        rowsPerPage={rowsPerPage}
-        page={currentPage - 1} 
-        onPageChange={handleChangePage}
-      />
+
+      {paginationSection &&
+        <TablePagination
+          rowsPerPageOptions={[]}
+          component="div"
+          count={totalItems}
+          rowsPerPage={rowsPerPage}
+          page={currentPage - 1}
+          onPageChange={handleChangePage}
+        />
       }
     </Paper>
   );

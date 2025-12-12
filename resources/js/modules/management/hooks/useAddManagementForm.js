@@ -154,6 +154,7 @@ export const useAddManagementForm = () => {
     
     // Pasar la campaña al handleSubmit
     const success = await handleSubmit(payload, campaign);
+    console.log("Gestión guardada con éxito:", success);
 
     if (success) {
       if (wsp || sms) {
