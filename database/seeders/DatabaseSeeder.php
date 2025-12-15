@@ -18,9 +18,9 @@ class DatabaseSeeder extends Seeder
         // -----------------------------
         // 1) ROLES
         // -----------------------------
-        $adminRole  = Role::firstOrCreate(['name' => 'Administrador']);
+        $adminRole  = Role::firstOrCreate(['name' => 'Administrador']);/* 
         $liderRole  = Role::firstOrCreate(['name' => 'Lider de Campaña']);
-        $agenteRole = Role::firstOrCreate(['name' => 'Agente']);
+        $agenteRole = Role::firstOrCreate(['name' => 'Agente']); */
 
         // -----------------------------
         // 2) USERS
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
                 'password'   => Hash::make('password'),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
+            ]/* ,
             [
                 'name'       => 'Lider de campaña',
                 'email'      => 'campaing_manager@example.com',
@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
                 'password'   => Hash::make('password'),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
+            ], */
         ];
 
         $userIds = [];
@@ -60,14 +60,15 @@ class DatabaseSeeder extends Seeder
         }
 
         // Asignar roles (uso de assignRole con nombre de rol para evitar problemas con ids)
-        if (! empty($userIds[0])) User::find($userIds[0])->assignRole($adminRole->name);
+        if (! empty($userIds[0])) User::find($userIds[0])->assignRole($adminRole->name);/* 
         if (! empty($userIds[1])) User::find($userIds[1])->assignRole($liderRole->name);
-        if (! empty($userIds[2])) User::find($userIds[2])->assignRole($agenteRole->name);
+        if (! empty($userIds[2])) User::find($userIds[2])->assignRole($agenteRole->name); */
 
         // -----------------------------
         // 3) CAMPAÑAS (campaign)
         // -----------------------------
         // Nota: en tu código original la tabla se llama 'campaign' (singular). Lo mantuve.
+        /* 
         $aliados = DB::table('campaign')->where('name', 'Aliados')->first();
         $aliadosId = $aliados ? $aliados->id : DB::table('campaign')->insertGetId([
             'name'       => 'Aliados',
@@ -398,6 +399,6 @@ class DatabaseSeeder extends Seeder
                     'updated_at'      => now(),
                 ],
             ]);
-        }
+        } */
     }
 }
