@@ -5,9 +5,7 @@ import { AuthContext } from "@context/AuthContext";
 import {
   getManagements,
   getActiveMonitorings,
-  updateManagementMonitoring,
-  getCountManagementsAliados,
-  getCountManagementsAfiliados
+  updateManagementMonitoring
 } from "@modules/management/services/managementService";
 import { useDebounce } from "@modules/management/hooks/useDebounce";
 
@@ -104,6 +102,28 @@ export const useManagement = () => {
   useEffect(() => {
     fetchManagement(currentPage, debouncedSearchTerm, filterColumn, campaign);
   }, [currentPage, debouncedSearchTerm, filterColumn, campaign, fetchManagement]);
+
+  // Inicializar contadores de ambas campañas al montar el componente
+  useEffect(() => {
+    const initializeCounts = async () => {
+      try {
+        // Fetch count for the opposite campaign (the one not currently active)
+        const oppositeCampaign = campaign === "Aliados" ? "Afiliados" : "Aliados";
+        const data = await getManagements(1, debouncedSearchTerm, oppositeCampaign, filterColumn);
+        const totalCount = data.pagination?.total ?? 0;
+        
+        if (oppositeCampaign.toLowerCase() === 'afiliados') {
+          setManagementCountAfiliados(totalCount);
+        } else {
+          setManagementCountAliados(totalCount);
+        }
+      } catch (err) {
+        console.error("Error al inicializar contadores:", err);
+      }
+    };
+
+    initializeCounts();
+  }, [debouncedSearchTerm, filterColumn, campaign]);
 
   /* ===========================================================
    *  Paginación y búsqueda con filtro
@@ -203,27 +223,6 @@ export const useManagement = () => {
   useEffect(() => {
     fetchMonitoring();
   }, [fetchMonitoring]);
-
-
-  /* ===========================================================
-   *  Fetch Initial Counts (Aliados & Afiliados)
-   * =========================================================== */
-  const fetchCounts = useCallback(async () => {
-    try {
-      const [aliados, afiliados] = await Promise.all([
-        getCountManagementsAliados(),
-        getCountManagementsAfiliados(),
-      ]);
-      setManagementCountAliados(aliados);
-      setManagementCountAfiliados(afiliados);
-    } catch (err) {
-      console.error("Error al obtener contadores:", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCounts();
-  }, [fetchCounts]);
 
   /* ===========================================================
    *  Validar monitoring_id actual

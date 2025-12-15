@@ -24,7 +24,7 @@ export const useTypeManagement = () => {
   const [formData, setFormData] = useState({
     id: null,
     name: "",
-    payroll_id: "",
+    payrolls: [],
     is_active: true,
   });
 
@@ -115,10 +115,15 @@ export const useTypeManagement = () => {
    *  Editar tipo de gestión
    * =========================================================== */
   const handleEdit = (item) => {
+    // Extraer los IDs de las pagadurías del array
+    const payrollIds = Array.isArray(item.payrolls) 
+      ? item.payrolls.map(p => p.id)
+      : [];
+    
     setFormData({
       id: item.id,
       name: item.name,
-      payroll_id: item.payrolls?.id || "",
+      payrolls: payrollIds,
       is_active: item.is_active,
     });
     setValidationErrors({});

@@ -23,7 +23,7 @@ export const ManagementStaticDataProvider = ({ children }) => {
    * Solo se ejecuta una vez
    * 
    * NOTA: Las consultas (consultation y specific) ahora se cargan dinámicamente
-   * por campaña en useAddManagementForm, por lo que ya no se cargan aquí.
+   * por campaña en useAddManagementForm, por lo que ya no se cargan aquí. CSC485
    */
 const fetchStaticData = useCallback(async () => {
   if (isLoaded) return;

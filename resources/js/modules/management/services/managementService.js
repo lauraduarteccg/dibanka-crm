@@ -69,8 +69,8 @@ export const saveManagement = async (payload, campaign = "") => {
     endpoint = "/management-afiliados";
   }
   
-  console.log(`🎯 Creando gestión en: ${endpoint} (Campaña: "${campaign}")`);
-  console.log('📊 Tipo de campaign:', typeof campaign, 'Valor:', campaign);
+  //console.log(`🎯 Creando gestión en: ${endpoint} (Campaña: "${campaign}")`);
+  //console.log('📊 Tipo de campaign:', typeof campaign, 'Valor:', campaign);
   
   const { data } = await api.post(endpoint, payload);
   return data;

@@ -46,7 +46,6 @@ const P = ({ text1, text2 }) => {
 
   if (typeof text2 === 'object' && text2 !== null) {
     displayValue = text2.name || JSON.stringify(text2);
-    console.warn("P component received object:", text1, text2);
   }
 
   return (
@@ -323,13 +322,13 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
             <P text1="Consulta: " text2={formData.consultation?.name ?? "Sin consulta"} />
-            <P text1="Consulta específica: " text2={formData.specific?.name ?? "Sin consulta"} />
+            <P text1="Consulta específica: " text2={formData.specific?.name ?? "Sin consulta especifica"} />
             <P text1="Wolkvox_id: " text2={formData.wolkvox_id ?? "Sin wolkvox_id"} />
           </div>
 
           <div className="bg-white shadow-md rounded-lg p-5 flex flex-col gap-3">
             <P text1="Solución en primer contacto: " text2={formData.solution ? "Sí" : "No"} />
-            <P text1="Observaciones: " text2={formData.comments ?? "Sin consulta"} />
+            <P text1="Observaciones: " text2={formData.comments ?? "Sin observaciones"} />
             <P text1="Fecha de solución: " text2={formData.solution_date ?? "Sin fecha de solución"} />
             <P text1="Seguimiento: " text2={formData.monitoring?.name ?? "Sin seguimiento"} />
           </div>

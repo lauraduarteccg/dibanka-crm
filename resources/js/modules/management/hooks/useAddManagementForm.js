@@ -145,7 +145,7 @@ export const useAddManagementForm = () => {
   const onSave = async () => {
     const payload = buildPayload();
     
-    console.log('🔍 useAddManagementForm - onSave tiene campaign:', campaign);
+    //console.log('🔍 useAddManagementForm - onSave tiene campaign:', campaign);
     
     // Validar que se haya seleccionado una campaña
     if (!campaign) {
