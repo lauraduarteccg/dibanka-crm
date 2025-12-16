@@ -5,8 +5,9 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormAdd from "@components/forms/FormAdd";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 import Search from "@components/forms/Search";
+import StatCard from "@components/ui/StatCard";
 import { useConsultSpecificsAliados } from "@modules/config/ConsultationSpecific/hooks/useConsultSpecificsAliados";
 import { useConsultSpecificsAfiliados } from "@modules/config/ConsultationSpecific/hooks/useConsultSpecificsAfiliados";
 import * as yup from "yup";
@@ -69,7 +70,7 @@ function a11yProps(index) {
 const ConsultationSpecific = () => {
   // Hook independiente para Aliados
   const aliadosHook = useConsultSpecificsAliados();
-  
+
   // Hook independiente para Afiliados
   const afiliadosHook = useConsultSpecificsAfiliados();
 
@@ -110,25 +111,18 @@ const ConsultationSpecific = () => {
   const activeLoading = value === 0 ? loadingAliados : loadingAfiliados;
 
   const activeCount = activeData?.filter((c) => c.is_active === 1).length || 0;
-  const inactiveCount = (totalItems || 0) ;
-
+  const inactiveCount = (totalItems || 0);
+  const statsCards = [
+    { title: "Consultas Totales", value: totalItems },
+    { title: "Consultas Activas", value: activeCount },
+    { title: "Consultas Inactivas", value: inactiveCount },
+  ]
   return (
     <>
       {/* Cards */}
       <div className="flex justify-center gap-6 mb-4">
-        {[
-          { label: "Consultas Específicas Totales", value: totalItems || 0 },
-          { label: "Consultas Específicas Activas", value: activeCount },
-          { label: "Consultas Específicas Inactivas", value: inactiveCount },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white shadow-md rounded-lg px-6 py-4 w-64">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-black font-bold">{stat.label}</p>
-              <p className="text-2xl font-bold text-primary-dark">
-                {stat.value}
-              </p>
-            </div>
-          </div>
+        {statsCards.map((stat, index) => (
+          <StatCard key={index} stat={stat} loading={activeLoading} />
         ))}
       </div>
 
@@ -180,7 +174,8 @@ const ConsultationSpecific = () => {
           />
 
           {activeLoading ? (
-            <Loader />
+            <TableSkeleton rows={5} />
+
           ) : (
             <Table
               columns={columns}
@@ -231,7 +226,8 @@ const ConsultationSpecific = () => {
           />
 
           {activeLoading ? (
-            <Loader />
+            <TableSkeleton rows={5} />
+
           ) : (
             <Table
               columns={columns}

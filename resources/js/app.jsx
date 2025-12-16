@@ -1,13 +1,12 @@
 import React, { useContext, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "@components/Layout";
-import Loader from "@components/ui/Loader";
 import { AuthContext } from "@context/AuthContext";
 import { TourProvider, useTour } from "@context/TourContext";
 import AuthPage from "@modules/auth/pages/AuthPage";
 import RecoverPage from "@modules/auth/pages/RecoverPage";
 import Dashboard from "@modules/dashboard/pages/Dashboard";
-
+import Loader from "@components/ui/Loader";
 import Contact from "@modules/contact/pages/Contact";
 import Management from "@modules/management/pages/Management";
 import AddManagement from "@modules/management/pages/AddManagement";

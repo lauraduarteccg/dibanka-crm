@@ -107,6 +107,14 @@ const MuiTable = ({
         <Table>
           <TableHead>
             <TableRow className="bg-gradient-primary">
+              {actions && (
+                <TableCell
+                  align="center"
+                  sx={{ color: "white", fontWeight: "bold", fontSize: "1rem" }}
+                >
+                  Acciones
+                </TableCell>
+              )}
               {columns.map((col) => (
                 <TableCell
                   key={col.key}
@@ -126,40 +134,13 @@ const MuiTable = ({
                   </TableSortLabel>
                 </TableCell>
               ))}
-              {actions && (
-                <TableCell
-                  align="center"
-                  sx={{ color: "white", fontWeight: "bold", fontSize: "1rem" }}
-                >
-                  Acciones
-                </TableCell>
-              )}
+
             </TableRow>
           </TableHead>
 
           <TableBody>
             {filteredData.map((row, rowIndex) => (
               <TableRow key={rowIndex} hover>
-                {columns.map((col) => (
-                  <TableCell key={col.key} align="center">
-                    {col.key === "img_payroll" ? (
-                      row.img_payroll ? (
-                        <img
-                          src={row.img_payroll}
-                          alt="Imagen"
-                          className="h-12 w-12 object-contain rounded-md mx-auto"
-                        />
-                      ) : (
-                        "—"
-                      )
-                    ) : col.render ? (
-                      // Si la columna tiene una función render personalizada
-                      col.render(row)
-                    ) : (
-                      getNestedValue(row, col.key)
-                    )}
-                  </TableCell>
-                ))}
                 {actions && (
                   <TableCell
                     align="center"
@@ -235,8 +216,8 @@ const MuiTable = ({
                             id={idOnActiveOrInactive}
                             onClick={() => onDelete(row.id, row.is_active)}
                             className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-md ${row.is_active === 1
-                                ? "bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200"
-                                : "bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200"
+                              ? "bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200"
+                              : "bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200"
                               }`}
                           >
                             {row.is_active === 1 ? (
@@ -250,6 +231,27 @@ const MuiTable = ({
                     </div>
                   </TableCell>
                 )}
+                {columns.map((col) => (
+                  <TableCell key={col.key} align="center">
+                    {col.key === "img_payroll" ? (
+                      row.img_payroll ? (
+                        <img
+                          src={row.img_payroll}
+                          alt="Imagen"
+                          className="h-12 w-12 object-contain rounded-md mx-auto"
+                        />
+                      ) : (
+                        "—"
+                      )
+                    ) : col.render ? (
+                      // Si la columna tiene una función render personalizada
+                      col.render(row)
+                    ) : (
+                      getNestedValue(row, col.key)
+                    )}
+                  </TableCell>
+                ))}
+
               </TableRow>
             ))}
 

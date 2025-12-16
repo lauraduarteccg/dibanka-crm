@@ -5,8 +5,9 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormAdd from "@components/forms/FormAdd";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 import Search from "@components/forms/Search";
+import StatCard from "@components/ui/StatCard";
 import { useConsultsAliados } from "@modules/config/Consultation/hooks/useConsultsAliados";
 import { useConsultsAfiliados } from "@modules/config/Consultation/hooks/useConsultsAfiliados";
 import * as yup from "yup";
@@ -32,17 +33,17 @@ const consultSchema = yup.object().shape({
  * =========================================================== */
 const columns = [
   { header: "ID", key: "id" },
-  { 
-    header: "Pagadurías", 
+  {
+    header: "Pagadurías",
     key: "payrolls",
     render: (row) => {
       if (!row.payrolls || (Array.isArray(row.payrolls) && row.payrolls.length === 0)) return "Sin relaciones";
-      
+
       // Si es un array de pagadurías 
       if (Array.isArray(row.payrolls)) {
         return row.payrolls.map(p => p.name).join(", ");
       }
-      
+
       // Si es un objeto único
       return row.payrolls.name || "—";
     }
@@ -79,7 +80,7 @@ function a11yProps(index) {
 const Consultation = () => {
   // Hook independiente para Aliados
   const aliadosHook = useConsultsAliados();
-  
+
   // Hook independiente para Afiliados
   const afiliadosHook = useConsultsAfiliados();
 
@@ -115,26 +116,20 @@ const Consultation = () => {
 
   const activeConsults = consultations.filter((u) => u.is_active === 1).length;
   const inactiveConsults = totalItems - activeConsults;
-
+  const statsCards = [
+    { title: "Consultas Totales", value: totalItems },
+    { title: "Consultas Activas", value:activeConsults },
+    { title: "Consultas Inactivas", value: inactiveConsults },
+  ]
   return (
     <>
       {/* Cards */}
-      <div className="flex justify-center gap-6 mb-4">
-        {[
-          { label: "Consultas Totales", value: totalItems },
-          { label: "Consultas Activas", value: activeConsults },
-          { label: "Consultas Inactivas", value: inactiveConsults },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white shadow-md rounded-lg px-6 py-4 w-64">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-black font-bold">{stat.label}</p>
-              <p className="text-2xl font-bold text-primary-dark">
-                {stat.value}
-              </p>
+        <div className="flex justify-center gap-6 mb-4">
+                {statsCards.map((stat, index) => (
+                    <StatCard key={index} stat={stat} loading={loading} />
+                ))}
             </div>
-          </div>
-        ))}
-      </div>
+
 
       {/* Tabs */}
       <Box sx={{ width: "80%", mb: 4, textAlign: "center", margin: "auto" }}>
@@ -178,12 +173,12 @@ const Consultation = () => {
             fields={fields.map((f) =>
               f.name === "payroll_ids"
                 ? {
-                    ...f,
-                    options: payroll.map((p) => ({
-                      value: p.id,
-                      label: p.name,
-                    })),
-                  }
+                  ...f,
+                  options: payroll.map((p) => ({
+                    value: p.id,
+                    label: p.name,
+                  })),
+                }
                 : f
             )}
             schema={consultSchema}
@@ -191,7 +186,8 @@ const Consultation = () => {
 
           {/* Tabla */}
           {loading ? (
-            <Loader />
+            <TableSkeleton rows={4} />
+
           ) : (
             <Table
               columns={columns}
@@ -235,12 +231,12 @@ const Consultation = () => {
             fields={fields.map((f) =>
               f.name === "payroll_ids"
                 ? {
-                    ...f,
-                    options: payroll.map((p) => ({
-                      value: p.id,
-                      label: p.name,
-                    })),
-                  }
+                  ...f,
+                  options: payroll.map((p) => ({
+                    value: p.id,
+                    label: p.name,
+                  })),
+                }
                 : f
             )}
             schema={consultSchema}
@@ -248,7 +244,8 @@ const Consultation = () => {
 
           {/* Tabla */}
           {loading ? (
-            <Loader />
+            <TableSkeleton rows={4} />
+
           ) : (
             <Table
               columns={columns}

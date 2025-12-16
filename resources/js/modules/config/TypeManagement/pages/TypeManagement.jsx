@@ -2,8 +2,9 @@ import React from "react";
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormAdd from "@components/forms/FormAdd";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 import Search from "@components/forms/Search";
+import StatCard from "@components/ui/StatCard";
 import * as yup from "yup";
 import { useTypeManagement } from "@modules/config/TypeManagement/hooks/useTypeManagement";
 
@@ -56,36 +57,32 @@ const TypeManagement = () => {
 
   const columns = [
     { header: "ID", key: "id" },
-    { header: "Pagadurías", key: "payrolls", render: (row) => {
+    {
+      header: "Pagadurías", key: "payrolls", render: (row) => {
         if (!row.payrolls || (Array.isArray(row.payrolls) && row.payrolls.length === 0)) return "Sin relaciones";
-        
+
         // Si es un array de pagadurías
         if (Array.isArray(row.payrolls)) {
           return row.payrolls.map(p => p.name).join(", ");
         }
-        
+
         // Si es un objeto único
         return row.payrolls.name || "—";
       }
     },
     { header: "Tipo de gestión", key: "name" },
   ];
-
+  const statsCards = [
+    { title: "Tipos de Gestión Totales", value: totalItems },
+    { title: "Tipos de Gestión Activos", value: activeCount },
+    { title: "Tipos de Gestión Inactivos", value: inactiveCount },
+  ]
   return (
     <>
       {/* Cards */}
       <div className="flex justify-center gap-6 mb-4">
-        {[
-          { label: "Gestiones Totales", value: totalItems },
-          { label: "Gestiones Activas", value: activeCount },
-          { label: "Gestiones Inactivas", value: inactiveCount },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white shadow-md rounded-lg px-6 py-4 w-64">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-black font-bold">{stat.label}</p>
-              <p className="text-2xl font-bold text-primary-dark">{stat.value}</p>
-            </div>
-          </div>
+        {statsCards.map((stat, index) => (
+          <StatCard key={index} stat={stat} loading={loading} />
         ))}
       </div>
 
@@ -116,12 +113,12 @@ const TypeManagement = () => {
         fields={fields.map((field) =>
           field.name === "payrolls"
             ? {
-                ...field,
-                options: payroll.map((p) => ({
-                  value: p.id,
-                  label: p.name,
-                })),
-              }
+              ...field,
+              options: payroll.map((p) => ({
+                value: p.id,
+                label: p.name,
+              })),
+            }
             : field
         )}
         schema={typeManagementSchema}
@@ -129,7 +126,7 @@ const TypeManagement = () => {
 
       {/* Tabla */}
       {loading ? (
-        <Loader />
+        <TableSkeleton rows={4} />
       ) : (
         <Table
           columns={columns}

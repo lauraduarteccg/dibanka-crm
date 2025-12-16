@@ -68,7 +68,7 @@ class DatabaseSeeder extends Seeder
         // 3) CAMPAÑAS (campaign)
         // -----------------------------
         // Nota: en tu código original la tabla se llama 'campaign' (singular). Lo mantuve.
-        /* 
+
         $aliados = DB::table('campaign')->where('name', 'Aliados')->first();
         $aliadosId = $aliados ? $aliados->id : DB::table('campaign')->insertGetId([
             'name'       => 'Aliados',
@@ -82,7 +82,7 @@ class DatabaseSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
+        /* 
         // -----------------------------
         // 4) PAGADURIAS (payrolls)
         // -----------------------------

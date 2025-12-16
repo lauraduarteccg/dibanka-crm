@@ -4,11 +4,9 @@ import { useCan } from "@hooks/useCan";
 import Drawer from '@mui/material/Drawer';
 import { TextField, FormControl, Autocomplete, Tabs, Tab, Box } from "@mui/material";
 import { useManagement } from "@modules/management/hooks/useManagement.js";
-import { AuthContext } from "@context/AuthContext";
-
+import TableSkeleton from "@components/tables/TableSkeleton";
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
-import Loader from "@components/ui/Loader";
 import Button from "@components/ui/Button";
 import FilterSearch from "@components/ui/FilterSearch";
 
@@ -105,7 +103,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
 
   const { can } = useCan();
   const navigate = useNavigate();
-  
+
   const [tabValue, setTabValue] = useState(campaign === "Aliados" ? 0 : 1);
 
   useEffect(() => {
@@ -166,11 +164,14 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
 
         {/* Tab Panel - Aliados */}
         <TabPanel value={tabValue} index={0}>
-          
+
           {can("management.create") && (
             <ButtonAdd
               id={idAddManagement}
-              onClickButtonAdd={() => navigate("/gestiones/añadir")}
+              onClickButtonAdd={() => {
+                console.log("Navigating to add management with search term:", searchTerm);
+                navigate(`/gestiones/añadir?identification_number=${searchTerm}`)
+              }}
               text="Agregar Gestión"
             />
           )}
@@ -184,7 +185,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
               initialSearchValue={searchTerm}
               initialSelectedFilter={filterColumn}
             />
-            {searchTerm  && (
+            {searchTerm && (
               <button
                 onClick={handleClearSearch}
                 className="bg-red-500 text-white h-[50%] px-4 py-2 rounded hover:bg-red-600 transition-colors"
@@ -199,7 +200,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
           </h1>
 
           {loading ? (
-            <Loader />
+            <TableSkeleton rows={11} />
           ) : (
             <Table
               width="90%"
@@ -229,7 +230,10 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
           {can("management.create") && (
             <ButtonAdd
               id={idAddManagement}
-              onClickButtonAdd={() => navigate("/gestiones/añadir")}
+              onClickButtonAdd={() => {
+                console.log("Navigating to add management with search term:", searchTerm);
+                navigate(`/gestiones/añadir?identification_number=${searchTerm}`)
+              }} 
               text="Agregar Gestión"
             />
           )}
@@ -257,7 +261,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
           </h1>
 
           {loading ? (
-            <Loader />
+            <TableSkeleton rows={columns.length} />
           ) : (
             <Table
               columns={columns}

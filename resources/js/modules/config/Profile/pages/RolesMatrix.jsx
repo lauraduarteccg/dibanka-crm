@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createRole, getRoleById, updateRole } from "@modules/config/profile/services/profileService";
-import Loader from "@components/ui/Loader";
 import Swal from "sweetalert2";
 import ButtonAdd from "@components/ui/ButtonAdd";
-
+import Loader from "@components/ui/Loader";
 // ======================================================
 // 🔧 Estructura modular — agrupada por tipo
 // ======================================================

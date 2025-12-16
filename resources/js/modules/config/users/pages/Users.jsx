@@ -3,9 +3,11 @@ import { AuthContext } from "@context/AuthContext";
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormAddTest from "@components/forms/FormAdd";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 import Search from "@components/forms/Search";
 import { useUsers } from "@modules/config/users/hooks/useUsers";
+import StatCard from "@components/ui/StatCard";
+
 import * as yup from "yup";
 
 /*
@@ -71,28 +73,31 @@ const Users = () => {
   // Contadores estadísticos
   const activeUsers = users.filter((u) => u.is_active === 1).length;
   const inactiveUsers = total_users - activeUsers;
-
+  const statsCards = [
+    {
+      title: "Usuarios Totales",
+      value: total_users,
+    },
+    {
+      title: "Usuarios Activos",
+      value: activeUsers,
+    },
+    {
+      title: "Usuarios Inactivos",
+      value: inactiveUsers,
+    }
+  ]
   return (
     <>
       {/*
        *  TARJETAS DE ESTADÍSTICAS
        * */}
       <div className="flex justify-center gap-6 mb-4">
-        {[
-          { label: "Usuarios Totales", value: total_users },
-          { label: "Usuarios Activos", value: activeUsers },
-          { label: "Usuarios Inactivos", value: inactiveUsers },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white shadow-md rounded-lg px-6 py-4 w-64">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-black font-bold">{stat.label}</p>
-              <p className="text-2xl font-bold text-primary-dark">
-                {stat.value}
-              </p>
-            </div>
-          </div>
+        {statsCards.map((stat, index) => (
+          <StatCard key={index} stat={stat} loading={loading} />
         ))}
       </div>
+
 
       {/*
        *  BOTÓN DE AGREGAR USUARIO
@@ -153,7 +158,7 @@ const Users = () => {
        *  TABLA DE USUARIOS
        * */}
       {loading ? (
-        <Loader />
+        <TableSkeleton rows={5} />
       ) : (
         <Table
           columns={[

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 import Search from "@components/forms/Search";
 import { useProfile } from "@modules/config/profile/hooks/useProfile";
 import RolesMatrix from "@modules/config/profile/pages/RolesMatrix";
@@ -49,8 +49,8 @@ const Profiles = () => {
       </div>
 
       {/* Tabla */ }
-      {loading ? (
-        <Loader />
+    {loading ? (
+        <TableSkeleton rows={4} />
       ) : (
         <Table
           columns={columns}

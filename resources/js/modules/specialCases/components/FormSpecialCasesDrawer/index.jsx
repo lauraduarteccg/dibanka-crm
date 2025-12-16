@@ -12,6 +12,8 @@ import {
   DialogContent,
   FormHelperText,
 } from "@mui/material";
+import { IoMdSearch } from "react-icons/io";
+
 import SearchContact from "@modules/specialCases/components/SearchContact";
 
 export default function FormSpecialCasesDrawer({
@@ -76,7 +78,7 @@ export default function FormSpecialCasesDrawer({
           <div className="grid grid-cols-1 gap-6">
 
             {/* CLIENTE */}
-            <div className="flex gap-2 items-start">
+            <div className="flex items-stretch rounded-lg overflow-hidden border border-gray-300 hover:border-blue-400 transition-all duration-200 bg-white shadow-sm">
               <TextField
                 label="Cliente"
                 value={
@@ -93,13 +95,12 @@ export default function FormSpecialCasesDrawer({
                     : ""
                 }
               />
-              <Button
-                variant="contained"
+              <button
                 onClick={() => setOpenSearchContact(true)}
-                sx={{ height: "56px", minWidth: "120px" }}
+                className="px-5 bg-blue-50 hover:bg-blue-100 border-l border-gray-300 transition-all duration-200 group"
               >
-                Buscar
-              </Button>
+                <IoMdSearch className="text-blue-600 w-6 h-6 group-hover:scale-110 transition-transform" />
+              </button>
             </div>
 
             {/* GESTIÓN DE MESSI */}

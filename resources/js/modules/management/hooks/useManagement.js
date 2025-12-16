@@ -29,6 +29,7 @@ export const useManagement = () => {
   // Estado para el término de búsqueda y el filtro por columna
   const [searchTerm, setSearchTerm] = useState(() => {
     const params = new URLSearchParams(location.search);
+    
     return params.get("search") || "";
   });
   

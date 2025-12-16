@@ -6,6 +6,7 @@ import { getDashboardCounts } from "@modules/dashboard/services/dashboardService
 
 const useDashboard = () => {
   const { user, loading } = useContext(AuthContext);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
 
   const location = useLocation();
   const [dataCounts, setDataCounts] = useState({
@@ -24,7 +25,10 @@ const useDashboard = () => {
         try {
           const counts = await getDashboardCounts();
           // console.log(counts);
-          if (isMounted) setDataCounts(counts);
+          if (isMounted) {
+            setDataCounts(counts);
+            setDashboardLoading(false);
+          }
         } catch (error) {
           console.error("Error al obtener datos del Dashboard:", error);
         }
@@ -38,7 +42,7 @@ const useDashboard = () => {
     };
   }, [user, loading, location.pathname]);
 
-  return { dataCounts, loading };
+    return { dataCounts, loading: dashboardLoading };
 };
 
 export default useDashboard;

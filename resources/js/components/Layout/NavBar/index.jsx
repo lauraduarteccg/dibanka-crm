@@ -9,10 +9,12 @@ import {
   ListItemIcon,
   ListItemText,
   IconButton,
+
 } from "@mui/material";
 import { FaUserCircle } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoIosLogOut } from "react-icons/io";
+import { IoHomeOutline } from "react-icons/io5";
 import { HiOutlineRectangleGroup, HiOutlineIdentification } from "react-icons/hi2";
 import { MdOutlineFolderSpecial } from "react-icons/md";
 import { VscTools } from "react-icons/vsc";
@@ -34,6 +36,13 @@ const NavBar = ({ id_contact, id_management, id_special_cases, id_config }) => {
 
   // 🔹 MENÚ PRINCIPAL — módulos operativos
   const MENU_ITEMS = [
+    {
+      id: "dashboard",
+      label: "Inicio",
+      path: "/home",
+      icon: <IoHomeOutline className="text-white w-6 h-auto" />,
+      permission: "any",
+    },
     {
       id: id_contact,
       label: "Contactos",
@@ -172,7 +181,7 @@ const NavBar = ({ id_contact, id_management, id_special_cases, id_config }) => {
               {user?.name ?? "Usuario indefinido"}
             </h2>
           </button>
-          
+
           <div className="flex items-center w-8 h-8">
             <Tooltip title="Cerrar Sesión">
               <IconButton

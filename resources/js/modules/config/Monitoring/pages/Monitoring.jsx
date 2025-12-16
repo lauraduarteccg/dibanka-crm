@@ -1,8 +1,9 @@
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 import FormAdd from "@components/forms/FormAdd";
 import Search from "@components/forms/Search";
+import StatCard from "@components/ui/StatCard";
 import * as yup from "yup";
 import { useMonitoring } from "@modules/config/Monitoring/hooks/useMonitoring";
 
@@ -50,21 +51,17 @@ const Monitoring = () => {
   const activeCount = monitoring.filter((m) => m.is_active === 1).length;
   const inactiveCount = totalItems - activeCount;
 
+  const statsCards = [
+    { title: "Seguimientos Totales", value: totalItems },
+    { title: "Seguimientos Activos", value: activeCount },
+    { title: "Seguimientos Inactivos", value: inactiveCount },
+  ]
   return (
     <>
       {/* Cards */}
       <div className="flex justify-center gap-6 mb-4">
-        {[
-          { label: "Seguimientos Totales", value: totalItems },
-          { label: "Seguimientos Activos", value: activeCount },
-          { label: "Seguimientos Inactivos", value: inactiveCount },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white shadow-md rounded-lg px-6 py-4 w-64">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-black font-bold">{stat.label}</p>
-              <p className="text-2xl font-bold text-primary-dark">{stat.value}</p>
-            </div>
-          </div>
+        {statsCards.map((stat, index) => (
+          <StatCard key={index} stat={stat} loading={loading} />
         ))}
       </div>
 
@@ -98,7 +95,7 @@ const Monitoring = () => {
 
       {/* Tabla */}
       {loading ? (
-        <Loader />
+        <TableSkeleton rows={3} />
       ) : (
         <Table
           columns={columns}

@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useCan } from "@hooks/useCan";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 
 /**
  * 🔒 Ruta protegida basada en permisos (Spatie Laravel Permission)

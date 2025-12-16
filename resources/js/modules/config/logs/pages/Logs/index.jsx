@@ -1,7 +1,7 @@
 import React from "react";
 import useLogs from "../../hooks/useLogs";
 import Calendar from "@components/ui/Calendar";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 import Table from "@components/tables/Table";
 
 const Logs = () => {
@@ -54,8 +54,8 @@ const Logs = () => {
       />
 
       {/* Tabla */}
-      {loading ? (
-        <Loader />
+    {loading ? (
+        <TableSkeleton rows={7} />
       ) : (
         <Table
           columns={columns}

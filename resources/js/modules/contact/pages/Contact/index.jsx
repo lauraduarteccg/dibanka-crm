@@ -3,12 +3,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useCan } from "@hooks/useCan";
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
-import Loader from "@components/ui/Loader";
 import FormAdd from "@components/forms/FormAdd";
 import FilterSearch from "@components/ui/FilterSearch";
 import { useContact } from "@modules/contact/hooks/useContact";
 import { fields, userSchema, columns, filterOptions } from "./constants";
-
+import TableSkeleton from "@components/tables/TableSkeleton";
 const Contact = ({
     addContact,
     searchContact,
@@ -158,9 +157,8 @@ const Contact = ({
                 fields={formFields}
                 schema={userSchema}
             />
-
             {loading ? (
-                <Loader />
+                <TableSkeleton row="9" />
             ) : (
                 <Table
                     columns={columns}

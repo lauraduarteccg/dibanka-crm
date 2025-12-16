@@ -1,11 +1,11 @@
 import { useContext, useEffect } from "react";
 import { useCan } from "@hooks/useCan";
 import { useSpecialCases } from "@modules/specialCases/hooks/useSpecialCases";
+import TableSkeleton from "@components/tables/TableSkeleton";
 
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormSpecialCasesDrawer from "@modules/specialCases/components/FormSpecialCasesDrawer";
-import Loader from "@components/ui/Loader";
 import FilterSearch from "@components/ui/FilterSearch";
 
 import { AuthContext } from "@context/AuthContext";
@@ -147,7 +147,7 @@ const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
       />
 
       {loading ? (
-        <Loader />
+        <TableSkeleton rows={11} />
       ) : (
         <Table
           columns={columns}

@@ -10,7 +10,7 @@ const Counter = ({ value, duration = 1 }) => {
         return controls.stop; 
     }, [value, count, duration]);
 
-    return <motion.span>{rounded}</motion.span>;
+    return <motion.span >{rounded}</motion.span>;
 };
 
 export default Counter;

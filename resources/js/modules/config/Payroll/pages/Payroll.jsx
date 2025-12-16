@@ -2,8 +2,9 @@ import { usePayrolls } from "@modules/config/payroll/hooks/usePayrolls";
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormAdd from "@components/forms/FormAdd";
-import Loader from "@components/ui/Loader";
+import TableSkeleton from "@components/tables/TableSkeleton";
 import Search from "@components/forms/Search";
+import StatCard from "@components/ui/StatCard";
 import * as yup from "yup";
 
 /* ===========================================================
@@ -39,6 +40,7 @@ const payrollSchema = yup.object().shape({
     i_email: yup.string(),
 });
 
+
 /* ===========================================================
  *  COMPONENTE PRINCIPAL
  * =========================================================== */
@@ -65,24 +67,29 @@ const Payroll = () => {
 
     const activePayroll = payrolls.filter((p) => p.is_active === 1).length;
     const inactivePayroll = totalItems - activePayroll;
-
+    const statsCards = [
+        {
+            title: "Pagadurías Totales",
+            value: totalItems,
+        },
+        {
+            title: "Pagadurías Activas",
+            value: activePayroll,
+        },
+        {
+            title: "Pagadurías Inactivas",
+            value: inactivePayroll,
+        }
+    ]
     return (
         <>
             {/* Estadísticas */}
             <div className="flex justify-center gap-6 mb-4">
-                {[
-                    { label: "Pagadurías Totales", value: totalItems },
-                    { label: "Pagadurías Activas", value: activePayroll },
-                    { label: "Pagadurías Inactivas", value: inactivePayroll },
-                ].map((stat, i) => (
-                    <div key={i} className="bg-white shadow-md rounded-lg px-6 py-4 w-64">
-                        <div className="flex justify-between items-center">
-                            <p className="text-sm text-black font-bold">{stat.label}</p>
-                            <p className="text-2xl font-bold text-primary-dark">{stat.value}</p>
-                        </div>
-                    </div>
+                {statsCards.map((stat, index) => (
+                    <StatCard key={index} stat={stat} loading={loading} />
                 ))}
             </div>
+
 
             {/* Botón + */}
             <ButtonAdd
@@ -98,7 +105,7 @@ const Payroll = () => {
                 <Search onSearch={handleSearch} placeholder="Buscar pagaduría..." />
             </div>
 
-            {/* Modal Formulario */ }
+            {/* Modal Formulario */}
             <FormAdd
                 isOpen={isOpenADD}
                 setIsOpen={handleCloseModal}
@@ -114,7 +121,7 @@ const Payroll = () => {
 
             {/* Tabla */}
             {loading ? (
-                <Loader />
+                <TableSkeleton rows={4} />
             ) : (
                 <Table
                     columns={[
@@ -128,7 +135,7 @@ const Payroll = () => {
                     totalPages={totalPages}
                     rowsPerPage={perPage}
                     totalItems={totalItems}
-                    fetchPage ={(page) => fetchPage(page)}
+                    fetchPage={(page) => fetchPage(page)}
                     onDelete={handleDelete}
                     actions
                     onEdit={handleEdit}

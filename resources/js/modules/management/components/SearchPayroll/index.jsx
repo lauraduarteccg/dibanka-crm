@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom"; // Importar useNavigate
 import FilterSearch from "@components/ui/FilterSearch";
 import Table from "@components/tables/Table";
 import { useAddManagement } from "@modules/management/hooks/useAddManagement";
-
+import TableSkeleton from "@components/tables/TableSkeleton";
 // Opciones de filtro para búsqueda de contactos
 const filterOptions = [
   { value: "identification_number", label: "Número de identificación" },
@@ -26,6 +26,7 @@ export default function SearchPayroll({
 }) {
   const navigate = useNavigate(); // Hook de navegación
   const {
+    loading,
     handleSearchContact,
     contact,
     totalPagesContact,
@@ -55,18 +56,18 @@ export default function SearchPayroll({
   };
 
   const handleEdit = (record) => {
-      // Redirigir a Contactos filtrando por identificación
-      navigate(
-          `/contactos?search=${encodeURIComponent(
-              record.identification_number
-          )}&column=identification_number`
-      );
+    // Redirigir a Contactos filtrando por identificación
+    navigate(
+      `/contactos?search=${encodeURIComponent(
+        record.identification_number
+      )}&column=identification_number`
+    );
   };
 
   const handleFilterSearch = (searchValue, filterColumn) => {
     // Normalizar filtros para backend (igual que en Contact)
     let column = filterColumn;
-    
+
     if (filterColumn === "payroll.name") column = "payroll";
     if (filterColumn === "campaign.name") column = "campaign";
 
@@ -125,13 +126,13 @@ export default function SearchPayroll({
           <div className="w-full flex justify-end gap-2">
             <div className="w-full">
             </div>
-                <FilterSearch
-                className=""
-                onFilter={handleFilterSearch}
-                placeholder="Buscar contacto o cliente..."
-                filterOptions={filterOptions}
-                initialSearchValue={searchTermContact}
-                />
+            <FilterSearch
+              className=""
+              onFilter={handleFilterSearch}
+              placeholder="Buscar contacto o cliente..."
+              filterOptions={filterOptions}
+              initialSearchValue={searchTermContact}
+            />
             {searchTermContact && (
               <button
                 onClick={handleClearSearch}
@@ -142,25 +143,30 @@ export default function SearchPayroll({
             )}
           </div>
         </div>
-            
-        {/* Tabla */}
-        <Table
-          width="100%"
-          columns={columns}
-          data={contact}
-          paginationSection={true}
-          actions={true}
-          edit={true}
-          onEdit={handleEdit}
-          currentPage={currentPageContact}
-          totalPages={totalPagesContact}
-          rowsPerPage={perPageContact}
-          totalItems={totalItemsContact}
-          fetchPage={fetchPageContact}
-          onActiveOrInactive={false}
-          selectRecord={true}
-          onSelectRecord={handleSelectRecord}
-        />
+        {/* TABLE / SKELETON */}
+        <div className="min-h-[420px]">
+          {loading ? (
+            <TableSkeleton rows={8} />
+          ) : (
+            <Table
+              width="100%"
+              columns={columns}
+              data={contact}
+              paginationSection={true}
+              actions={true}
+              edit={true}
+              onEdit={handleEdit}
+              currentPage={currentPageContact}
+              totalPages={totalPagesContact}
+              rowsPerPage={perPageContact}
+              totalItems={totalItemsContact}
+              fetchPage={fetchPageContact}
+              onActiveOrInactive={false}
+              selectRecord={true}
+              onSelectRecord={handleSelectRecord}
+            />
+          )}
+        </div>
 
         {/* Footer */}
         <div className="mt-6 text-center text-sm text-gray-400">
