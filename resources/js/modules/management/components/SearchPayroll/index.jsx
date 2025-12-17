@@ -89,7 +89,6 @@ export default function SearchPayroll({
           borderRadius: 1,
           boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
           background: "#f7fafc",
-          overflow: "hidden",
         },
       }}
     >

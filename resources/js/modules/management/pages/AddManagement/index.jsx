@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   FormControl,
   InputLabel,
@@ -14,7 +15,7 @@ import {
 } from "@mui/material";
 import { TiContacts, TiInfoLarge } from "react-icons/ti";
 import { MdOutlineFolderSpecial } from "react-icons/md";
-import { BsInfoCircle } from "react-icons/bs";
+import { FiUserPlus } from "react-icons/fi";
 import SpeedDialButton from "@components/ui/SpeedDialButton";
 import seleccione_imagen from "@assets/seleccione_imagen.png";
 import { useAddManagementForm } from "@modules/management/hooks/useAddManagementForm";
@@ -24,6 +25,9 @@ import FormSpecialCases from "@modules/management/components/FormSpecialCases";
 import SearchPayroll from "@modules/management/components/SearchPayroll";
 import { IoMdSearch } from "react-icons/io";
 import Agent from "@modules/management/components/agent";
+import { fields as contactFields } from "@modules/contact/pages/Contact/constants";
+import { FiX, FiSave, FiEdit2, FiUserX } from "react-icons/fi";
+import { LuUserPen } from "react-icons/lu";
 
 const AddManagement = () => {
   const {
@@ -41,6 +45,7 @@ const AddManagement = () => {
     modal,
     validationErrors,
     loadingConsultations,
+    payroll,
     setCampaign,
     setSms,
     setWsp,
@@ -56,6 +61,7 @@ const AddManagement = () => {
     clearValidationError,
     onSave,
     handleClear,
+    handleClearConact,
     filteredTypeManagement,
     filteredConsultation,
     filteredSpecific,
@@ -63,7 +69,31 @@ const AddManagement = () => {
     openSections,
     setOpenSections,
     optionsWithIndex,
+
+    // Editing contact
+    isEditingContact,
+    contactFormData,
+    setContactFormData,
+    handleEditContact,
+    handleCreateContact,
+    handleCancelEdit,
+    handleSaveContactEdit,
   } = useAddManagementForm();
+
+  const formContactFields = useMemo(() => {
+    return contactFields.map((field) => {
+      if (field.name === "payroll_id") {
+        return {
+          ...field,
+          options: (payroll || []).map((p) => ({
+            value: p.id,
+            label: p.name,
+          })),
+        };
+      }
+      return field;
+    });
+  }, [payroll]);
 
   const {
     user,
@@ -93,7 +123,7 @@ const AddManagement = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-4 text-secondary-dark px-[10%] pb-40 ">
+    <div className="flex flex-col gap-4 text-secondary-dark lg:px-[8%] md:px-[5%] sm:px-[5%] pb-40 ">
       {/* Título */}
       <div className="flex justify-between items-center">
         <h1 className="flex justify-center items-center gap-3 text-2xl font-semibold">
@@ -145,28 +175,117 @@ const AddManagement = () => {
                   >
                     <IoMdSearch className="text-blue-600 w-6 h-6 group-hover:scale-110 transition-transform" />
                   </button>
+                  
+                  <button
+                    onClick={handleCreateContact}
+                    disabled={selectedContact}
+                    title="Crear nuevo contacto"
+                    className="px-5 bg-blue-50 hover:bg-blue-100 border-l border-gray-300 transition-all duration-200 group disabled:opacity-50"
+                  >
+                    <FiUserPlus className="text-blue-600 w-6 h-6 group-hover:scale-110 transition-transform" />
+                  </button>
+                  <button
+                    onClick={handleEditContact}
+                    disabled={!selectedContact}
+                    title="Editar información del cliente"
+                    className="px-5 bg-blue-50 hover:bg-blue-100 border-l border-gray-300 transition-all duration-200 group disabled:opacity-50"
+                  >
+                    <LuUserPen className="text-blue-600 w-6 h-6 group-hover:scale-110 transition-transform" />
+                  </button>
+                  {selectedContact && (
+                  <button
+                    onClick={handleClearConact}
+                    title="Limpiar información del cliente"
+                    className="px-5 bg-red-50 hover:bg-red-100 border-l border-gray-300 transition-all duration-200 group"
+                  >
+                    <FiUserX className="text-red-600 w-6 h-6 group-hover:scale-110 transition-transform" />
+                  </button>                    
+                  )}
                 </div>
               )}
             />
           </div>
 
-          {/* Grid de Información */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InfoField label="Campaña" value={selectedContact?.campaign.name ?? "—"} fieldName="campaign" />
-            <InfoField label="Pagaduría" value={selectedContact?.payroll.name ?? "—"} fieldName="payroll" />
-            <InfoField label="Nombre" value={selectedContact?.name ?? "—"} fieldName="name" />
-            <InfoField label="Correo electrónico" value={selectedContact?.email ?? "—"} fieldName="email" />
-            <InfoField label="Teléfono" value={selectedContact?.phone ?? "—"} fieldName="phone" />
-            <InfoField label="Celular actualizado" value={selectedContact?.update_phone ?? "—"} fieldName="update_phone" />
-            <InfoField label="Tipo de identificación" value={selectedContact?.identification_type ?? "—"} fieldName="identification_type" />
-            <InfoField label="Número de identificación" value={selectedContact?.identification_number ?? "—"} fieldName="identification_number" />
-            {loadingConsultations && (
-              <div className="col-span-2 flex items-center justify-center gap-3 py-4 bg-blue-50 rounded-lg">
-                <CircularProgress size={20} className="text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">Cargando consultas...</span>
+          {/* Grid de Información / Formulario Editable */}
+          {!isEditingContact ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-300 ease-in-out">
+              <InfoField label="Campaña" value={selectedContact?.campaign?.name ?? "—"} fieldName="campaign" />
+              <InfoField label="Pagaduría" value={selectedContact?.payroll?.name ?? "—"} fieldName="payroll" />
+              <InfoField label="Nombre" value={selectedContact?.name ?? "—"} fieldName="name" />
+              <InfoField label="Correo electrónico" value={selectedContact?.email ?? "—"} fieldName="email" />
+              <InfoField label="Teléfono" value={selectedContact?.phone ?? "—"} fieldName="phone" />
+              <InfoField label="Celular actualizado" value={selectedContact?.update_phone ?? "—"} fieldName="update_phone" />
+              <InfoField label="Tipo de identificación" value={selectedContact?.identification_type ?? "—"} fieldName="identification_type" />
+              <InfoField label="Número de identificación" value={selectedContact?.identification_number ?? "—"} fieldName="identification_number" />
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-xl p-6 border-2 border-dashed border-blue-200 transition-all duration-300 ease-in-out animate-pulse-subtle">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-blue-800">Editando Información</h3>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={handleCancelEdit} 
+                    className="flex items-center gap-1 px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm transition-colors"
+                  >
+                    <FiX /> Cancelar
+                  </button>
+                  <button 
+                    onClick={handleSaveContactEdit}
+                    className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                  >
+                    <FiSave /> Guardar cambios
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {formContactFields.map((field) => (
+                  <div key={field.name}>
+                    {field.type === "select" ? (
+                      <FormControl fullWidth size="small" error={!!validationErrors[field.name]}>
+                        <InputLabel id={`label-${field.name}`}>{field.label}</InputLabel>
+                        <Select
+                          labelId={`label-${field.name}`}
+                          value={contactFormData[field.name] || ""}
+                          label={field.label}
+                          onChange={(e) => {
+                            setContactFormData({ ...contactFormData, [field.name]: e.target.value });
+                            clearValidationError(field.name);
+                          }}
+                        >
+                          {field.options?.map((opt) => (
+                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                          ))}
+                        </Select>
+                        {validationErrors[field.name] && (
+                          <FormHelperText>{validationErrors[field.name][0]}</FormHelperText>
+                        )}
+                      </FormControl>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label={field.label}
+                        value={contactFormData[field.name] || ""}
+                        error={!!validationErrors[field.name]}
+                        helperText={validationErrors[field.name] ? validationErrors[field.name][0] : ""}
+                        onChange={(e) => {
+                          setContactFormData({ ...contactFormData, [field.name]: e.target.value });
+                          clearValidationError(field.name);
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {loadingConsultations && (
+            <div className="col-span-2 flex items-center justify-center gap-3 py-4 bg-blue-50 rounded-lg mt-4">
+              <CircularProgress size={20} className="text-blue-600" />
+              <span className="text-sm font-medium text-blue-700">Cargando consultas...</span>
+            </div>
+          )}
         </div>
 
         {/* Imagen con información */}

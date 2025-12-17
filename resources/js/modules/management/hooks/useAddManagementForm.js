@@ -8,6 +8,9 @@ import {
   getActiveConsultationsByCampaign,
   getActiveSpecificConsultationsByCampaign
 } from "@modules/management/services/managementService";
+import { createContact, updateContact } from "@modules/contact/services/contactService";
+import { userSchema as contactSchema } from "@modules/contact/pages/Contact/constants";
+import Swal from "sweetalert2";
 
 export const useAddManagementForm = () => {
   const navigate = useNavigate();
@@ -29,6 +32,8 @@ export const useAddManagementForm = () => {
   const [selectedSpecificConsultation, setSelectedSpecificConsultation] = useState(null);
   const [wolkvox_id, setWolkvox_id] = useState("");
   const [comments, setObservations] = useState("");
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [contactFormData, setContactFormData] = useState({});
 
   // Estados para consultas dinámicas
   const [consultation, setConsultation] = useState([]);
@@ -125,6 +130,10 @@ export const useAddManagementForm = () => {
     }
   }, [selectedContact]);
 
+  const handleClearConact = () => {
+    setSelectedContact(null)
+  }
+
   // Limpia el formulario
   const handleClear = () => {
     setCampaign("");
@@ -139,6 +148,101 @@ export const useAddManagementForm = () => {
     setSms(false);
     setWsp(false);
     setValidationErrors({});
+    setIsEditingContact(false);
+  };
+
+  const handleEditContact = () => {
+    if (!selectedContact) return;
+    setContactFormData({
+      id: selectedContact.id,
+      campaign_id: selectedContact.campaign_id || (selectedContact.campaign?.id),
+      payroll_id: selectedContact.payroll_id || (selectedContact.payroll?.id),
+      name: selectedContact.name || "",
+      email: selectedContact.email || "",
+      phone: selectedContact.phone || "",
+      update_phone: selectedContact.update_phone || "",
+      identification_type: selectedContact.identification_type || "",
+      identification_number: selectedContact.identification_number || "",
+    });
+    setIsEditingContact(true);
+  };
+
+  const handleCreateContact = () => {
+    setSelectedContact(null); // Deseleccionar contacto actual si existe
+    setContactFormData({
+      id: null,
+      campaign_id: "",
+      payroll_id: "",
+      name: "",
+      email: "",
+      phone: "",
+      update_phone: "",
+      identification_type: "",
+      identification_number: "",
+    });
+    setIsEditingContact(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingContact(false);
+    setContactFormData({});
+    setValidationErrors({});
+  };
+
+  const handleSaveContactEdit = async () => {
+    try {
+      await contactSchema.validate(contactFormData, { abortEarly: false });
+      
+      let response;
+      if (contactFormData.id) {
+        response = await updateContact(contactFormData.id, contactFormData);
+      } else {
+        response = await createContact(contactFormData);
+      }
+
+      // El backend suele devolver el objeto creado/editado
+      const savedContact = response.contact || response.data || response;
+      
+      // Mapear nombres de campaña y pagaduría para el grid local
+      const campaignName = contactFormData.campaign_id == 1 ? "Aliados" : "Afiliados";
+      const fullPayroll = (payroll || []).find(p => p.id === contactFormData.payroll_id);
+
+      setSelectedContact({
+        ...savedContact,
+        campaign: { id: contactFormData.campaign_id, name: campaignName },
+        payroll: fullPayroll || { id: contactFormData.payroll_id, name: (payroll || []).find(p => p.id === contactFormData.payroll_id)?.name || "—" },
+      });
+      
+      Swal.fire({
+        title: "Contacto guardado",
+        text: `El contacto ha sido ${contactFormData.id ? 'actualizado' : 'creado'} correctamente.`,
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      setIsEditingContact(false);
+      setValidationErrors({});
+    } catch (err) {
+      if (err.inner) {
+        const errors = {};
+        err.inner.forEach((error) => {
+          errors[error.path] = [error.message];
+        });
+        setValidationErrors(errors);
+      } else if (err.response?.status === 422) {
+        setValidationErrors(err.response.data.errors);
+      } else {
+        console.error("Error al guardar contacto:", err);
+        Swal.fire({
+          title: "Error",
+          text: "Ocurrió un error al guardar el contacto.",
+          icon: "error",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+    }
   };
 
   // Envía la gestión
@@ -295,5 +399,15 @@ export const useAddManagementForm = () => {
     openSections,
     setOpenSections,
     optionsWithIndex,
+
+    // Editing contact
+    isEditingContact,
+    contactFormData,
+    setContactFormData,
+    handleEditContact,
+    handleCreateContact,
+    handleCancelEdit,
+    handleSaveContactEdit,
+    handleClearConact,
   };
 };
