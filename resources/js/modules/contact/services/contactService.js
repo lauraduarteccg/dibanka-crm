@@ -50,6 +50,16 @@ export const deleteContact = async (id) => {
     return data;
 };
 
+/**
+ * Obtiene el historial de cambios de un contacto específico.
+ * @param {number} id - ID del contacto
+ * @param {number} page - Número de página
+ */
+export const getHistoryChanges = async (contactId, page = 1) => {
+    const { data } = await api.get(`/change-histories/entity/contact/${contactId}?page=${page}`);
+    return data;
+};
+
 /* ===========================================================
  *  PAGADURÍAS
  * =========================================================== */

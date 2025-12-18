@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ChangeHistory;
 
 class SpecialCases extends Model
 {
@@ -19,10 +18,5 @@ class SpecialCases extends Model
     public function contact()
     {
         return $this->belongsTo(Contact::class, 'contact_id');
-    }
-    
-    public function histories()
-    {
-        return $this->morphMany(ChangeHistory::class, 'entity');
     }
 }

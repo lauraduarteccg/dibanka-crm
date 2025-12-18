@@ -4,171 +4,186 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class ChangeHistoryResource extends JsonResource
 {
     /**
-     * Transform the resource into an array.
+     * Transformar el recurso en un array.
      *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        $data = [
+        return [
             'id' => $this->id,
-            'entity_type' => $this->entity_type,
+            'entity_type' => $this->formatEntityType($this->entity_type),
+            'entity_type_full' => $this->entity_type,
             'entity_id' => $this->entity_id,
             'action' => $this->action,
             'changes' => $this->getFormattedChanges(),
-            'user' => [
+            'user' => $this->when($this->user, [
                 'id' => $this->user?->id,
                 'name' => $this->user?->name,
                 'email' => $this->user?->email,
-            ],
+            ]),
             'ip_address' => $this->ip_address,
             'user_agent' => $this->user_agent,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'created_at_human' => $this->created_at?->diffForHumans(),
+            ...$this->getValuesBasedOnAction(),
         ];
-
-        // Only include old_values and new_values based on action
-        if ($this->action === 'created') {
-            $data['new_values'] = $this->new_values;
-        } elseif ($this->action === 'deleted') {
-            $data['old_values'] = $this->old_values;
-        } else {
-            $data['old_values'] = $this->old_values;
-            $data['new_values'] = $this->new_values;
-        }
-
-        return $data;
     }
 
     /**
-     * Get formatted changes comparing old and new values
+     * Obtener valores antiguos y nuevos según la acción.
+     */
+    private function getValuesBasedOnAction(): array
+    {
+        return match ($this->action) {
+            'created' => ['new_values' => $this->new_values],
+            'deleted' => ['old_values' => $this->old_values],
+            default => [
+                'old_values' => $this->old_values,
+                'new_values' => $this->new_values,
+            ],
+        };
+    }
+
+    /**
+     * Formatear tipo de entidad a kebab-case.
+     * Ejemplos:
+     * - App\Models\Contact -> contact
+     * - App\Models\Afiliados\Management -> afiliados-management
+     */
+    private function formatEntityType(string $entityType): string
+    {
+        $path = str_replace('App\\Models\\', '', $entityType);
+        $parts = explode('\\', $path);
+        
+        return collect($parts)
+            ->map(fn($part) => Str::kebab($part))
+            ->implode('-');
+    }
+
+    /**
+     * Obtener cambios formateados comparando valores antiguos y nuevos.
      */
     private function getFormattedChanges(): array
     {
-        if ($this->action === 'created') {
-            return $this->formatCreatedChanges();
-        }
-
-        if ($this->action === 'deleted') {
-            return $this->formatDeletedChanges();
-        }
-
-        return $this->formatUpdatedChanges();
+        return match ($this->action) {
+            'created' => $this->formatCreatedChanges(),
+            'deleted' => $this->formatDeletedChanges(),
+            default => $this->formatUpdatedChanges(),
+        };
     }
 
     /**
-     * Format changes for created action
+     * Formatear cambios para acción de creación.
      */
     private function formatCreatedChanges(): array
     {
-        $changes = [];
-        
-        foreach ($this->new_values ?? [] as $field => $value) {
-            if ($this->shouldSkipField($field)) {
-                continue;
-            }
-
-            $changes[] = [
-                'field' => $field,
-                'value' => $value,
-                'display_value' => $this->formatValue($value, $field),
-            ];
-        }
-
-        return $changes;
+        return $this->mapChanges($this->new_values ?? [], fn($field, $value) => [
+            'field' => $field,
+            'value' => $value,
+            'display_value' => $this->formatValue($value, $field),
+        ]);
     }
 
     /**
-     * Format changes for deleted action
+     * Formatear cambios para acción de eliminación.
      */
     private function formatDeletedChanges(): array
     {
-        $changes = [];
-        
-        foreach ($this->old_values ?? [] as $field => $value) {
-            if ($this->shouldSkipField($field)) {
-                continue;
-            }
-
-            $changes[] = [
-                'field' => $field,
-                'value' => $value,
-                'display_value' => $this->formatValue($value, $field),
-            ];
-        }
-
-        return $changes;
+        return $this->mapChanges($this->old_values ?? [], fn($field, $value) => [
+            'field' => $field,
+            'value' => $value,
+            'display_value' => $this->formatValue($value, $field),
+        ]);
     }
 
     /**
-     * Format changes for updated action
+     * Formatear cambios para acción de actualización.
      */
     private function formatUpdatedChanges(): array
     {
-        $changes = [];
-        
-        foreach ($this->new_values ?? [] as $field => $newValue) {
-            if ($this->shouldSkipField($field)) {
-                continue;
-            }
-
+        return $this->mapChanges($this->new_values ?? [], function($field, $newValue) {
             $oldValue = $this->old_values[$field] ?? null;
 
-            $changes[] = [
+            return [
                 'field' => $field,
                 'old_value' => $oldValue,
                 'new_value' => $newValue,
                 'display_old' => $this->formatValue($oldValue, $field),
                 'display_new' => $this->formatValue($newValue, $field),
             ];
-        }
-
-        return $changes;
+        });
     }
 
     /**
-     * Check if field should be skipped
+     * Mapear cambios filtrando campos que deben omitirse.
+     */
+    private function mapChanges(array $values, callable $callback): array
+    {
+        return collect($values)
+            ->reject(fn($value, $field) => $this->shouldSkipField($field))
+            ->map(fn($value, $field) => $callback($field, $value))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Verificar si el campo debe omitirse.
      */
     private function shouldSkipField(string $field): bool
     {
-        $skipFields = ['password', 'remember_token', 'updated_at'];
-        return in_array($field, $skipFields);
+        return in_array($field, ['password', 'remember_token', 'updated_at']);
     }
 
     /**
-     * Format value for display
+     * Formatear valor para visualización.
      */
     private function formatValue($value, string $field = null): string
     {
         if (is_null($value)) {
             return 'N/A';
         }
+        
+        // Campo de estado activo/inactivo
+        if ($field === 'is_active') {
+            return in_array($value, [1, '1', true], true)
+                ? 'Activo'
+                : 'Inactivo';
+        }
+        
+        // Campo de WHATSAP
+        if ($field === 'wsp') {
+            return in_array($value, [1, '1', true], true)
+                ? 'Enviado'
+                : 'No enviado';
+        }
 
-        if (is_bool($value)) {
-            return $value ? 'Sí' : 'No';
+        // Campo de SMS
+        if ($field === 'sms') {
+            return in_array($value, [1, '1', true], true)
+                ? 'Enviado'
+                : 'No enviado';
         }
 
         if (is_array($value)) {
             return json_encode($value);
         }
 
-        // Try to resolve foreign key relationships
+        // Intentar resolver relaciones de claves foráneas
         if ($field && $this->isForeignKey($field)) {
-            $relatedValue = $this->resolveRelationship($field, $value);
-            if ($relatedValue) {
-                return $relatedValue;
-            }
+            return $this->resolveRelationship($field, $value) ?? (string) $value;
         }
 
         return (string) $value;
     }
 
     /**
-     * Check if field is a foreign key
+     * Verificar si el campo es una clave foránea.
      */
     private function isForeignKey(string $field): bool
     {
@@ -176,39 +191,29 @@ class ChangeHistoryResource extends JsonResource
     }
 
     /**
-     * Resolve relationship value
+     * Resolver valor de relación.
      */
     private function resolveRelationship(string $field, $id): ?string
     {
         try {
-            // Remove '_id' suffix to get relation name
             $relationName = str_replace('_id', '', $field);
-            
-            // Get the model class from entity_type
             $modelClass = $this->entity_type;
             
             if (!class_exists($modelClass)) {
                 return null;
             }
 
-            // Create a temporary instance to check if relation exists
             $model = new $modelClass;
             
+            // Si no existe el método de relación, intentar por nombre del modelo
             if (!method_exists($model, $relationName)) {
                 return $this->resolveByModelName($relationName, $id);
             }
 
-            // Try to get the related model
-            $relation = $model->$relationName();
-            $relatedModel = $relation->getRelated();
-            $relatedInstance = $relatedModel->find($id);
+            // Obtener el modelo relacionado
+            $relatedInstance = $model->$relationName()->getRelated()->find($id);
 
-            if (!$relatedInstance) {
-                return null;
-            }
-
-            // Try common name fields
-            return $this->getDisplayName($relatedInstance);
+            return $relatedInstance ? $this->getDisplayName($relatedInstance) : null;
 
         } catch (\Exception $e) {
             return null;
@@ -216,13 +221,12 @@ class ChangeHistoryResource extends JsonResource
     }
 
     /**
-     * Resolve by guessing model name
+     * Resolver adivinando el nombre del modelo.
      */
     private function resolveByModelName(string $relationName, $id): ?string
     {
         try {
-            // Convert relation name to model class (e.g., 'payroll' -> 'Payroll')
-            $modelName = 'App\\Models\\' . ucfirst(\Illuminate\Support\Str::camel($relationName));
+            $modelName = 'App\\Models\\' . Str::studly($relationName);
             
             if (!class_exists($modelName)) {
                 return null;
@@ -230,11 +234,7 @@ class ChangeHistoryResource extends JsonResource
 
             $relatedInstance = $modelName::find($id);
             
-            if (!$relatedInstance) {
-                return null;
-            }
-
-            return $this->getDisplayName($relatedInstance);
+            return $relatedInstance ? $this->getDisplayName($relatedInstance) : null;
 
         } catch (\Exception $e) {
             return null;
@@ -242,20 +242,18 @@ class ChangeHistoryResource extends JsonResource
     }
 
     /**
-     * Get display name from model instance
+     * Obtener nombre para mostrar de la instancia del modelo.
      */
     private function getDisplayName($instance): string
     {
-        // Try common name fields in order of preference
         $nameFields = ['name', 'title', 'description', 'email', 'code', 'number'];
         
         foreach ($nameFields as $field) {
-            if (isset($instance->$field) && !empty($instance->$field)) {
+            if (!empty($instance->$field)) {
                 return (string) $instance->$field;
             }
         }
 
-        // Fallback to ID
         return "ID: {$instance->id}";
     }
 }

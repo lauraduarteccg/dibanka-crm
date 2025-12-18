@@ -204,10 +204,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // ------------------- Historial de Cambios -------------------
     Route::prefix('change-histories')->group(function () {
         Route::get('/', [ChangeHistoryController::class, 'index']);
-        Route::get('/recent', [ChangeHistoryController::class, 'recent']);
-        Route::get('/statistics', [ChangeHistoryController::class, 'statistics']);
-        Route::get('/{changeHistory}', [ChangeHistoryController::class, 'show']);
-        Route::get('/entity/{entityType}/{entityId}', [ChangeHistoryController::class, 'getEntityHistory']);
+        Route::get('/entity/{entityType}', [ChangeHistoryController::class, 'getEntityTypeHistory']);
+        Route::get('/entity/{entityType}/{id}', [ChangeHistoryController::class, 'getEntityHistory']);
     });
 
     // ------------------- Sesión / Perfil -------------------

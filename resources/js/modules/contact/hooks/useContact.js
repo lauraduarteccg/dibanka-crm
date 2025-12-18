@@ -7,6 +7,7 @@ import {
     updateContact,
     deleteContact,
     getPayrolls,
+    getHistoryChanges,
 } from "@modules/contact/services/contactService";
 import { getManagements } from "@modules/management/services/managementService";
 
@@ -24,7 +25,7 @@ export const useContact = () => {
     const [validationErrors, setValidationErrors] = useState({});
 
     const [searchTerm, setSearchTerm] = useState("");
-    const [filterColumn, setFilterColumn] = useState(""); // Nueva columna de filtro
+    const [filterColumn, setFilterColumn] = useState("");
     const [isOpenADD, setIsOpenADD] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
     const [selectedManagement, setSelectedManagement] = useState(null);
@@ -40,6 +41,15 @@ export const useContact = () => {
     const [totalPagesM, setTotalPagesM] = useState(1);
     const [perPageM, setPerPageM] = useState(1);
     const [totalItemsM, setTotalItemsM] = useState(1);
+
+    // ====================== Historial de Cambios ======================
+    const [openHistory, setOpenHistory] = useState(false);
+    const [history, setHistory] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [currentPageH, setCurrentPageH] = useState(1);
+    const [totalPagesH, setTotalPagesH] = useState(1);
+    const [perPageH, setPerPageH] = useState(1);
+    const [totalItemsH, setTotalItemsH] = useState(1);
 
     // ====================== Formulario ======================
     const [formData, setFormData] = useState({
@@ -90,6 +100,42 @@ export const useContact = () => {
         },
         [fetchContact]
     );
+
+    // ================= Fetch historial de cambios =======================
+    const fetchHistoryChanges = useCallback(async (contactId, page = 1) => {
+        setLoadingHistory(true);
+        try {
+            const response = await getHistoryChanges(contactId, page);
+            console.log(response)
+            
+            setHistory(response.data || []);
+            setCurrentPageH(response.pagination?.current_page || 1);
+            setTotalPagesH(response.pagination?.last_page || 1);
+            setPerPageH(response.pagination?.per_page || 15);
+            setTotalItemsH(response.pagination?.total || 0);
+        } catch (err) {
+            console.error(err);
+            setError("Error al obtener el historial.");
+            setHistory([]);
+        } finally {
+            setLoadingHistory(false);
+        }
+    }, []);
+
+    // Función para abrir el historial de un contacto
+    const handleOpenHistory = useCallback((contact) => {
+        setSelectedContact(contact);
+        setOpenHistory(true);
+        setCurrentPageH(1);
+        fetchHistoryChanges(contact.id, 1);
+    }, [fetchHistoryChanges]);
+
+    // Función para cambiar de página en el historial
+    const fetchHistoryPage = useCallback((page) => {
+        if (selectedContact) {
+            fetchHistoryChanges(selectedContact.id, page);
+        }
+    }, [selectedContact, fetchHistoryChanges]);
 
     // ====================== Crear / Editar ======================
     const handleEdit = (item) => {
@@ -156,6 +202,12 @@ export const useContact = () => {
     const handleCloseModal = () => {
         setIsOpenADD(false);
         setValidationErrors({});
+    };
+
+    const handleCloseHistory = () => {
+        setOpenHistory(false);
+        setSelectedContact(null);
+        setHistory([]);
     };
 
     // ====================== Eliminar / Desactivar ======================
@@ -289,8 +341,21 @@ export const useContact = () => {
         setFormData,
         setIsOpenADD,
         
-        // Estado de búsqueda (Nuevo)
+        // Estado de búsqueda
         searchTerm,
         filterColumn,
+
+        // Historial de Cambios
+        openHistory,
+        setOpenHistory,
+        history,
+        loadingHistory,
+        currentPageH,
+        totalPagesH,
+        perPageH,
+        totalItemsH,
+        handleOpenHistory,
+        handleCloseHistory,
+        fetchHistoryPage,
     };
 };

@@ -5,7 +5,9 @@ import { AuthContext } from "@context/AuthContext";
 import {
   getManagements,
   getActiveMonitorings,
-  updateManagementMonitoring
+  updateManagementMonitoring,
+  getHistoryChangesAliados,
+  getHistoryChangesAfiliados
 } from "@modules/management/services/managementService";
 import { useDebounce } from "@modules/management/hooks/useDebounce";
 
@@ -16,12 +18,32 @@ export const useManagement = () => {
   const [managementCountAliados, setManagementCountAliados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Gestión seleccionada para historial
+  const [selectedManagement, setSelectedManagement] = useState(null);
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [perPage, setPerPage] = useState(1);
   const [totalItems, setTotalItems] = useState(1);
+
+  // ====================== Historial de Cambios ======================
+  // Aliados
+  const [openHistoryAliados, setOpenHistoryAliados] = useState(false);
+  const [historyAliados, setHistoryAliados] = useState([]);
+  const [loadingHistoryAliados, setLoadingHistoryAliados] = useState(true);
+  const [currentPageAliados, setCurrentPageAliados] = useState(1);
+  const [totalPagesAliados, setTotalPagesAliados] = useState(1);
+  const [perPageAliados, setPerPageAliados] = useState(1);
+  const [totalItemsAliados, setTotalItemsAliados] = useState(1);
+  // Afiliados
+  const [openHistoryAfiliados, setOpenHistoryAfiliados] = useState(false);
+  const [historyAfiliados, setHistoryAfiliados] = useState([]);
+  const [loadingHistoryAfiliados, setLoadingHistoryAfiliados] = useState(true);
+  const [currentPageAfiliados, setCurrentPageAfiliados] = useState(1);
+  const [totalPagesAfiliados, setTotalPagesAfiliados] = useState(1);
+  const [perPageAfiliados, setPerPageAfiliados] = useState(1);
+  const [totalItemsAfiliados, setTotalItemsAfiliados] = useState(1);
 
   // UI y búsqueda
   const location = useLocation();
@@ -261,6 +283,90 @@ export const useManagement = () => {
     navigate(location.pathname, { replace: true });
   }, [navigate, location.pathname]);
 
+  // ================= Fetch historial de cambios ALIADOS =======================
+  const fetchHistoryChangesAliados = useCallback(
+    async (managementId, page = 1) => {
+      setLoadingHistoryAliados(true);
+      try {
+        const response = await getHistoryChangesAliados(managementId, page);
+
+        setHistoryAliados(response.data || []);
+        setCurrentPageAliados(response.pagination?.current_page || 1);
+        setTotalPagesAliados(response.pagination?.last_page || 1);
+        setPerPageAliados(response.pagination?.per_page || 15);
+        setTotalItemsAliados(response.pagination?.total || 0);
+      } catch (err) {
+        console.error(err);
+        setError("Error al obtener el historial.");
+        setHistoryAliados([]);
+      } finally {
+        setLoadingHistoryAliados(false);
+      }
+    },
+    []
+  );
+
+  const handleOpenHistoryAliados = useCallback(
+    (management) => {
+      setSelectedManagement(management);
+      setOpenHistoryAliados(true);
+      setCurrentPageAliados(1);
+      fetchHistoryChangesAliados(management.id, 1);
+    },
+    [fetchHistoryChangesAliados]
+  );
+
+  const fetchHistoryPageAliados = useCallback(
+    (page) => {
+      if (selectedManagement) {
+        fetchHistoryChangesAliados(selectedManagement.id, page);
+      }
+    },
+    [selectedManagement, fetchHistoryChangesAliados]
+  );
+
+  // ================= Fetch historial de cambios AFILIADOS =======================
+  const fetchHistoryChangesAfiliados = useCallback(
+    async (managementId, page = 1) => {
+      setLoadingHistoryAfiliados(true);
+      try {
+        const response = await getHistoryChangesAfiliados(managementId, page);
+
+        setHistoryAfiliados(response.data || []);
+        setCurrentPageAfiliados(response.pagination?.current_page || 1);
+        setTotalPagesAfiliados(response.pagination?.last_page || 1);
+        setPerPageAfiliados(response.pagination?.per_page || 15);
+        setTotalItemsAfiliados(response.pagination?.total || 0);
+      } catch (err) {
+        console.error(err);
+        setError("Error al obtener el historial.");
+        setHistoryAfiliados([]);
+      } finally {
+        setLoadingHistoryAfiliados(false);
+      }
+    },
+    []
+  );
+
+  const handleOpenHistoryAfiliados = useCallback(
+    (management) => {
+      setSelectedManagement(management);
+      setOpenHistoryAfiliados(true);
+      setCurrentPageAfiliados(1);
+      fetchHistoryChangesAfiliados(management.id, 1);
+    },
+    [fetchHistoryChangesAfiliados]
+  );
+
+  const fetchHistoryPageAfiliados = useCallback(
+    (page) => {
+      if (selectedManagement) {
+        fetchHistoryChangesAfiliados(selectedManagement.id, page);
+      }
+    },
+    [selectedManagement, fetchHistoryChangesAfiliados]
+  );
+
   /* ===========================================================
    *  Return
    * =========================================================== */
@@ -304,5 +410,30 @@ export const useManagement = () => {
     // Campaign
     campaign,
     setCampaign,
+
+    // Historial Aliados
+    openHistoryAliados,
+    setOpenHistoryAliados,
+    historyAliados,
+    loadingHistoryAliados,
+    currentPageAliados,
+    totalPagesAliados,
+    perPageAliados,
+    totalItemsAliados,
+    handleOpenHistoryAliados,
+    fetchHistoryPageAliados,
+    selectedManagement,
+
+    //Historial Afiliados
+    openHistoryAfiliados,
+    setOpenHistoryAfiliados,
+    historyAfiliados,
+    loadingHistoryAfiliados,
+    currentPageAfiliados,
+    totalPagesAfiliados,
+    perPageAfiliados,
+    totalItemsAfiliados,
+    handleOpenHistoryAfiliados,
+    fetchHistoryPageAfiliados,
   };
 };

@@ -231,3 +231,23 @@ export const sendWhatsApp = async (payload) => {
   const { data } = await api.post("/send-wsp", payload);
   return data;
 };
+
+/**
+ * Obtiene el historial de cambios de una gestión de aliados.
+ * @param {number} id - ID de la gestión
+ * @param {number} page - Número de página
+ */
+export const getHistoryChangesAliados = async (managementId, page = 1) => {
+    const { data } = await api.get(`/change-histories/entity/aliados-management/${managementId}?page=${page}`);
+    return data;
+};
+
+/**
+ * Obtiene el historial de cambios de una gestión de afiliados.
+ * @param {number} id - ID de la gestión
+ * @param {number} page - Número de página
+ */
+export const getHistoryChangesAfiliados = async (managementId, page = 1) => {
+    const { data } = await api.get(`/change-histories/entity/afiliados-management/${managementId}?page=${page}`);
+    return data;
+};

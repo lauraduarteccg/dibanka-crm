@@ -9,6 +9,7 @@ import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import Button from "@components/ui/Button";
 import FilterSearch from "@components/ui/FilterSearch";
+import HistoryChanges from "@components/ui/HistoryChanges";
 
 const columns = [
   { header: "ID", key: "id" },
@@ -99,6 +100,31 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
     managementCountAliados,
     managementCountAfiliados,
     filterColumn,
+
+    // Historial Aliados
+    openHistoryAliados,
+    setOpenHistoryAliados,
+    historyAliados,
+    loadingHistoryAliados,
+    currentPageAliados,
+    totalPagesAliados,
+    perPageAliados,
+    totalItemsAliados,
+    handleOpenHistoryAliados,
+    fetchHistoryPageAliados,
+    selectedManagement,
+    
+    //Historial Afiliados
+    openHistoryAfiliados,
+    setOpenHistoryAfiliados,
+    historyAfiliados,
+    loadingHistoryAfiliados,
+    currentPageAfiliados,
+    totalPagesAfiliados,
+    perPageAfiliados,
+    totalItemsAfiliados,
+    handleOpenHistoryAfiliados,
+    fetchHistoryPageAfiliados,
   } = useManagement();
 
   const { can } = useCan();
@@ -169,7 +195,7 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
             <ButtonAdd
               id={idAddManagement}
               onClickButtonAdd={() => {
-                console.log("Navigating to add management with search term:", searchTerm);
+                //console.log("Navigating to add management with search term:", searchTerm);
                 navigate(`/gestiones/añadir?identification_number=${searchTerm}`)
               }}
               text="Agregar Gestión"
@@ -212,6 +238,8 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
               totalItems={totalItems}
               fetchPage={fetchPage}
               actions={true}
+              history={true}
+              onHistory={(item) => handleOpenHistoryAliados(item)}
               view={true}
               onView={(item) => handleView(item)}
               edit={false}
@@ -222,6 +250,19 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
               idMonitoring={idMonitoring}
             />
           )}
+          
+            <HistoryChanges
+                isOpen={openHistoryAliados}
+                onClose={() => setOpenHistoryAliados(false)}
+                contact={selectedManagement} 
+                history={historyAliados}
+                loading={loadingHistoryAliados}
+                currentPage={currentPageAliados}
+                totalPages={totalPagesAliados}
+                totalItems={totalItemsAliados}
+                perPage={perPageAliados}
+                onPageChange={fetchHistoryPageAliados}
+            />
         </TabPanel>
 
         {/* Tab Panel - Afiliados */}
@@ -272,6 +313,8 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
               totalItems={totalItems}
               fetchPage={fetchPage}
               actions={true}
+              history={true}
+              onHistory={(item) => handleOpenHistoryAfiliados(item)}
               view={true}
               onView={(item) => handleView(item)}
               edit={false}
@@ -281,7 +324,19 @@ const Management = ({ idView, idMonitoring, idSearchManagement, idAddManagement 
               idView={idView}
               idMonitoring={idMonitoring}
             />
-          )}
+          )}          
+            <HistoryChanges
+                isOpen={openHistoryAfiliados}
+                onClose={() => setOpenHistoryAfiliados(false)}
+                contact={selectedManagement} 
+                history={historyAfiliados}
+                loading={loadingHistoryAfiliados}
+                currentPage={currentPageAfiliados}
+                totalPages={totalPagesAfiliados}
+                totalItems={totalItemsAfiliados}
+                perPage={perPageAfiliados}
+                onPageChange={fetchHistoryPageAfiliados}
+            />
         </TabPanel>
       </Box>
 

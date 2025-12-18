@@ -5,9 +5,11 @@ import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormAdd from "@components/forms/FormAdd";
 import FilterSearch from "@components/ui/FilterSearch";
+import HistoryChanges from "@components/ui/HistoryChanges";
 import { useContact } from "@modules/contact/hooks/useContact";
 import { fields, userSchema, columns, filterOptions } from "./constants";
 import TableSkeleton from "@components/tables/TableSkeleton";
+
 const Contact = ({
     addContact,
     searchContact,
@@ -17,7 +19,7 @@ const Contact = ({
 }) => {
     const { can } = useCan();
     const navigate = useNavigate();
-    const location = useLocation(); // Hook para leer parámetros de la URL
+    const location = useLocation();
     const {
         handleSearch,
         fetchPage,
@@ -37,6 +39,19 @@ const Contact = ({
         handleDelete,
         handleEdit,
         handleCloseModal,
+        // Historial de Cambios
+        openHistory,
+        setOpenHistory,
+        history,
+        loadingHistory,
+        currentPageH,
+        totalPagesH,
+        perPageH,
+        totalItemsH,
+        handleOpenHistory,
+        handleCloseHistory,
+        fetchHistoryPage,
+        selectedContact, // IMPORTANTE: Agregar esto
     } = useContact();
 
     // Efecto para leer parámetros de la URL y filtrar automáticamente
@@ -106,7 +121,6 @@ const Contact = ({
         handleSearch(searchValue, column);
     };
 
-
     const handleClearSearch = () => {
         handleSearch("", "");
         navigate("/contactos");
@@ -157,6 +171,7 @@ const Contact = ({
                 fields={formFields}
                 schema={userSchema}
             />
+            
             {loading ? (
                 <TableSkeleton row="9" />
             ) : (
@@ -169,6 +184,8 @@ const Contact = ({
                     totalItems={totalItems}
                     fetchPage={(page) => fetchPage(page)}
                     onDelete={handleDelete}
+                    onHistory={handleOpenHistory}
+                    history={true}
                     actions={true}
                     onEdit={handleEdit}
                     management={true}
@@ -177,8 +194,23 @@ const Contact = ({
                     idManagement={viewManagementContact}
                     idEdit={editContact}
                     idOnActiveOrInactive={activeOrDesactiveContact}
+                    idOnHistory={handleOpenHistory}
                 />
             )}
+
+            {/* Props correctas para HistoryChanges */}
+            <HistoryChanges
+                isOpen={openHistory}
+                onClose={handleCloseHistory}
+                contact={selectedContact} 
+                history={history}
+                loading={loadingHistory}
+                currentPage={currentPageH}
+                totalPages={totalPagesH}
+                totalItems={totalItemsH}
+                perPage={perPageH}
+                onPageChange={fetchHistoryPage}
+            />
         </>
     );
 };

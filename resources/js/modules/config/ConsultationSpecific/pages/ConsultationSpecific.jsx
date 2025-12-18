@@ -111,7 +111,7 @@ const ConsultationSpecific = () => {
   const activeLoading = value === 0 ? loadingAliados : loadingAfiliados;
 
   const activeCount = activeData?.filter((c) => c.is_active === 1).length || 0;
-  const inactiveCount = (totalItems || 0);
+  const inactiveCount = totalItems - activeCount;
   const statsCards = [
     { title: "Consultas Totales", value: totalItems },
     { title: "Consultas Activas", value: activeCount },
@@ -127,7 +127,7 @@ const ConsultationSpecific = () => {
       </div>
 
       {/* Tabs */}
-      <Box sx={{ width: "80%", mb: 4, textAlign: "center", margin: "auto" }}>
+      <Box sx={{ width: "90%", mb: 4, textAlign: "center", margin: "auto" }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
             value={value}

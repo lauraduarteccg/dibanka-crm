@@ -6,101 +6,22 @@ use App\Models\ChangeHistory;
 use App\Http\Resources\ChangeHistoryResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 
 class ChangeHistoryController extends Controller
 {
     /**
-     * Display a listing of change histories.
+     * Listar todos los historiales de cambios con filtros opcionales.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ChangeHistory::with('user')
-            ->orderBy('created_at', 'desc');
+        $query = ChangeHistory::with('user')->orderBy('created_at', 'desc');
 
-        // Filter by entity type
-        if ($request->filled('entity_type')) {
-            $query->where('entity_type', $request->entity_type);
-        }
+        // Aplicar filtros
+        $this->applyFilters($query, $request);
 
-        // Filter by entity id
-        if ($request->filled('entity_id')) {
-            $query->where('entity_id', $request->entity_id);
-        }
-
-        // Filter by action
-        if ($request->filled('action')) {
-            $query->where('action', $request->action);
-        }
-
-        // Filter by user
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        // Filter by date range
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        // Search in entity type
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('entity_type', 'like', "%{$search}%")
-                  ->orWhere('entity_id', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->integer('per_page', 15);
         $histories = $query->paginate($perPage);
-
-        return response()->json([
-            'success' => true,
-            'data' => ChangeHistoryResource::collection($histories),
-            'meta' => [
-                'current_page' => $histories->currentPage(),
-                'last_page' => $histories->lastPage(),
-                'per_page' => $histories->perPage(),
-                'total' => $histories->total(),
-            ],
-        ]);
-    }
-
-    /**
-     * Mostrar el historial de cambios especificado.
-     */
-    public function show(ChangeHistory $changeHistory): JsonResponse
-    {
-        $changeHistory->load('user');
-
-        return response()->json([
-            'success' => true,
-            'data' => new ChangeHistoryResource($changeHistory),
-        ]);
-    }
-
-    /**
-     * Mostrar el historial de cambios para una entidad específica.
-     */
-    public function getEntityHistory(Request $request, string $entityType, int $entityId): JsonResponse
-    {
-        $request->validate([
-            'per_page' => 'sometimes|integer|min:1|max:100',
-        ]);
-
-        $histories = ChangeHistory::with('user')
-            ->where('entity_type', $entityType)
-            ->where('entity_id', $entityId)
-            ->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 15));
 
         return response()->json([
             'success' => true,
@@ -115,13 +36,111 @@ class ChangeHistoryController extends Controller
     }
 
     /**
-     * Mostrar estadísticas sobre los cambios.
+     * Obtener historial de todos los registros de un tipo de entidad.
      */
-    public function statistics(Request $request): JsonResponse
-    {
-        $query = ChangeHistory::query();
+    public function getEntityTypeHistory(
+        Request $request, 
+        string $entityType
+    ): JsonResponse {
+        $request->validate([
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
 
-        // Apply date filters if provided
+        $fullEntityType = $this->resolveEntityType($entityType);
+
+        if (!$fullEntityType) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tipo de entidad no válido',
+            ], 404);
+        }
+
+        $perPage = $request->integer('per_page', 15);
+        
+        $histories = ChangeHistory::with('user')
+            ->where('entity_type', $fullEntityType)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => ChangeHistoryResource::collection($histories),
+            'pagination' => [
+                'current_page' => $histories->currentPage(),
+                'last_page' => $histories->lastPage(),
+                'per_page' => $histories->perPage(),
+                'total' => $histories->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Obtener historial de un registro específico de una entidad.
+     */
+    public function getEntityHistory(
+        Request $request, 
+        string $entityType, 
+        int $entityId
+    ): JsonResponse {
+        $request->validate([
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
+
+        $fullEntityType = $this->resolveEntityType($entityType);
+
+        if (!$fullEntityType) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tipo de entidad no válido',
+            ], 404);
+        }
+
+        $perPage = $request->integer('per_page', 15);
+        
+        $histories = ChangeHistory::with('user')
+            ->where('entity_type', $fullEntityType)
+            ->where('entity_id', $entityId)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => ChangeHistoryResource::collection($histories),
+            'pagination' => [
+                'current_page' => $histories->currentPage(),
+                'last_page' => $histories->lastPage(),
+                'per_page' => $histories->perPage(),
+                'total' => $histories->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Aplicar filtros a la consulta.
+     */
+    private function applyFilters($query, Request $request): void
+    {
+        // Filtrar por tipo de entidad
+        if ($request->filled('entity_type')) {
+            $query->where('entity_type', $request->entity_type);
+        }
+
+        // Filtrar por ID de entidad
+        if ($request->filled('entity_id')) {
+            $query->where('entity_id', $request->entity_id);
+        }
+
+        // Filtrar por acción
+        if ($request->filled('action')) {
+            $query->where('action', $request->action);
+        }
+
+        // Filtrar por usuario
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Filtrar por rango de fechas
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
@@ -130,57 +149,39 @@ class ChangeHistoryController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $totalChanges = $query->count();
-        $changesByAction = (clone $query)->selectRaw('action, count(*) as count')
-            ->groupBy('action')
-            ->pluck('count', 'action');
-
-        $changesByEntity = (clone $query)->selectRaw('entity_type, count(*) as count')
-            ->groupBy('entity_type')
-            ->pluck('count', 'entity_type');
-
-        $topUsers = (clone $query)->with('user')
-            ->selectRaw('user_id, count(*) as changes_count')
-            ->whereNotNull('user_id')
-            ->groupBy('user_id')
-            ->orderByDesc('changes_count')
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'user_id' => $item->user_id,
-                    'user_name' => $item->user?->name,
-                    'user_email' => $item->user?->email,
-                    'changes_count' => $item->changes_count,
-                ];
+        // Búsqueda general
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('entity_type', 'like', "%{$search}%")
+                  ->orWhere('entity_id', 'like', "%{$search}%")
+                  ->orWhereHas('user', fn($userQuery) => 
+                      $userQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%")
+                  );
             });
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'total_changes' => $totalChanges,
-                'changes_by_action' => $changesByAction,
-                'changes_by_entity' => $changesByEntity,
-                'top_users' => $topUsers,
-            ],
-        ]);
+        }
     }
 
     /**
-     * Mostrar los cambios recientes.
+     * Resolver tipo de entidad de kebab-case a namespace completo.
+     * Ejemplo: "afiliados-management" -> "App\Models\Afiliados\Management"
      */
-    public function recent(Request $request): JsonResponse
+    private function resolveEntityType(string $entityType): ?string
     {
-        $limit = $request->get('limit', 10);
+        // Si ya es un namespace completo, retornarlo
+        if (str_starts_with($entityType, 'App\\Models\\')) {
+            return $entityType;
+        }
 
-        $histories = ChangeHistory::with('user')
-            ->orderBy('created_at', 'desc')
-            ->limit($limit)
-            ->get();
+        // Convertir kebab-case a namespace
+        $namespace = collect(explode('-', $entityType))
+            ->map(fn($part) => Str::studly($part))
+            ->implode('\\');
 
-        return response()->json([
-            'success' => true,
-            'data' => ChangeHistoryResource::collection($histories),
-        ]);
+        $fullNamespace = 'App\\Models\\' . $namespace;
+
+        // Verificar que la clase existe
+        return class_exists($fullNamespace) ? $fullNamespace : null;
     }
 }

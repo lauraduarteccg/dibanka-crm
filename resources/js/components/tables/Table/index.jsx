@@ -18,6 +18,7 @@ import { GoEye } from "react-icons/go";
 import { IoFootstepsOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { MdPersonAddAlt1 } from "react-icons/md";
+import { GoHistory } from "react-icons/go";
 
 // 🔎 Función para obtener valores anidados
 export const getNestedValue = (obj, path) =>
@@ -53,6 +54,8 @@ const MuiTable = ({
   onManagement,
   onMonitoring,
   onSelectRecord,
+  onHistory,
+  history = false,
   edit = true,
   view = false,
   management = false,
@@ -73,6 +76,7 @@ const MuiTable = ({
   idEdit,
   idView,
   idManagement,
+  idHistory,
 
 }) => {
 
@@ -203,6 +207,17 @@ const MuiTable = ({
                             className="p-2 rounded-lg bg-gradient-to-br from-teal-50 to-teal-100 text-teal-600 hover:from-teal-100 hover:to-teal-200 hover:shadow-md transition-all duration-300 hover:scale-110"
                           >
                             <IoFootstepsOutline size={18} />
+                          </button>
+                        </Tooltip>
+                      )}
+                      {history && (
+                        <Tooltip title="Historial" arrow placement="top">
+                          <button
+                            id={idHistory}
+                            onClick={() => onHistory(row)}
+                            className="p-2 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 text-orange-600 hover:from-orange-100 hover:to-orange-200 hover:shadow-md transition-all duration-300 hover:scale-110"
+                          >
+                            <GoHistory size={18} />
                           </button>
                         </Tooltip>
                       )}

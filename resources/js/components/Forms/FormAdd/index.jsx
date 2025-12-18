@@ -84,7 +84,7 @@ const FormAdd = ({
           top: 0,
           height: "100vh",
           maxHeight: "100vh",
-          width: "36%",
+          width: "45%",
           maxWidth: "none",
           margin: 0,
           borderRadius: "12px 0 0 12px",
