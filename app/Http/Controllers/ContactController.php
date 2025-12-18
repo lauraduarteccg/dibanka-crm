@@ -11,7 +11,7 @@ use App\Http\Requests\ContactRequest;
 
 class ContactController extends Controller
 {
-    
+
     // Listar todos los contactos con paginación y filtros específicos
     public function index(Request $request)
     {
@@ -34,9 +34,9 @@ class ContactController extends Controller
 
         // 🔎 Filtro por teléfono
         if ($request->filled('phone')) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('phone', 'LIKE', '%' . $request->phone . '%')
-                ->orWhere('update_phone', 'LIKE', '%' . $request->phone . '%');
+                    ->orWhere('update_phone', 'LIKE', '%' . $request->phone . '%');
             });
         }
 
@@ -92,12 +92,12 @@ class ContactController extends Controller
         ], $request);
 
         return response()->json([
-            'message'    => 'Consultas obtenidas con éxito',
-            'contacts'   => ContactResource::collection($contacts),
+            'message' => 'Consultas obtenidas con éxito',
+            'contacts' => ContactResource::collection($contacts),
             'pagination' => [
-                'current_page'   => $contacts->currentPage(),
-                'total_pages'    => $contacts->lastPage(),
-                'per_page'       => $contacts->perPage(),
+                'current_page' => $contacts->currentPage(),
+                'total_pages' => $contacts->lastPage(),
+                'per_page' => $contacts->perPage(),
                 'total_contacts' => $contacts->total(),
             ]
         ], Response::HTTP_OK);
@@ -147,12 +147,12 @@ class ContactController extends Controller
         ], $request);
 
         return response()->json([
-            'message'    => 'Contactos activos obtenidos con éxito',
-            'contacts'   => ContactResource::collection($contacts),
+            'message' => 'Contactos activos obtenidos con éxito',
+            'contacts' => ContactResource::collection($contacts),
             'pagination' => [
-                'current_page'   => $contacts->currentPage(),
-                'total_pages'    => $contacts->lastPage(),
-                'per_page'       => $contacts->perPage(),
+                'current_page' => $contacts->currentPage(),
+                'total_pages' => $contacts->lastPage(),
+                'per_page' => $contacts->perPage(),
                 'total_contacts' => $contacts->total(),
             ]
         ], Response::HTTP_OK);
@@ -163,10 +163,10 @@ class ContactController extends Controller
     {
         $contacts = Contact::create($request->all());
         $contacts->load(['payroll', 'campaign']);
-        
+
         log_activity('crear', 'Contactos', [
             'mensaje' => "El usuario {$request->user()->name} creó un nuevo contacto.",
-     
+
             'contact_id' => $contacts->id
         ], $request);
 
@@ -214,14 +214,34 @@ class ContactController extends Controller
             'email',
             'is_active'
         ));
+
+        $changes = [];
+        $detailedChanges = [];
+        foreach ($contacts->getChanges() as $field => $newValue) {
+            if ($field === 'updated_at')
+                continue;
+
+            $oldValue = $dataBefore[$field] ?? 'null';
+            $changes[] = [
+                'columna' => $field,
+                'valor_anterior' => $oldValue,
+                'valor_nuevo' => $newValue,
+            ];
+            $detailedChanges[] = "{$field} ({$oldValue} -> {$newValue})";
+        }
+
+        $mensaje = "El usuario {$request->user()->name} actualizó la información de un contacto.";
+        if (!empty($detailedChanges)) {
+            $mensaje .= " Cambios: " . implode(', ', $detailedChanges);
+        }
+
         $contacts->load(['payroll']);
+
+        // Log principal en activity_logs
         log_activity('actualizar', 'Contactos', [
-            'mensaje' => "El usuario {$request->user()->name} actualizó la información de un contacto.",
+            'mensaje' => $mensaje,
             'contacto_id' => $contacts->id,
-            'cambios' => [
-                'antes' => $dataBefore,
-                'despues' => $contacts->toArray(),
-            ],
+            'cambios' => $changes,
         ], $request);
 
 

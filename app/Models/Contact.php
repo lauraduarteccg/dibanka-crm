@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ChangeHistory;
 
 class Contact extends Model
 {
@@ -22,7 +23,7 @@ class Contact extends Model
     {
         return $this->belongsTo(Campaign::class, 'campaign_id');
     }
-    
+
     public function payroll()
     {
         return $this->belongsTo(Payroll::class, 'payroll_id');
@@ -49,5 +50,10 @@ class Contact extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', 1);
+    }
+    
+    public function histories()
+    {
+        return $this->morphMany(ChangeHistory::class, 'entity');
     }
 }

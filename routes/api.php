@@ -14,6 +14,7 @@ use App\Http\Controllers\{
     PasswordResetController,
     SendToWolkvoxController,
     CampaignController,
+    ChangeHistoryController,
 };
 
 use App\Http\Controllers\Aliados\ConsultationController as AliadosConsultationController;
@@ -198,6 +199,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // ------------------- Campañas -------------------
     Route::prefix('campaign')->group(function () {
         Route::get('/', [CampaignController::class, 'index']);
+    });
+
+    // ------------------- Historial de Cambios -------------------
+    Route::prefix('change-histories')->group(function () {
+        Route::get('/', [ChangeHistoryController::class, 'index']);
+        Route::get('/recent', [ChangeHistoryController::class, 'recent']);
+        Route::get('/statistics', [ChangeHistoryController::class, 'statistics']);
+        Route::get('/{changeHistory}', [ChangeHistoryController::class, 'show']);
+        Route::get('/entity/{entityType}/{entityId}', [ChangeHistoryController::class, 'getEntityHistory']);
     });
 
     // ------------------- Sesión / Perfil -------------------

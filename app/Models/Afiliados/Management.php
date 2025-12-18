@@ -7,17 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Contact;
 use App\Models\TypeManagement;
-use App\Models\Monitoring;  
+use App\Models\Monitoring;
+use App\Models\ChangeHistory;
 
 class Management extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'management_afiliados';
 
     protected $fillable = [
-        'user_id', 'contact_id', 'solution', 'consultation_id', 'specific_id', 'comments',
-        'solution_date', 'monitoring_id', 'sms', 'wsp', 'type_management_id', 'wolkvox_id'
+        'user_id',
+        'contact_id',
+        'solution',
+        'consultation_id',
+        'specific_id',
+        'comments',
+        'solution_date',
+        'monitoring_id',
+        'sms',
+        'wsp',
+        'type_management_id',
+        'wolkvox_id'
     ];
 
     public function monitoring()
@@ -46,5 +57,10 @@ class Management extends Model
     public function type_management()
     {
         return $this->belongsTo(TypeManagement::class, 'type_management_id');
+    }
+    
+    public function histories()
+    {
+        return $this->morphMany(ChangeHistory::class, 'entity');
     }
 }
