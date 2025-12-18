@@ -125,6 +125,9 @@ export default function FormSpecialCasesDrawer({
                                 <MenuItem value="Nota creada">
                                     Nota creada
                                 </MenuItem>
+                                <MenuItem value="Ticket creado">
+                                    Ticket creado
+                                </MenuItem>
                             </Select>
                             {validationErrors?.management_messi && (
                                 <FormHelperText>

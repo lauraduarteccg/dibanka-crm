@@ -115,6 +115,7 @@ export default function FormSpecialCases({openSpecialCases,setOpenSpecialCases})
               >
                 <MenuItem value="">Seleccione</MenuItem>
                 <MenuItem value="Nota creada">Nota creada</MenuItem>
+                <MenuItem value="Ticket creado">Ticket creado</MenuItem>
               </Select>
               {validationErrorsSpecial?.management_messi && (
                 <FormHelperText>
