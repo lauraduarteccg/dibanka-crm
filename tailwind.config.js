@@ -44,6 +44,8 @@ export default {
                     "linear-gradient(270deg, #0487d9, #2eb8e8, #878fff)",
                 "gradient-secondary":
                     "linear-gradient(0deg, #0487d9, #2eb8e8, #878fff)",
+                "gradient-tertiary":
+                    "linear-gradient(270deg, #878fff, #2eb8e8, #0487d9)",
             },
             opacity: {
                 50: "0.5",

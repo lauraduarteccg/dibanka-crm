@@ -46,6 +46,7 @@ class SpecialCasesResource extends JsonResource
             'management_messi'  => $this->management_messi,
             'id_call'           => $this->id_call,
             'id_messi'          => $this->id_messi,
+            'observations'      => $this->observations,
             'created_at' => $this->created_at
                     ? $this->created_at->format('Y-m-d H:i:s')
                     : null,

@@ -5,7 +5,8 @@ import TableSkeleton from "@components/tables/TableSkeleton";
 
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
-import FormSpecialCasesDrawer from "@modules/specialCases/components/FormSpecialCasesDrawer";
+import FormSpecialCases from "@components/modals/FormSpecialCases";
+import SearchContact from "@components/modals/SearchContact";
 import FilterSearch from "@components/ui/FilterSearch";
 import HistoryChanges from "@components/ui/HistoryChanges";
 
@@ -47,6 +48,7 @@ const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
         fetchContactsSearch,
         handleSearchContact,
         fetchPageContact,
+        searchTermContact,
         searchTerm,
         filterColumn,
         handleClearSearch,
@@ -75,6 +77,7 @@ const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
         { value: "contact", label: "Cliente" },
         { value: "id_call", label: "ID llamada" },
         { value: "id_messi", label: "ID Messi" },
+        { value: "observations", label: "Observaciones" },
     ];
 
     // Cuando se abre el modal, asigna el user actual como predeterminado
@@ -98,6 +101,7 @@ const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
         { header: "ID llamada", key: "id_call" },
         { header: "ID Messi", key: "id_messi" },
         { header: "Fecha creación", key: "created_at" },
+        { header: "Observaciones", key: "observations" },
     ];
 
     return (
@@ -130,15 +134,10 @@ const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
                 Lista de casos especiales
             </h1>
-            <FormSpecialCasesDrawer
+            <FormSpecialCases
                 isOpen={isOpenADD}
                 setIsOpen={handleCloseModal}
-                user={user}
-                payroll={payroll}
-                selectedPayroll={selectedPayroll}
-                setSelectedPayroll={setSelectedPayroll}
                 selectedContact={selectedContact}
-                setSelectedContact={setSelectedContact}
                 formData={formData}
                 setFormData={setFormData}
                 validationErrors={validationErrors}
@@ -153,9 +152,24 @@ const SpecialCases = ({ idAddSpecialCase, idSearchSpecialCase }) => {
                 perPageContact={perPageContact}
                 totalItemsContact={totalItemsContact}
                 loadingContact={loadingContact}
-                fetchContactsSearch={fetchContactsSearch}
                 handleSearchContact={handleSearchContact}
                 fetchPageContact={fetchPageContact}
+                searchTermContact={searchTermContact}
+            />
+
+            <SearchContact
+                isOpen={openSearchContact}
+                setIsOpen={setOpenSearchContact}
+                onSelectContact={onSelectContact}
+                contactSearch={contactSearch}
+                currentPageContact={currentPageContact}
+                totalPagesContact={totalPagesContact}
+                perPageContact={perPageContact}
+                totalItemsContact={totalItemsContact}
+                loadingContact={loadingContact}
+                handleSearchContact={handleSearchContact}
+                fetchPageContact={fetchPageContact}
+                searchTermContact={searchTermContact}
             />
 
             {loading ? (

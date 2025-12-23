@@ -18,6 +18,8 @@ export const useUsers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [active, setActive] = useState(0);
+  const [inactive, setInactive] = useState(0);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,6 +51,8 @@ export const useUsers = () => {
         setPer_page(data.pagination.per_page);
         setTotal_users(data.pagination.total_users);
         setCurrentPage(data.pagination.current_page);
+        setActive(data.pagination.count_actives);
+        setInactive(data.pagination.count_inactives);
       } catch (err) {
         console.error(err);
         setError("Error al obtener la lista de usuarios.");
@@ -214,6 +218,8 @@ export const useUsers = () => {
   };
 
   return {
+    active,
+    inactive,
     filteredRoles,
     roles,
     users,

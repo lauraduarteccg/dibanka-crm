@@ -1,61 +1,102 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Dialog, IconButton } from "@mui/material";
 import { motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
-import Search from "@components/forms/Search";
+import { useNavigate } from "react-router-dom";
+import FilterSearch from "@components/ui/FilterSearch";
 import Table from "@components/tables/Table";
 import TableSkeleton from "@components/tables/TableSkeleton";
 
+const filterOptions = [
+    { value: "identification_number", label: "Número de identificación" },
+    { value: "name", label: "Nombre" },
+    { value: "email", label: "Correo" },
+    { value: "phone", label: "Teléfono" },
+    { value: "payroll", label: "Pagaduría" },
+    { value: "campaign", label: "Campaña" },
+];
+
 export default function SearchContact({
-    openSearchContact,
-    setOpenSearchContact,
+    isOpen,
+    setIsOpen,
     onSelectContact,
-    selectedPayroll,
     contactSearch,
     currentPageContact,
     totalPagesContact,
     perPageContact,
     totalItemsContact,
     loadingContact,
-    fetchContactsSearch,
     handleSearchContact,
     fetchPageContact,
+    searchTermContact = "",
 }) {
+    const navigate = useNavigate();
+
     const columns = [
+        { header: "ID", key: "id" },
+        { header: "Campaña", key: "campaign.name" },
         { header: "Pagaduría", key: "payroll.name" },
         { header: "Nombre", key: "name" },
         { header: "Correo", key: "email" },
-        { header: "Teléfono", key: "phone" },
         { header: "Celular", key: "update_phone" },
         { header: "Identificación", key: "identification_number" },
     ];
-
-    useEffect(() => {
-        if (openSearchContact) {
-            fetchContactsSearch(currentPageContact, "");
-        }
-    }, [openSearchContact, currentPageContact, fetchContactsSearch]);
 
     const handleSelectRecord = (recordId) => {
         const selected = contactSearch.find((item) => item.id === recordId);
         if (selected) {
             onSelectContact(selected);
-            setOpenSearchContact(false);
+            // El modal se cierra desde el hook después de seleccionar
+        } else {
+            console.log("❌ Contacto no encontrado en la lista");
         }
+    };
+
+    const handleEdit = (record) => {
+        navigate(
+            `/contactos?search=${encodeURIComponent(
+                record.identification_number
+            )}&column=identification_number`
+        );
+    };
+
+    const handleFilterSearch = (searchValue, filterColumn) => {
+        let column = filterColumn;
+        if (filterColumn === "payroll.name") column = "payroll";
+        if (filterColumn === "campaign.name") column = "campaign";
+
+        handleSearchContact(searchValue, column);
+    };
+
+    const handleClearSearch = () => {
+        handleSearchContact("", "");
     };
 
     return (
         <Dialog
-            onClose={() => setOpenSearchContact(false)}
-            open={openSearchContact}
+            onClose={() => {
+                console.log("❌ Cerrando búsqueda de contactos");
+                setIsOpen(false);
+            }}
+            open={isOpen}
             fullWidth
             maxWidth="lg"
+            // 🔥 FIX: Asegurar que esté por encima del Drawer
+            sx={{
+                "& .MuiDialog-root": {
+                    zIndex: 1400,
+                },
+                "& .MuiBackdrop-root": {
+                    zIndex: 1400,
+                },
+            }}
             PaperProps={{
                 sx: {
                     borderRadius: 1,
                     boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
                     background: "#f7fafc",
                     overflow: "hidden",
+                    zIndex: 1400,
                 },
             }}
         >
@@ -72,7 +113,7 @@ export default function SearchContact({
                     </h2>
 
                     <IconButton
-                        onClick={() => setOpenSearchContact(false)}
+                        onClick={() => setIsOpen(false)}
                         size="large"
                         sx={{
                             color: "#6b7280",
@@ -89,11 +130,22 @@ export default function SearchContact({
 
                 {/* Search */}
                 <div className="flex justify-center mb-6">
-                    <div className="w-full ml-[6%]">
-                        <Search
-                            onSearch={handleSearchContact}
+                    <div className="w-full flex justify-end gap-2">
+                        <div className="w-full"></div>
+                        <FilterSearch
+                            onFilter={handleFilterSearch}
                             placeholder="Buscar contacto o cliente..."
+                            filterOptions={filterOptions}
+                            initialSearchValue={searchTermContact}
                         />
+                        {searchTermContact && (
+                            <button
+                                onClick={handleClearSearch}
+                                className="bg-red-500 text-white w-[300px] h-[100%] px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                            >
+                                Limpiar filtro
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -103,18 +155,20 @@ export default function SearchContact({
                         <TableSkeleton rows={8} />
                     ) : (
                         <Table
+                            width="100%"
                             columns={columns}
                             data={contactSearch}
-                            paginationSection
-                            actions
-                            edit={false}
+                            paginationSection={true}
+                            actions={true}
+                            edit={true}
+                            onEdit={handleEdit}
                             currentPage={currentPageContact}
                             totalPages={totalPagesContact}
                             rowsPerPage={perPageContact}
                             totalItems={totalItemsContact}
                             fetchPage={fetchPageContact}
                             onActiveOrInactive={false}
-                            selectRecord
+                            selectRecord={true}
                             onSelectRecord={handleSelectRecord}
                         />
                     )}

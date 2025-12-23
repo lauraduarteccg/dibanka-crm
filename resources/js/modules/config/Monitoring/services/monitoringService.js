@@ -12,15 +12,7 @@ export const getMonitorings = async (page = 1, search = "") => {
     `/config/monitorings?page=${page}&search=${encodeURIComponent(search)}`
   );
 
-  return {
-    monitorings: data.monitorings || [],
-    pagination: {
-      total_pages: data.pagination?.total_pages ?? 1,
-      current_page: data.pagination?.current_page ?? 1,
-      per_page: data.pagination?.per_page ?? 10,
-      total_monitorings: data.pagination?.total_monitorings ?? 0,
-    },
-  };
+  return data;
 };
 
 /**

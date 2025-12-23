@@ -7,22 +7,17 @@ import api from "@api/axios";
 /**
  * Obtiene la lista de contactos con paginación y búsqueda.
  * @param {number} page - Número de página
- * @param {string} search - Término de búsqueda general
- * @param {string} filterColumn - Columna específica para filtrar
+ * @param {Object} filters - Filtros dinámicos
  */
-export const getContacts = async (page = 1, search = "", filterColumn = "") => {
-    let url = `/contacts?page=${page}`;
-    
-    // Si hay un filtro por columna específica
-    if (filterColumn && search) {
-        url += `&${filterColumn}=${encodeURIComponent(search)}`;
-    } 
-    // Si no hay filtro específico, usar búsqueda general
-    else if (search) {
-        url += `&search=${encodeURIComponent(search)}`;
-    }
-    
-    const { data } = await api.get(url);
+export const getContacts = async (page = 1, filters = {}) => {
+    const params = new URLSearchParams({ page });
+
+    // Agregar filtros dinámicos a la URL
+    Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+    });
+
+    const { data } = await api.get(`/contacts?${params.toString()}`);
     return data;
 };
 
@@ -56,7 +51,9 @@ export const deleteContact = async (id) => {
  * @param {number} page - Número de página
  */
 export const getHistoryChanges = async (contactId, page = 1) => {
-    const { data } = await api.get(`/change-histories/entity/contact/${contactId}?page=${page}`);
+    const { data } = await api.get(
+        `/change-histories/entity/contact/${contactId}?page=${page}`
+    );
     return data;
 };
 

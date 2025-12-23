@@ -39,6 +39,9 @@ class SpecialCasesController extends Controller
                 case 'id_messi':
                     $query->where('id_messi', 'LIKE', "%{$value}%");
                     break;
+                case 'observations':
+                    $query->where('observations', 'LIKE', "%{$value}%");
+                    break;
 
                 // Relaciones
                 case 'user':
@@ -82,6 +85,7 @@ class SpecialCasesController extends Controller
                 $q->where('id', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('management_messi', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('id_call', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('observations', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('id_messi', 'LIKE', "%{$searchTerm}%");
 
                 // Relaciones estructuradas en arrays para evitar repetir código
@@ -118,7 +122,7 @@ class SpecialCasesController extends Controller
         }
 
 
-        $specialcases = $query->paginate(10);
+        $specialcases = $query->orderBy('id', 'desc')->paginate(10);
 
         // Log
         log_activity('ver_listado', 'Casos Especiales', [

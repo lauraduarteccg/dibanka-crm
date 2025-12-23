@@ -17,15 +17,7 @@ export const getUsers = async (page = 1, search = "", perPage = 10) => {
   );
 
 
-  return {
-    users: data.users || [],
-    pagination: {
-      total_pages: data.pagination?.total_pages ?? 1,
-      current_page: data.pagination?.current_page ?? page,
-      per_page: data.pagination?.per_page ?? 10,
-      total_users: data.pagination?.total_users ?? 0,
-    },
-  };
+  return data;
 };
 
 /**

@@ -41,6 +41,8 @@ const Monitoring = () => {
     handleDelete,
     handleEdit,
     handleCloseModal,
+    active,
+    inactive,
   } = useMonitoring();
 
   const columns = [
@@ -48,13 +50,10 @@ const Monitoring = () => {
     { header: "Tipo de Seguimiento", key: "name" },
   ];
 
-  const activeCount = monitoring.filter((m) => m.is_active === 1).length;
-  const inactiveCount = totalItems - activeCount;
-
   const statsCards = [
     { title: "Seguimientos Totales", value: totalItems },
-    { title: "Seguimientos Activos", value: activeCount },
-    { title: "Seguimientos Inactivos", value: inactiveCount },
+    { title: "Seguimientos Activos", value: active },
+    { title: "Seguimientos Inactivos", value: inactive },
   ]
   return (
     <>

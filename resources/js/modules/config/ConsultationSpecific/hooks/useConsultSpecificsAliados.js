@@ -22,6 +22,8 @@ export const useConsultSpecificsAliados = () => {
   const [perPage, setPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [isOpenADD, setIsOpenADD] = useState(false);
+  const [countActives, setCountActives] = useState(0);
+  const [countInactives, setCountInactives] = useState(0);
   const [formData, setFormData] = useState({
     id: null,
     name: "",
@@ -32,12 +34,13 @@ export const useConsultSpecificsAliados = () => {
     setLoadingAliados(true);
     try {
       const data = await getSpecificAliados(page, search);
-      //console.log(data.pagination.total_specifics)
       setSpecificAliados(data.specifics);
       setTotalPages(data.pagination.total_pages);
       setCurrentPage(data.pagination.current_page);
       setPerPage(data.pagination.per_page);
-      setTotalItems(data.pagination.total_specifics);
+      setTotalItems(data.pagination.total_consultations);
+      setCountActives(data.pagination.count_actives);
+      setCountInactives(data.pagination.count_inactives);
     } catch (err) {
       console.error(err);
       setError("Error al obtener las consultas específicas de aliados.");
@@ -185,6 +188,8 @@ export const useConsultSpecificsAliados = () => {
     handleSaveAliados,
     perPage,
     totalItems,
+    countActives,
+    countInactives,
     currentPage,
     totalPages,
     handleEditAliados,

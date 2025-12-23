@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('management_messi');
             $table->string('id_call');
             $table->string('id_messi');
+            $table->string('observations');
             $table->timestamps();
         });
     }

@@ -28,13 +28,18 @@ class ConsultationController extends Controller
                 $q->where('name', 'LIKE', "%{$searchTerm}%");
 
                 // Para buscar en relaciones
-                $q->orWhereHas('payroll', function ($payrolQuery) use ($searchTerm) {
+                $q->orWhereHas('payrolls', function ($payrolQuery) use ($searchTerm) {
                     $payrolQuery->where('name', 'LIKE', "%{$searchTerm}%");
                 });
             });
         }
 
-        $consultations = $query->paginate(10);
+        $consultations = $query->orderBy('id', 'desc')->paginate(10);
+        
+        // Contar todos los registros activos e inactivos (no solo de la página actual)
+        $countActives = Consultation::where('is_active', true)->count();
+        $countInactives = Consultation::where('is_active', false)->count();
+        
         log_activity('ver_listado', 'Consultas', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas.",
             'criterios' => [
@@ -51,8 +56,8 @@ class ConsultationController extends Controller
                 'total_pages'           => $consultations->lastPage(),
                 'per_page'              => $consultations->perPage(),
                 'total_consultations'   => $consultations->total(),
-                'next_page_url'         => $consultations->nextPageUrl(),
-                'prev_page_url'         => $consultations->previousPageUrl(),
+                'count_inactives'       => $countInactives,
+                'count_actives'         => $countActives,
             ],
         ], Response::HTTP_OK);
     }
@@ -61,6 +66,14 @@ class ConsultationController extends Controller
     public function active(Request $request)
     {
         $query = Consultation::active()->with(['payrolls']);
+
+        // Filtrar por pagaduría si se proporciona payroll_id
+        if ($request->has('payroll_id') && !empty($request->payroll_id)) {
+            $payrollId = $request->payroll_id;
+            $query->whereHas('payrolls', function ($payrollQuery) use ($payrollId) {
+                $payrollQuery->where('payrolls.id', $payrollId);
+            });
+        }
 
         // Búsqueda por nombre de consulta
         if ($request->has('search') && !empty($request->search)) {
@@ -81,7 +94,8 @@ class ConsultationController extends Controller
         log_activity('ver_activas', 'Consultas', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas activas.",
             'criterios' => [
-                'búsqueda' => $request->search ?? 'Sin filtro aplicado'
+                'búsqueda' => $request->search ?? 'Sin filtro aplicado',
+                'payroll_id' => $request->payroll_id ?? 'Sin filtro de pagaduría'
             ]
         ], $request);
 

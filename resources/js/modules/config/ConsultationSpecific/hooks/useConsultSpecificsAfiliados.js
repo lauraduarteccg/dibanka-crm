@@ -21,6 +21,8 @@ export const useConsultSpecificsAfiliados = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+  const [countActives, setCountActives] = useState(0);
+  const [countInactives, setCountInactives] = useState(0);
   const [isOpenADD, setIsOpenADD] = useState(false);
   const [formData, setFormData] = useState({
     id: null,
@@ -36,7 +38,9 @@ export const useConsultSpecificsAfiliados = () => {
       setTotalPages(data.pagination.total_pages);
       setCurrentPage(data.pagination.current_page);
       setPerPage(data.pagination.per_page);
-      setTotalItems(data.pagination.total_specifics);
+      setTotalItems(data.pagination.total_consultations);
+      setCountActives(data.pagination.count_actives);
+      setCountInactives(data.pagination.count_inactives);
     } catch (err) {
       console.error(err);
       setError("Error al obtener las consultas específicas de afiliados.");
@@ -192,5 +196,7 @@ export const useConsultSpecificsAfiliados = () => {
     handleSearchAfiliados,
     handleOpenForm,
     handleCloseModal,
+    countActives,
+    countInactives,
   };
 };

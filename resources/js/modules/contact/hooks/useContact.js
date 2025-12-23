@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, useCallback } from "react";
 import Swal from "sweetalert2";
 import { AuthContext } from "@context/AuthContext";
+import { useMultiFilter } from "@hooks/useMultiFilter";
 import {
     getContacts,
     createContact,
@@ -24,9 +25,11 @@ export const useContact = () => {
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
 
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterColumn, setFilterColumn] = useState("");
+    // === Nuevo Sistema de Filtros ===
+    const { filters, addFilter, removeFilter, clearFilters } = useMultiFilter();
+
     const [isOpenADD, setIsOpenADD] = useState(false);
+
     const [selectedContact, setSelectedContact] = useState(null);
     const [selectedManagement, setSelectedManagement] = useState(null);
 
@@ -65,49 +68,46 @@ export const useContact = () => {
     });
 
     // ====================== Fetch Contactos ======================
-    const fetchContact = useCallback(async (page = 1, search = "", column = "") => {
-        setLoading(true);
-        try {
-            const data = await getContacts(page, search, column);
-            setContact(data.contacts);
-            setTotalPages(data.pagination.total_pages);
-            setCurrentPage(data.pagination.current_page);
-            setPerPage(data.pagination.per_page);
-            setTotalItems(data.pagination.total_contacts);
-        } catch (err) {
-            console.error(err);
-            setError("Error al obtener los contactos.");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const fetchContact = useCallback(
+        async (page = 1, currentFilters = filters) => {
+            setLoading(true);
+            try {
+                const data = await getContacts(page, currentFilters);
+                setContact(data.contacts);
+                setTotalPages(data.pagination.total_pages);
+                setCurrentPage(data.pagination.current_page);
+                setPerPage(data.pagination.per_page);
+                setTotalItems(data.pagination.total_contacts);
+            } catch (err) {
+                console.error(err);
+                setError("Error al obtener los contactos.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [filters]
+    );
 
     useEffect(() => {
         fetchContact(1);
     }, [fetchContact]);
 
     const fetchPage = useCallback(
-        (page) => fetchContact(page, searchTerm, filterColumn),
-        [fetchContact, searchTerm, filterColumn]
+        (page) => fetchContact(page, filters),
+        [fetchContact, filters]
     );
 
-    const handleSearch = useCallback(
-        (value, column = "") => {
-            setSearchTerm(value);
-            setFilterColumn(column);
-            setCurrentPage(1);
-            fetchContact(1, value, column);
-        },
-        [fetchContact]
-    );
+    // Reaccionar a cambios en filtros para recargar desde pag 1
+    useEffect(() => {
+        fetchContact(1, filters);
+    }, [filters]);
 
     // ================= Fetch historial de cambios =======================
     const fetchHistoryChanges = useCallback(async (contactId, page = 1) => {
         setLoadingHistory(true);
         try {
             const response = await getHistoryChanges(contactId, page);
-            console.log(response)
-            
+
             setHistory(response.data || []);
             setCurrentPageH(response.pagination?.current_page || 1);
             setTotalPagesH(response.pagination?.last_page || 1);
@@ -123,19 +123,25 @@ export const useContact = () => {
     }, []);
 
     // Función para abrir el historial de un contacto
-    const handleOpenHistory = useCallback((contact) => {
-        setSelectedContact(contact);
-        setOpenHistory(true);
-        setCurrentPageH(1);
-        fetchHistoryChanges(contact.id, 1);
-    }, [fetchHistoryChanges]);
+    const handleOpenHistory = useCallback(
+        (contact) => {
+            setSelectedContact(contact);
+            setOpenHistory(true);
+            setCurrentPageH(1);
+            fetchHistoryChanges(contact.id, 1);
+        },
+        [fetchHistoryChanges]
+    );
 
     // Función para cambiar de página en el historial
-    const fetchHistoryPage = useCallback((page) => {
-        if (selectedContact) {
-            fetchHistoryChanges(selectedContact.id, page);
-        }
-    }, [selectedContact, fetchHistoryChanges]);
+    const fetchHistoryPage = useCallback(
+        (page) => {
+            if (selectedContact) {
+                fetchHistoryChanges(selectedContact.id, page);
+            }
+        },
+        [selectedContact, fetchHistoryChanges]
+    );
 
     // ====================== Crear / Editar ======================
     const handleEdit = (item) => {
@@ -188,7 +194,8 @@ export const useContact = () => {
             }
 
             setIsOpenADD(false);
-            fetchContact(currentPage, searchTerm, filterColumn);
+
+            fetchContact(currentPage, filters);
         } catch (error) {
             if (error.response?.status === 422) {
                 setValidationErrors(error.response.data.errors);
@@ -217,7 +224,9 @@ export const useContact = () => {
         Swal.fire({
             position: "top-end",
             title: `¿Quieres ${actionText} este contacto?`,
-            text: `El contacto será marcado como ${!status ? "Activo" : "Inactivo"}.`,
+            text: `El contacto será marcado como ${
+                !status ? "Activo" : "Inactivo"
+            }.`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: !status ? "#28a745" : "#d33",
@@ -233,12 +242,14 @@ export const useContact = () => {
                     Swal.fire({
                         position: "top-end",
                         title: "Estado actualizado",
-                        text: `El contacto ahora está ${!status ? "Activo" : "Inactivo"}.`,
+                        text: `El contacto ahora está ${
+                            !status ? "Activo" : "Inactivo"
+                        }.`,
                         icon: "success",
                         timer: 1500,
                         showConfirmButton: false,
                     });
-                    fetchContact(currentPage, searchTerm, filterColumn);
+                    fetchContact(currentPage, filters);
                 } catch (error) {
                     Swal.fire({
                         title: "Error",
@@ -273,10 +284,9 @@ export const useContact = () => {
     const fetchManagement = async (identification_number, page = 1) => {
         setLoading(true);
         try {
-            const { managements, pagination } = await getManagements(
-                page,
-                identification_number
-            );
+            const { managements, pagination } = await getManagements(page, {
+                identification_number,
+            });
 
             setManagement(managements);
             setTotalPagesM(pagination.last_page);
@@ -325,7 +335,7 @@ export const useContact = () => {
         // Acciones
         fetchContact,
         fetchPage,
-        handleSearch,
+
         handleEdit,
         handleSubmit,
         handleCloseModal,
@@ -340,10 +350,12 @@ export const useContact = () => {
         formData,
         setFormData,
         setIsOpenADD,
-        
-        // Estado de búsqueda
-        searchTerm,
-        filterColumn,
+
+        // Estado de búsqueda (Nuevo Sistema)
+        filters,
+        addFilter,
+        removeFilter,
+        clearFilters,
 
         // Historial de Cambios
         openHistory,

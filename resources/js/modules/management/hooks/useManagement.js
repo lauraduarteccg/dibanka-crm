@@ -3,437 +3,436 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { AuthContext } from "@context/AuthContext";
 import {
-  getManagements,
-  getActiveMonitorings,
-  updateManagementMonitoring,
-  getHistoryChangesAliados,
-  getHistoryChangesAfiliados
+    getManagements,
+    getActiveMonitorings,
+    updateManagementMonitoring,
+    getHistoryChangesAliados,
+    getHistoryChangesAfiliados,
 } from "@modules/management/services/managementService";
-import { useDebounce } from "@modules/management/hooks/useDebounce";
+import { useMultiFilter } from "@hooks/useMultiFilter";
 
 export const useManagement = () => {
-  const [management, setManagement] = useState([]);
-  const [monitoring, setMonitoring] = useState([]);
-  const [managementCountAfiliados, setManagementCountAfiliados] = useState([]);
-  const [managementCountAliados, setManagementCountAliados] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  // Gestión seleccionada para historial
-  const [selectedManagement, setSelectedManagement] = useState(null);
+    const [management, setManagement] = useState([]);
+    const [monitoring, setMonitoring] = useState([]);
+    const [managementCountAfiliados, setManagementCountAfiliados] = useState(
+        []
+    );
+    const [managementCountAliados, setManagementCountAliados] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    // Gestión seleccionada para historial
+    const [selectedManagement, setSelectedManagement] = useState(null);
 
-  // Paginación
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [perPage, setPerPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(1);
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [perPage, setPerPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(1);
 
-  // ====================== Historial de Cambios ======================
-  // Aliados
-  const [openHistoryAliados, setOpenHistoryAliados] = useState(false);
-  const [historyAliados, setHistoryAliados] = useState([]);
-  const [loadingHistoryAliados, setLoadingHistoryAliados] = useState(true);
-  const [currentPageAliados, setCurrentPageAliados] = useState(1);
-  const [totalPagesAliados, setTotalPagesAliados] = useState(1);
-  const [perPageAliados, setPerPageAliados] = useState(1);
-  const [totalItemsAliados, setTotalItemsAliados] = useState(1);
-  // Afiliados
-  const [openHistoryAfiliados, setOpenHistoryAfiliados] = useState(false);
-  const [historyAfiliados, setHistoryAfiliados] = useState([]);
-  const [loadingHistoryAfiliados, setLoadingHistoryAfiliados] = useState(true);
-  const [currentPageAfiliados, setCurrentPageAfiliados] = useState(1);
-  const [totalPagesAfiliados, setTotalPagesAfiliados] = useState(1);
-  const [perPageAfiliados, setPerPageAfiliados] = useState(1);
-  const [totalItemsAfiliados, setTotalItemsAfiliados] = useState(1);
+    // ====================== Historial de Cambios ======================
+    // Aliados
+    const [openHistoryAliados, setOpenHistoryAliados] = useState(false);
+    const [historyAliados, setHistoryAliados] = useState([]);
+    const [loadingHistoryAliados, setLoadingHistoryAliados] = useState(true);
+    const [currentPageAliados, setCurrentPageAliados] = useState(1);
+    const [totalPagesAliados, setTotalPagesAliados] = useState(1);
+    const [perPageAliados, setPerPageAliados] = useState(1);
+    const [totalItemsAliados, setTotalItemsAliados] = useState(1);
+    // Afiliados
+    const [openHistoryAfiliados, setOpenHistoryAfiliados] = useState(false);
+    const [historyAfiliados, setHistoryAfiliados] = useState([]);
+    const [loadingHistoryAfiliados, setLoadingHistoryAfiliados] =
+        useState(true);
+    const [currentPageAfiliados, setCurrentPageAfiliados] = useState(1);
+    const [totalPagesAfiliados, setTotalPagesAfiliados] = useState(1);
+    const [perPageAfiliados, setPerPageAfiliados] = useState(1);
+    const [totalItemsAfiliados, setTotalItemsAfiliados] = useState(1);
 
-  // UI y búsqueda
-  const location = useLocation();
+    // UI y filtros (Nuevo)
+    const { filters, addFilter, removeFilter, clearFilters, hasFilters } =
+        useMultiFilter();
+    const location = useLocation();
 
-  // Estado para el término de búsqueda y el filtro por columna
-  const [searchTerm, setSearchTerm] = useState(() => {
-    const params = new URLSearchParams(location.search);
-    
-    return params.get("search") || "";
-  });
-  
-  const [filterColumn, setFilterColumn] = useState("");
+    const [IsOpenADD, setIsOpenADD] = useState(false);
+    const [view, setView] = useState(false);
+    const [onMonitoring, setOnMonitoring] = useState(false);
 
-  const [IsOpenADD, setIsOpenADD] = useState(false);
-  const [view, setView] = useState(false);
-  const [onMonitoring, setOnMonitoring] = useState(false);
+    // Debounce eliminado
 
-  // Debounce para búsqueda (optimización)
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+    // Refs para evitar loops y peticiones simultáneas
+    const isFetching = useRef(false);
+    const hasInitialLoad = useRef(false);
 
-  // Refs para evitar loops y peticiones simultáneas
-  const isFetching = useRef(false);
-  const hasInitialLoad = useRef(false);
-
-  // Validaciones y formulario
-  const [validationErrors, setValidationErrors] = useState({});
-  const [formData, setFormData] = useState({
-    id: null,
-    user_id: "",
-    consultation_id: "",
-    contact_id: "",
-    solution_date: "",
-    monitoring_id: "",
-  });
-
-  /* ===========================================================
-   *  Campaign State
-   * =========================================================== */
-  const [campaign, setCampaign] = useState(() => {
-    const params = new URLSearchParams(location.search);
-    return params.get("campaign") || "Aliados";
-  });
-
-  /* ===========================================================
-   *  Fetch principal de gestiones (optimizado)
-   * =========================================================== */
-  const fetchManagement = useCallback(
-    async (page = 1, search = "", column = "", currentCampaign = campaign) => {
-      if (isFetching.current) return;
-      
-      isFetching.current = true;
-      setLoading(true);
-      try {
-        const data = await getManagements(page, search, currentCampaign, column);
-        // Update count based on current campaign and search results
-        const totalCount = data.pagination?.total ?? 0;
-        if (currentCampaign.toLowerCase() === 'afiliados') {
-          setManagementCountAfiliados(totalCount);
-        } else {
-          setManagementCountAliados(totalCount);
-        }
-        setManagement(data.managements || []);
-        setCurrentPage(data.pagination?.current_page || 1);
-        setTotalPages(data.pagination?.last_page || 1);
-        setPerPage(data.pagination?.per_page || 1);
-        setTotalItems(data.pagination?.total || 0);
-      } catch (err) {
-        console.error("Error al obtener gestiones:", err);
-        setError("Error al obtener las gestiones.");
-      } finally {
-        setLoading(false);
-        isFetching.current = false;
-      }
-    },
-    [campaign]
-  );
-
-  // Cargar gestiones cuando cambie la página, búsqueda o filtro
-  useEffect(() => {
-    fetchManagement(currentPage, debouncedSearchTerm, filterColumn, campaign);
-  }, [currentPage, debouncedSearchTerm, filterColumn, campaign, fetchManagement]);
-
-  // Inicializar contadores de ambas campañas al montar el componente
-  useEffect(() => {
-    const initializeCounts = async () => {
-      try {
-        // Fetch count for the opposite campaign (the one not currently active)
-        const oppositeCampaign = campaign === "Aliados" ? "Afiliados" : "Aliados";
-        const data = await getManagements(1, debouncedSearchTerm, oppositeCampaign, filterColumn);
-        const totalCount = data.pagination?.total ?? 0;
-        
-        if (oppositeCampaign.toLowerCase() === 'afiliados') {
-          setManagementCountAfiliados(totalCount);
-        } else {
-          setManagementCountAliados(totalCount);
-        }
-      } catch (err) {
-        console.error("Error al inicializar contadores:", err);
-      }
-    };
-
-    initializeCounts();
-  }, [debouncedSearchTerm, filterColumn, campaign]);
-
-  /* ===========================================================
-   *  Paginación y búsqueda con filtro
-   * =========================================================== */
-  const fetchPage = useCallback(
-    (page) => fetchManagement(page, debouncedSearchTerm, filterColumn, campaign),
-    [fetchManagement, debouncedSearchTerm, filterColumn, campaign]
-  );
-
-  const handleSearch = useCallback(
-    (value, column = "") => {
-      setSearchTerm(value);
-      setFilterColumn(column);
-      setCurrentPage(1);
-    },
-    []
-  );
-
-  /* ===========================================================
-   *  Actualizar management-monitoring
-   * =========================================================== */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setValidationErrors({});
-
-    try {
-      const payload = {
-        solution_date: formData.solution_date,
-        monitoring_id: formData.monitoring_id,
-      };
-
-      if (!payload.solution_date || !payload.monitoring_id) {
-        Swal.fire({
-          title: "Campos requeridos",
-          text: "Por favor, complete todos los campos.",
-          icon: "warning",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-        return;
-      }
-
-      await updateManagementMonitoring(formData.id, payload, campaign);
-
-      Swal.fire({
-        title: "Gestión actualizada",
-        text: "Los cambios han sido guardados correctamente.",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
-      setFormData({
+    // Validaciones y formulario
+    const [validationErrors, setValidationErrors] = useState({});
+    const [formData, setFormData] = useState({
         id: null,
         user_id: "",
         consultation_id: "",
         contact_id: "",
         solution_date: "",
         monitoring_id: "",
-      });
+    });
 
-      setOnMonitoring(false);
-      setIsOpenADD(false);
-      fetchManagement(currentPage, debouncedSearchTerm, filterColumn);
-    } catch (error) {
-      if (error.response?.status === 422) {
-        setValidationErrors(error.response.data.errors);
-      } else {
-        console.error("Error al actualizar gestión:", error);
-        Swal.fire({
-          title: "Error",
-          text: "Ocurrió un error al actualizar la gestión.",
-          icon: "error",
-          timer: 2000,
-          showConfirmButton: false,
+    /* ===========================================================
+     *  Campaign State
+     * =========================================================== */
+    const [campaign, setCampaign] = useState(() => {
+        const params = new URLSearchParams(location.search);
+        return params.get("campaign") || "Aliados";
+    });
+
+    /* ===========================================================
+     *  Fetch principal de gestiones (optimizado)
+     * =========================================================== */
+    const fetchManagement = useCallback(
+        async (
+            page = 1,
+            currentFilters = filters,
+            currentCampaign = campaign
+        ) => {
+            if (isFetching.current) return;
+
+            isFetching.current = true;
+            setLoading(true);
+            try {
+                const data = await getManagements(
+                    page,
+                    currentFilters,
+                    currentCampaign
+                );
+                // Update count based on current campaign and search results
+                const totalCount = data.pagination?.total ?? 0;
+                if (currentCampaign.toLowerCase() === "afiliados") {
+                    setManagementCountAfiliados(totalCount);
+                } else {
+                    setManagementCountAliados(totalCount);
+                }
+                setManagement(data.managements || []);
+                setCurrentPage(data.pagination?.current_page || 1);
+                setTotalPages(data.pagination?.last_page || 1);
+                setPerPage(data.pagination?.per_page || 1);
+                setTotalItems(data.pagination?.total || 0);
+            } catch (err) {
+                console.error("Error al obtener gestiones:", err);
+                setError("Error al obtener las gestiones.");
+            } finally {
+                setLoading(false);
+                isFetching.current = false;
+            }
+        },
+        [campaign]
+    );
+
+    // Cargar gestiones cuando cambie la página, búsqueda o filtro
+    useEffect(() => {
+        fetchManagement(currentPage, filters, campaign);
+    }, [currentPage, filters, campaign, fetchManagement]);
+
+    // Inicializar contadores de ambas campañas al montar el componente
+    useEffect(() => {
+        const initializeCounts = async () => {
+            try {
+                // Fetch count for the opposite campaign (the one not currently active)
+                const oppositeCampaign =
+                    campaign === "Aliados" ? "Afiliados" : "Aliados";
+                const data = await getManagements(1, filters, oppositeCampaign);
+                const totalCount = data.pagination?.total ?? 0;
+
+                if (oppositeCampaign.toLowerCase() === "afiliados") {
+                    setManagementCountAfiliados(totalCount);
+                } else {
+                    setManagementCountAliados(totalCount);
+                }
+            } catch (err) {
+                console.error("Error al inicializar contadores:", err);
+            }
+        };
+
+        initializeCounts();
+    }, [filters, campaign]);
+
+    /* ===========================================================
+     *  Paginación y búsqueda con filtro
+     * =========================================================== */
+    const fetchPage = useCallback(
+        (page) => fetchManagement(page, filters, campaign),
+        [fetchManagement, filters, campaign]
+    );
+
+    /* ===========================================================
+     *  Actualizar management-monitoring
+     * =========================================================== */
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setValidationErrors({});
+
+        try {
+            const payload = {
+                solution_date: formData.solution_date,
+                monitoring_id: formData.monitoring_id,
+            };
+
+            if (!payload.solution_date || !payload.monitoring_id) {
+                Swal.fire({
+                    title: "Campos requeridos",
+                    text: "Por favor, complete todos los campos.",
+                    icon: "warning",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+                return;
+            }
+
+            await updateManagementMonitoring(formData.id, payload, campaign);
+
+            Swal.fire({
+                title: "Gestión actualizada",
+                text: "Los cambios han sido guardados correctamente.",
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false,
+            });
+
+            setFormData({
+                id: null,
+                user_id: "",
+                consultation_id: "",
+                contact_id: "",
+                solution_date: "",
+                monitoring_id: "",
+            });
+
+            setOnMonitoring(false);
+            setIsOpenADD(false);
+            fetchManagement(currentPage, filters);
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setValidationErrors(error.response.data.errors);
+            } else {
+                console.error("Error al actualizar gestión:", error);
+                Swal.fire({
+                    title: "Error",
+                    text: "Ocurrió un error al actualizar la gestión.",
+                    icon: "error",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /* ===========================================================
+     *  Fetch Monitorings
+     * =========================================================== */
+    const fetchMonitoring = useCallback(async () => {
+        try {
+            const data = await getActiveMonitorings();
+            setMonitoring(data);
+        } catch (err) {
+            console.error("Error al obtener monitorings:", err);
+            setError("Error al obtener los monitorings.");
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchMonitoring();
+    }, [fetchMonitoring]);
+
+    /* ===========================================================
+     *  Validar monitoring_id actual
+     * =========================================================== */
+    useEffect(() => {
+        if (monitoring?.length && formData.monitoring_id != null) {
+            const exists = monitoring.some(
+                (opt) => Number(opt.id) === Number(formData.monitoring_id)
+            );
+            if (!exists) {
+                setFormData((prev) => ({ ...prev, monitoring_id: "" }));
+            }
+        }
+    }, [monitoring]);
+
+    /* ===========================================================
+     *  Sincronizar URL con searchTerm
+     * =========================================================== */
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+
+        // Cargar filtros iniciales desde URL si no hay filtros activos
+        params.forEach((value, key) => {
+            if (
+                value &&
+                ["page", "campaign"].indexOf(key) === -1 &&
+                !filters[key]
+            ) {
+                addFilter(key, value);
+            }
         });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, [location.search]);
 
-  /* ===========================================================
-   *  Fetch Monitorings
-   * =========================================================== */
-  const fetchMonitoring = useCallback(async () => {
-    try {
-      const data = await getActiveMonitorings();
-      setMonitoring(data);
-    } catch (err) {
-      console.error("Error al obtener monitorings:", err);
-      setError("Error al obtener los monitorings.");
-    }
-  }, []);
+    // ================= Fetch historial de cambios ALIADOS =======================
+    const fetchHistoryChangesAliados = useCallback(
+        async (managementId, page = 1) => {
+            setLoadingHistoryAliados(true);
+            try {
+                const response = await getHistoryChangesAliados(
+                    managementId,
+                    page
+                );
 
-  useEffect(() => {
-    fetchMonitoring();
-  }, [fetchMonitoring]);
+                setHistoryAliados(response.data || []);
+                setCurrentPageAliados(response.pagination?.current_page || 1);
+                setTotalPagesAliados(response.pagination?.last_page || 1);
+                setPerPageAliados(response.pagination?.per_page || 15);
+                setTotalItemsAliados(response.pagination?.total || 0);
+            } catch (err) {
+                console.error(err);
+                setError("Error al obtener el historial.");
+                setHistoryAliados([]);
+            } finally {
+                setLoadingHistoryAliados(false);
+            }
+        },
+        []
+    );
 
-  /* ===========================================================
-   *  Validar monitoring_id actual
-   * =========================================================== */
-  useEffect(() => {
-    if (monitoring?.length && formData.monitoring_id != null) {
-      const exists = monitoring.some(
-        (opt) => Number(opt.id) === Number(formData.monitoring_id)
-      );
-      if (!exists) {
-        setFormData((prev) => ({ ...prev, monitoring_id: "" }));
-      }
-    }
-  }, [monitoring]);
+    const handleOpenHistoryAliados = useCallback(
+        (management) => {
+            setSelectedManagement(management);
+            setOpenHistoryAliados(true);
+            setCurrentPageAliados(1);
+            fetchHistoryChangesAliados(management.id, 1);
+        },
+        [fetchHistoryChangesAliados]
+    );
 
-  /* ===========================================================
-   *  Sincronizar URL con searchTerm
-   * =========================================================== */
-  const navigate = useNavigate();
+    const fetchHistoryPageAliados = useCallback(
+        (page) => {
+            if (selectedManagement) {
+                fetchHistoryChangesAliados(selectedManagement.id, page);
+            }
+        },
+        [selectedManagement, fetchHistoryChangesAliados]
+    );
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const searchParam = params.get("search");
+    // ================= Fetch historial de cambios AFILIADOS =======================
+    const fetchHistoryChangesAfiliados = useCallback(
+        async (managementId, page = 1) => {
+            setLoadingHistoryAfiliados(true);
+            try {
+                const response = await getHistoryChangesAfiliados(
+                    managementId,
+                    page
+                );
 
-    if (searchParam !== null && searchParam !== searchTerm) {
-      setSearchTerm(searchParam);
-      setCurrentPage(1);
-    }
-  }, [location.search]);
+                setHistoryAfiliados(response.data || []);
+                setCurrentPageAfiliados(response.pagination?.current_page || 1);
+                setTotalPagesAfiliados(response.pagination?.last_page || 1);
+                setPerPageAfiliados(response.pagination?.per_page || 15);
+                setTotalItemsAfiliados(response.pagination?.total || 0);
+            } catch (err) {
+                console.error(err);
+                setError("Error al obtener el historial.");
+                setHistoryAfiliados([]);
+            } finally {
+                setLoadingHistoryAfiliados(false);
+            }
+        },
+        []
+    );
 
-  const handleClearSearch = useCallback(() => {
-    setSearchTerm("");
-    setFilterColumn("");
-    setCurrentPage(1);
-    navigate(location.pathname, { replace: true });
-  }, [navigate, location.pathname]);
+    const handleOpenHistoryAfiliados = useCallback(
+        (management) => {
+            setSelectedManagement(management);
+            setOpenHistoryAfiliados(true);
+            setCurrentPageAfiliados(1);
+            fetchHistoryChangesAfiliados(management.id, 1);
+        },
+        [fetchHistoryChangesAfiliados]
+    );
 
-  // ================= Fetch historial de cambios ALIADOS =======================
-  const fetchHistoryChangesAliados = useCallback(
-    async (managementId, page = 1) => {
-      setLoadingHistoryAliados(true);
-      try {
-        const response = await getHistoryChangesAliados(managementId, page);
+    const fetchHistoryPageAfiliados = useCallback(
+        (page) => {
+            if (selectedManagement) {
+                fetchHistoryChangesAfiliados(selectedManagement.id, page);
+            }
+        },
+        [selectedManagement, fetchHistoryChangesAfiliados]
+    );
 
-        setHistoryAliados(response.data || []);
-        setCurrentPageAliados(response.pagination?.current_page || 1);
-        setTotalPagesAliados(response.pagination?.last_page || 1);
-        setPerPageAliados(response.pagination?.per_page || 15);
-        setTotalItemsAliados(response.pagination?.total || 0);
-      } catch (err) {
-        console.error(err);
-        setError("Error al obtener el historial.");
-        setHistoryAliados([]);
-      } finally {
-        setLoadingHistoryAliados(false);
-      }
-    },
-    []
-  );
+    /* ===========================================================
+     *  Return
+     * =========================================================== */
+    return {
+        // Datos
+        management,
+        monitoring,
+        formData,
+        validationErrors,
+        filters,
+        addFilter,
+        removeFilter,
+        clearFilters,
+        managementCountAliados,
+        managementCountAfiliados,
 
-  const handleOpenHistoryAliados = useCallback(
-    (management) => {
-      setSelectedManagement(management);
-      setOpenHistoryAliados(true);
-      setCurrentPageAliados(1);
-      fetchHistoryChangesAliados(management.id, 1);
-    },
-    [fetchHistoryChangesAliados]
-  );
+        // Estados UI
+        loading,
+        error,
+        IsOpenADD,
+        view,
+        onMonitoring,
 
-  const fetchHistoryPageAliados = useCallback(
-    (page) => {
-      if (selectedManagement) {
-        fetchHistoryChangesAliados(selectedManagement.id, page);
-      }
-    },
-    [selectedManagement, fetchHistoryChangesAliados]
-  );
+        // Paginación
+        currentPage,
+        totalPages,
+        totalItems,
+        perPage,
+        fetchPage,
 
-  // ================= Fetch historial de cambios AFILIADOS =======================
-  const fetchHistoryChangesAfiliados = useCallback(
-    async (managementId, page = 1) => {
-      setLoadingHistoryAfiliados(true);
-      try {
-        const response = await getHistoryChangesAfiliados(managementId, page);
+        // Acciones
+        fetchManagement,
+        fetchPage,
+        handleSubmit,
+        setFormData,
+        setIsOpenADD,
+        setOnMonitoring,
+        setView,
+        setCurrentPage,
 
-        setHistoryAfiliados(response.data || []);
-        setCurrentPageAfiliados(response.pagination?.current_page || 1);
-        setTotalPagesAfiliados(response.pagination?.last_page || 1);
-        setPerPageAfiliados(response.pagination?.per_page || 15);
-        setTotalItemsAfiliados(response.pagination?.total || 0);
-      } catch (err) {
-        console.error(err);
-        setError("Error al obtener el historial.");
-        setHistoryAfiliados([]);
-      } finally {
-        setLoadingHistoryAfiliados(false);
-      }
-    },
-    []
-  );
+        // Campaign
+        campaign,
+        setCampaign,
 
-  const handleOpenHistoryAfiliados = useCallback(
-    (management) => {
-      setSelectedManagement(management);
-      setOpenHistoryAfiliados(true);
-      setCurrentPageAfiliados(1);
-      fetchHistoryChangesAfiliados(management.id, 1);
-    },
-    [fetchHistoryChangesAfiliados]
-  );
+        // Historial Aliados
+        openHistoryAliados,
+        setOpenHistoryAliados,
+        historyAliados,
+        loadingHistoryAliados,
+        currentPageAliados,
+        totalPagesAliados,
+        perPageAliados,
+        totalItemsAliados,
+        handleOpenHistoryAliados,
+        fetchHistoryPageAliados,
+        selectedManagement,
 
-  const fetchHistoryPageAfiliados = useCallback(
-    (page) => {
-      if (selectedManagement) {
-        fetchHistoryChangesAfiliados(selectedManagement.id, page);
-      }
-    },
-    [selectedManagement, fetchHistoryChangesAfiliados]
-  );
-
-  /* ===========================================================
-   *  Return
-   * =========================================================== */
-  return {
-    // Datos
-    management,
-    monitoring,
-    formData,
-    validationErrors,
-    searchTerm,
-    filterColumn,
-    managementCountAliados,
-    managementCountAfiliados,
-
-    // Estados UI
-    loading,
-    error,
-    IsOpenADD,
-    view,
-    onMonitoring,
-
-    // Paginación
-    currentPage,
-    totalPages,
-    totalItems,
-    perPage,
-    fetchPage,
-
-    // Acciones
-    fetchManagement,
-    fetchPage,
-    handleSearch,
-    handleClearSearch,
-    handleSubmit,
-    setFormData,
-    setIsOpenADD,
-    setOnMonitoring,
-    setView,
-    setCurrentPage,
-    
-    // Campaign
-    campaign,
-    setCampaign,
-
-    // Historial Aliados
-    openHistoryAliados,
-    setOpenHistoryAliados,
-    historyAliados,
-    loadingHistoryAliados,
-    currentPageAliados,
-    totalPagesAliados,
-    perPageAliados,
-    totalItemsAliados,
-    handleOpenHistoryAliados,
-    fetchHistoryPageAliados,
-    selectedManagement,
-
-    //Historial Afiliados
-    openHistoryAfiliados,
-    setOpenHistoryAfiliados,
-    historyAfiliados,
-    loadingHistoryAfiliados,
-    currentPageAfiliados,
-    totalPagesAfiliados,
-    perPageAfiliados,
-    totalItemsAfiliados,
-    handleOpenHistoryAfiliados,
-    fetchHistoryPageAfiliados,
-  };
+        //Historial Afiliados
+        openHistoryAfiliados,
+        setOpenHistoryAfiliados,
+        historyAfiliados,
+        loadingHistoryAfiliados,
+        currentPageAfiliados,
+        totalPagesAfiliados,
+        perPageAfiliados,
+        totalItemsAfiliados,
+        handleOpenHistoryAfiliados,
+        fetchHistoryPageAfiliados,
+    };
 };

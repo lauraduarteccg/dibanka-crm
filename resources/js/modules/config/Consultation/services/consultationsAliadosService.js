@@ -13,15 +13,7 @@ export const getConsults = async (page = 1, search = "") => {
             search
         )}`
     );
-    return {
-        consultations: data.consultations || [],
-        pagination: {
-            total_pages: data.pagination?.total_pages ?? 1,
-            current_page: data.pagination?.current_page ?? 1,
-            per_page: data.pagination?.per_page ?? 10,
-            total_consultations: data.pagination?.total_consultations ?? 0,
-        },
-    };
+    return data;
 };
 
 /**

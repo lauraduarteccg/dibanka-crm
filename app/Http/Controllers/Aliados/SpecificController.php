@@ -27,7 +27,7 @@ class SpecificController extends Controller
                 $q->where('name', 'LIKE', "%{$searchTerm}%");
 
                 // Para buscar en relaciones
-                $q->orWhereHas('consultations_aliados', function ($consultationQuery) use ($searchTerm) {
+                $q->orWhereHas('consultation', function ($consultationQuery) use ($searchTerm) {
                     $consultationQuery->where('name', 'LIKE', "%{$searchTerm}%");
                 });
             });
@@ -41,6 +41,10 @@ class SpecificController extends Controller
                 'búsqueda' => $request->search ?? 'Sin filtro aplicado'
             ]
         ], $request);
+        
+        // Contar todos los registros activos e inactivos (no solo de la página actual)
+        $countActives = Specific::where('is_active', true)->count();
+        $countInactives = Specific::where('is_active', false)->count();
 
         return response()->json([
             'message'       => 'Consultas específicas obtenidas con éxito',
@@ -50,8 +54,8 @@ class SpecificController extends Controller
                 'total_pages'         => $specifics->lastPage(),
                 'per_page'            => $specifics->perPage(),
                 'total_consultations' => $specifics->total(),
-                'next_page_url'       => $specifics->nextPageUrl(),
-                'prev_page_url'       => $specifics->previousPageUrl(),
+                'count_inactives' => $countInactives,
+                'count_actives' => $countActives,
             ],
         ], Response::HTTP_OK);
     }
@@ -61,6 +65,11 @@ class SpecificController extends Controller
     {
         $query = Specific::with(['consultation.payrolls'])
             ->where('is_active', 1);
+
+        // Filtrar por consulta si se proporciona consultation_id
+        if ($request->has('consultation_id') && !empty($request->consultation_id)) {
+            $query->where('consultation_id', $request->consultation_id);
+        }
 
         // Filtro de búsqueda
         if ($request->has('search') && !empty($request->search)) {
@@ -76,25 +85,20 @@ class SpecificController extends Controller
             });
         }
 
-        // Paginación
-        $consultations = $query->paginate(10);
+        // Obtener todos los resultados sin paginación
+        $consultations = $query->orderBy('id', 'desc')->get();
 
         log_activity('ver_activas', 'Consultas Especificas', [
             'mensaje' => "El usuario {$request->user()->name} consultó el listado de consultas específicas activas.",
             'criterios' => [
-                'búsqueda' => $request->search ?? 'Sin filtro aplicado'
+                'búsqueda' => $request->search ?? 'Sin filtro aplicado',
+                'payroll_id' => $request->payroll_id ?? 'Sin filtro de pagaduría'
             ]
         ], $request);
 
         return response()->json([
             'message'       => 'Consultas específicas activas obtenidas con éxito',
-            'consultationspecific' => SpecificResource::collection($consultations),
-            'pagination'    => [
-                'current_page'        => $consultations->currentPage(),
-                'total_pages'         => $consultations->lastPage(),
-                'per_page'            => $consultations->perPage(),
-                'total_consultations' => $consultations->total(),
-            ],
+            'consultationspecific' => SpecificResource::collection($consultations)
         ], Response::HTTP_OK);
     }
 

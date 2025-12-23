@@ -28,13 +28,17 @@ class TypeManagementController extends Controller
             });
         }
 
-        $typeManagement = $query->paginate(10);
+        $typeManagement = $query->orderBy('id', 'desc')->paginate(10);
 
         log_activity('ver_listado', 'Tipo de Gestión', [
             'mensaje' => "El usuario {$request->user()->name} visualizó el listado de tipos de gestión" .
                 ($request->filled('search') ? " con filtro '{$request->search}'" : ""),
             'criterios' => ['búsqueda' => $request->search ?? null]
         ], $request);
+        
+        // Contar todos los registros activos e inactivos (no solo de la página actual)
+        $countActives = TypeManagement::where('is_active', true)->count();
+        $countInactives = TypeManagement::where('is_active', false)->count();
 
         return response()->json([
             'message' => 'Tipos de gestion obtenidas con éxito',
@@ -44,6 +48,8 @@ class TypeManagementController extends Controller
                 'total_pages' => $typeManagement->lastPage(),
                 'per_page' => $typeManagement->perPage(),
                 'total_managements' => $typeManagement->total(),
+                'count_inactives' => $countInactives,
+                'count_actives' => $countActives,
             ]
         ], Response::HTTP_OK);
     }

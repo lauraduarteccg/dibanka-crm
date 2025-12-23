@@ -18,6 +18,8 @@ export const useMonitoring = () => {
   const [perPage, setPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [isOpenADD, setIsOpenADD] = useState(false);
+  const [active, setActive] = useState(0);
+  const [inactive, setInactive] = useState(0);
 
   const [formData, setFormData] = useState({
     id: null,
@@ -37,6 +39,8 @@ export const useMonitoring = () => {
       setCurrentPage(data.pagination.current_page);
       setPerPage(data.pagination.per_page);
       setTotalItems(data.pagination.total_monitorings);
+      setActive(data.pagination.count_actives);
+      setInactive(data.pagination.count_inactives);
     } catch (err) {
       console.error(err);
       setError("Error al obtener los tipos de seguimiento.");
@@ -141,6 +145,8 @@ export const useMonitoring = () => {
   };
 
   return {
+    active,
+    inactive,
     monitoring,
     loading,
     error,

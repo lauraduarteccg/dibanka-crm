@@ -37,7 +37,11 @@ class UserController extends Controller
             ], $request);
         }
 
-        $users = $query->paginate(10);
+        $users = $query->orderBy('id', 'desc')->paginate(10);
+        
+        // Contar todos los registros activos e inactivos (no solo de la página actual)
+        $countActives = User::where('is_active', true)->count();
+        $countInactives = User::where('is_active', false)->count();
 
         return response()->json([
             'message'       => 'Usuarios obtenidos con éxito',
@@ -47,8 +51,8 @@ class UserController extends Controller
                 'total_pages'   => $users->lastPage(),
                 'per_page'      => $users->perPage(),
                 'total_users'   => $users->total(),
-                'next_page_url' => $users->nextPageUrl(),
-                'prev_page_url' => $users->previousPageUrl(),
+                'count_inactives' => $countInactives,
+                'count_actives' => $countActives,
             ]
         ], Response::HTTP_OK);
     }

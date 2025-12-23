@@ -32,7 +32,11 @@ class PayrollController extends Controller
             });
         }
 
-        $payrolls = $query->paginate(10);
+        $payrolls = $query->orderBy('id', 'desc')->paginate(10);
+        
+        // Contar todos los registros activos e inactivos (no solo de la página actual)
+        $countActives = Payroll::where('is_active', true)->count();
+        $countInactives = Payroll::where('is_active', false)->count();
 
         // 🔹 Registrar actividad
         log_activity('ver_listado', 'Pagadurías', [
@@ -45,6 +49,10 @@ class PayrollController extends Controller
             ],
         ], $request);
 
+        // Contar todos los registros activos e inactivos (no solo de la página actual)
+        $countActives = Payroll::where('is_active', true)->count();
+        $countInactives = Payroll::where('is_active', false)->count();
+
         return response()->json([
             'message' => 'Pagadurías obtenidas con éxito',
             'data' => PayrollResource::collection($payrolls),
@@ -53,6 +61,8 @@ class PayrollController extends Controller
                 'total_pages' => $payrolls->lastPage(),
                 'per_page' => $payrolls->perPage(),
                 'total_payrolls' => $payrolls->total(),
+                'count_inactives' => $countInactives,
+                'count_actives' => $countActives,
             ]
         ], Response::HTTP_OK);
     }

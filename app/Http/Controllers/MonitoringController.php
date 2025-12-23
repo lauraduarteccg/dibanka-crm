@@ -25,7 +25,7 @@ class MonitoringController extends Controller
             });
         }
 
-        $monitoring = $query->paginate(10);
+        $monitoring = $query->orderBy('id', 'desc')->paginate(10);
 
         log_activity('ver_listado', 'Seguimientos', [
             'mensaje' => "El usuario {$request->user()->name} visualizó el listado de seguimientos" .
@@ -35,6 +35,10 @@ class MonitoringController extends Controller
             ]
         ], $request);
 
+        // Contar todos los registros activos e inactivos (no solo de la página actual)
+        $countActives = Monitoring::where('is_active', true)->count();
+        $countInactives = Monitoring::where('is_active', false)->count();
+
         return response()->json([
             'message'       => 'Seguimientos obtenidos con éxito',
             'monitorings' => MonitoringResource::collection($monitoring),
@@ -43,6 +47,8 @@ class MonitoringController extends Controller
                 'total_pages'           => $monitoring->lastPage(),
                 'per_page'              => $monitoring->perPage(),
                 'total_monitorings'   => $monitoring->total(),
+                'count_inactives' => $countInactives,
+                'count_actives' => $countActives,
             ],
         ], Response::HTTP_OK);
     }

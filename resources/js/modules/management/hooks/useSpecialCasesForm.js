@@ -4,166 +4,199 @@ import Swal from "sweetalert2";
 import { useAddManagement } from "@modules/management/hooks/useAddManagement";
 import api from "@api/axios";
 
-export const useSpecialCasesForm = () => {
-  const { user } = useContext(AuthContext);
-  const location = window.location;
-  const [openSpecialCases, setOpenSpecialCases] = useState(false);
-  const [openSearchPayroll, setOpenSearchPayroll] = useState(false);
-  const {
-    payroll,
-    contact,
-    consultation,
-    typeManagement,
-    specific,
-  } = useAddManagement();
+export const useSpecialCasesForm = (onContactSelected) => {  // 🔥 Nuevo parámetro
+    const { user } = useContext(AuthContext);
+    const location = window.location;
+    const [openSpecialCases, setOpenSpecialCases] = useState(false);
+    const [openSearchContact, setOpenSearchContact] = useState(false);
+    
+    const { 
+        payroll, 
+        contact,
+        currentPageContact,
+        totalPagesContact,
+        perPageContact,
+        totalItemsContact,
+        fetchPageContact,
+        handleSearchContact,
+        searchTermContact,
+    } = useAddManagement();
 
-  const [selectedPayrollSpecial, setSelectedPayrollSpecial] = useState(null);
-  const [selectedContactSpecial, setSelectedContactSpecial] = useState(null);
+    const [selectedPayrollSpecial, setSelectedPayrollSpecial] = useState(null);
+    const [selectedContactSpecial, setSelectedContactSpecial] = useState(null);
+    const [loadingContact, setLoadingContact] = useState(false);
 
-  const [formData, setFormData] = useState({
-    user_id: user?.id || "",
-    payroll_id: "",
-    contact_id: "",
-    management_messi: "",
-    id_call: "",
-    id_messi: "",
-  });
+    const [formData, setFormData] = useState({
+        user_id: user?.id || "",
+        payroll_id: "",
+        contact_id: "",
+        management_messi: "",
+        id_call: "",
+        id_messi: "",
+        observations: "",
+    });
 
-  const [validationErrorsSpecial, setValidationErrorsSpecial] = useState({});
-  const [autoFilled, setAutoFilled] = useState(false); // 👈 Para evitar ejecuciones múltiples
+    const [validationErrorsSpecial, setValidationErrorsSpecial] = useState({});
+    const [autoFilled, setAutoFilled] = useState(false);
 
-  // ===================================================
-  // AUTO LLENADO POR PARÁMETROS DE LA URL
-  // ===================================================
-  useEffect(() => {
-    if (!payroll?.length || !contact?.length || autoFilled) return;
+    // ===================================================
+    // AUTO LLENADO POR PARÁMETROS DE LA URL
+    // ===================================================
+    useEffect(() => {
+        if (!payroll?.length || !contact?.length || autoFilled) return;
 
-    const params = new URLSearchParams(location.search);
-    const payrollParam = params.get("payroll");
-    const idNumberParam = params.get("identification_number");
+        const params = new URLSearchParams(location.search);
+        const payrollParam = params.get("payroll");
+        const idNumberParam = params.get("identification_number");
 
-    // Si no hay parámetros, no hacemos nada
-    if (!payrollParam && !idNumberParam) return;
+        if (!payrollParam && !idNumberParam) return;
 
-    // Buscar la pagaduría
-    const foundPayroll =
-      payroll.find(
-        (p) => p.name?.toLowerCase().trim() === payrollParam?.toLowerCase().trim()
-      ) || null;
+        const foundPayroll =
+            payroll.find(
+                (p) =>
+                    p.name?.toLowerCase().trim() ===
+                    payrollParam?.toLowerCase().trim()
+            ) || null;
 
-    // Buscar el contacto
-    const foundContact =
-      contact.find(
-        (c) =>
-          c.identification_number?.toString().trim() ===
-          idNumberParam?.toString().trim()
-      ) || null;
+        const foundContact =
+            contact.find(
+                (c) =>
+                    c.identification_number?.toString().trim() ===
+                    idNumberParam?.toString().trim()
+            ) || null;
 
-    if (foundPayroll) setSelectedPayrollSpecial(foundPayroll);
-    if (foundContact) setSelectedContactSpecial(foundContact);
+        if (foundPayroll) setSelectedPayrollSpecial(foundPayroll);
+        if (foundContact) {
+            setSelectedContactSpecial(foundContact);
+            // 🔥 También notificar al componente padre
+            if (onContactSelected) {
+                onContactSelected(foundContact);
+            }
+        }
 
-    // Para no volver a ejecutar este bloque
-    setAutoFilled(true);
-  }, [location.search, payroll, contact, autoFilled]);
+        setAutoFilled(true);
+    }, [location.search, payroll, contact, autoFilled, onContactSelected]);
 
-  // ===================================================
-  // ENVIAR FORMULARIO
-  // ===================================================
-  const handleSubmit = async () => {
-    const payload = {
-      user_id: user?.id,
-      payroll_id: selectedPayrollSpecial?.id,
-      contact_id: selectedContactSpecial?.id,
-      management_messi: formData.management_messi,
-      id_call: formData.id_call,
-      id_messi: formData.id_messi,
+    // ===================================================
+    // ENVIAR FORMULARIO
+    // ===================================================
+    const handleSubmit = async () => {
+        const payload = {
+            user_id: user?.id,
+            payroll_id: selectedPayrollSpecial?.id,
+            contact_id: selectedContactSpecial?.id,
+            management_messi: formData.management_messi,
+            id_call: formData.id_call,
+            id_messi: formData.id_messi,
+            observations: formData.observations,
+        };
+
+        try {
+            setLoadingContact(true);
+            const { data } = await api.post("/specialcases", payload);
+
+            Swal.fire({
+                icon: "success",
+                title: "Éxito",
+                text: data.message || "Caso especial guardado correctamente",
+                confirmButtonText: "Aceptar",
+            });
+
+            // Reiniciar estados
+            setFormData({
+                management_messi: "",
+                id_call: "",
+                id_messi: "",
+                observations: "",
+            });
+            setSelectedPayrollSpecial(null);
+            setSelectedContactSpecial(null);
+            setValidationErrorsSpecial({});
+            setOpenSpecialCases(false);
+        } catch (error) {
+            console.log("❌ Error del servidor:", error.response?.data);
+            if (error.response?.status === 422) {
+                setValidationErrorsSpecial(
+                    error.response.data.errors || error.response.data.data || {}
+                );
+            } else {
+                Swal.fire(
+                    "❌ Error",
+                    "No se pudo guardar el caso especial",
+                    "error"
+                );
+            }
+        } finally {
+            setLoadingContact(false);
+        }
     };
 
-    try {
-      const { data } = await api.post("/specialcases", payload);
+    const onClose = () => {
+        setFormData({
+            management_messi: "",
+            id_call: "",
+            id_messi: "",
+            observations: "",
+        });
+        setSelectedPayrollSpecial(null);
+        setSelectedContactSpecial(null);
+        setValidationErrorsSpecial({});
+        setOpenSpecialCases(false);
+    };
 
-      Swal.fire({
-        icon: "success",
-        title: "Éxito",
-        text: data.message || "Caso especial guardado correctamente",
-        confirmButtonText: "Aceptar",
-      });
+    // 🔥 FIX: Notificar al componente padre cuando se selecciona un contacto
+    const onSelectContact = (contact) => {
+        setSelectedContactSpecial(contact);
+        setFormData((prev) => ({
+            ...prev,
+            contact_id: contact?.id || "",
+        }));
+        clearFieldError("contact_id");
+        setOpenSearchContact(false);
+        
+        // 🔥 NUEVO: Notificar al componente padre (AddManagement)
+        if (onContactSelected) {
+            onContactSelected(contact);
+        }
+    };
 
-      // Reiniciar estados
-      setFormData({
-        management_messi: "",
-        id_call: "",
-        id_messi: "",
-      });
-      setSelectedPayrollSpecial(null);
-      setSelectedContactSpecial(null);
-      setValidationErrorsSpecial({});
-      setOpenSpecialCases(false);
-    } catch (error) {
-      console.log("❌ Error del servidor:", error.response?.data);
-      if (error.response?.status === 422) {
-        setValidationErrorsSpecial(
-          error.response.data.errors || error.response.data.data || {}
-        );
-      } else {
-        Swal.fire("❌ Error", "No se pudo guardar el caso especial", "error");
-      }
-    }
-  };
-  
-  const onClose = () =>{
-    setFormData({
-        management_messi: "",
-        id_call: "",
-        id_messi: "",
-    })
-      setSelectedPayrollSpecial(null);
-      setSelectedContactSpecial(null);
-      setValidationErrorsSpecial({});
-      setOpenSpecialCases(false);
-  }
+    const clearFieldError = (field) => {
+        if (validationErrorsSpecial?.[field]) {
+            setValidationErrorsSpecial((prev) => {
+                const updated = { ...prev };
+                delete updated[field];
+                return updated;
+            });
+        }
+    };
 
-  const onSelectContact = (contact) => {
-    setSelectedContactSpecial(contact);
-    setFormData((prev) => ({
-      ...prev,
-      contact_id: contact?.id || "",
-    }));
-    clearFieldError("contact_id");
-  };
-
-  const clearFieldError = (field) => {
-    if (validationErrorsSpecial?.[field]) {
-      setValidationErrorsSpecial((prev) => {
-        const updated = { ...prev };
-        delete updated[field];
-        return updated;
-      });
-    }
-  };
-
-  return {
-    openSearchPayroll, 
-    setOpenSearchPayroll,
-    onClose,
-    onSelectContact,
-    clearFieldError,
-    user,
-    payrollSpecial: payroll,
-    contact,
-    consultation,
-    typeManagement,
-    specific,
-    selectedPayrollSpecial,
-    setSelectedPayrollSpecial,
-    selectedContactSpecial,
-    setSelectedContactSpecial,
-    formData,
-    setFormData,
-    validationErrorsSpecial,
-    setValidationErrorsSpecial,
-    handleSubmit,
-    openSpecialCases,
-    setOpenSpecialCases,
-  };
+    return {
+        openSearchContact,
+        setOpenSearchContact,
+        onClose,
+        onSelectContact,
+        clearFieldError,
+        user,
+        payrollSpecial: payroll,
+        contactSearch: contact || [],
+        selectedPayrollSpecial,
+        setSelectedPayrollSpecial,
+        selectedContactSpecial,
+        setSelectedContactSpecial,
+        formData,
+        setFormData,
+        validationErrorsSpecial,
+        setValidationErrorsSpecial,
+        handleSubmit,
+        openSpecialCases,
+        setOpenSpecialCases,
+        currentPageContact,
+        totalPagesContact,
+        perPageContact,
+        totalItemsContact,
+        fetchPageContact,
+        handleSearchContact,
+        searchTermContact,
+        loadingContact,
+    };
 };

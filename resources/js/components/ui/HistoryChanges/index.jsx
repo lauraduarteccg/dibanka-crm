@@ -67,7 +67,6 @@ const HistoryModal = ({
             identification_type: "Tipo de identificación",
             identification_number: "Número de identificación",
             payroll_id: "Pagaduría",
-            campaign_id: "Campaña",
             status: "Estado",
             is_active: "Estado",
             user_id: "Usuario",

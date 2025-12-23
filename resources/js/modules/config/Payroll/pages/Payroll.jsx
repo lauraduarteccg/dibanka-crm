@@ -63,10 +63,10 @@ const Payroll = () => {
         totalItems,
         handleCloseModal,
         perPage,
+        active,
+        inactive,
     } = usePayrolls();
 
-    const activePayroll = payrolls.filter((p) => p.is_active === 1).length;
-    const inactivePayroll = totalItems - activePayroll;
     const statsCards = [
         {
             title: "Pagadurías Totales",
@@ -74,11 +74,11 @@ const Payroll = () => {
         },
         {
             title: "Pagadurías Activas",
-            value: activePayroll,
+            value: active,
         },
         {
             title: "Pagadurías Inactivas",
-            value: inactivePayroll,
+            value: inactive,
         }
     ]
     return (

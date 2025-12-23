@@ -66,13 +66,13 @@ const Users = () => {
     handleSearch,
     fetchPage,
     filteredRoles,
+    active,
+    inactive,
   } = useUsers();
 
   const { user } = useContext(AuthContext);
 
   // Contadores estadísticos
-  const activeUsers = users.filter((u) => u.is_active === 1).length;
-  const inactiveUsers = total_users - activeUsers;
   const statsCards = [
     {
       title: "Usuarios Totales",
@@ -80,11 +80,11 @@ const Users = () => {
     },
     {
       title: "Usuarios Activos",
-      value: activeUsers,
+      value: active,
     },
     {
       title: "Usuarios Inactivos",
-      value: inactiveUsers,
+      value: inactive,
     }
   ]
   return (

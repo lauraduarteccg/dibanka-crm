@@ -17,6 +17,11 @@ class ContactController extends Controller
     {
         $query = Contact::query();
 
+        // 🔎 Filtro por id
+        if ($request->filled('id')) {
+            $query->where('id', 'LIKE', '%' . $request->id . '%');
+        }
+
         // 🔎 Filtro por número de identificación
         if ($request->filled('identification_number')) {
             $query->where('identification_number', 'LIKE', '%' . $request->identification_number . '%');
@@ -57,6 +62,7 @@ class ContactController extends Controller
         // 🔎 Búsqueda general si no hay filtros específicos
         if (
             $request->filled('search') &&
+            !$request->filled('id') &&
             !$request->filled('identification_number') &&
             !$request->filled('name') &&
             !$request->filled('email') &&
@@ -68,7 +74,7 @@ class ContactController extends Controller
         }
 
         // Cargar relaciones y paginar
-        $contacts = $query->with('payroll', 'campaign')->paginate(10);
+        $contacts = $query->with('payroll', 'campaign')->orderBy('id', 'desc')->paginate(10);
 
         // Construcción criterios para logs
         $searchCriteria = [];

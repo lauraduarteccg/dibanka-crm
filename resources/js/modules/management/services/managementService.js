@@ -11,77 +11,87 @@ import api from "@api/axios";
  * @param {string} campaign - "Aliados" o "Afiliados"
  * @param {string} filterColumn - Columna específica para filtrar (opcional)
  */
-export const getManagements = async (page = 1, search = "", campaign = "Aliados", filterColumn = "") => {
-  const campaignLower = campaign.toLowerCase();
-  let endpoint = "/management-aliados"; // Default
+export const getManagements = async (
+    page = 1,
+    filters = {},
+    campaign = "Aliados"
+) => {
+    const campaignLower = campaign.toLowerCase();
+    let endpoint = "/management-aliados"; // Default
 
-  if (campaignLower === "afiliados") {
-    endpoint = "/management-afiliados";
-  }
+    if (campaignLower === "afiliados") {
+        endpoint = "/management-afiliados";
+    }
 
-  let url = `${endpoint}?page=${page}`;
+    const params = new URLSearchParams({ page });
 
-  // Si hay un filtro por columna específica, usar los parámetros que espera el backend
-  if (filterColumn && search) {
-    url += `&searchValue=${encodeURIComponent(search)}&filterColumn=${filterColumn}`;
-  } 
-  // Si no hay filtro específico, usar búsqueda general
-  else if (search) {
-    url += `&search=${encodeURIComponent(search)}`;
-  }
+    // Agregar filtros dinámicos a la URL
+    // Si filters viene como string (legacy search), lo manejamos
+    if (typeof filters === "string") {
+        if (filters) params.append("search", filters);
+    } else {
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value) params.append(key, value);
+        });
+    }
 
-  const { data } = await api.get(url);
+    const { data } = await api.get(`${endpoint}?${params.toString()}`);
 
-  return {
-    managements: data.managements || [],
-    count: data.count || 0,
-    pagination: {
-      current_page: data.pagination?.current_page ?? 1,
-      last_page: data.pagination?.last_page ?? data.pagination?.total_pages ?? 1,
-      per_page: data.pagination?.per_page ?? 0,
-      total: data.pagination?.total_management ?? data.pagination?.total_items ?? 0,
-    },
-  };
+    return {
+        managements: data.managements || [],
+        count: data.count || 0,
+        pagination: {
+            current_page: data.pagination?.current_page ?? 1,
+            last_page:
+                data.pagination?.last_page ?? data.pagination?.total_pages ?? 1,
+            per_page: data.pagination?.per_page ?? 0,
+            total:
+                data.pagination?.total_management ??
+                data.pagination?.total_items ??
+                0,
+        },
+    };
 };
 
 /**
  * Crea una nueva gestión según la campaña seleccionada.
  * Para actualizaciones (con id), usa el endpoint estándar.
  * Para creaciones, usa endpoints específicos por campaña.
- * 
+ *
  * @param {Object} payload - Datos de la gestión
  * @param {string} campaign - "Aliados" o "Afiliados"
  */
 export const saveManagement = async (payload, campaign = "") => {
-  const { id } = payload;
-  
-  // Si tiene ID, es una actualización (usar endpoint estándar)
-  if (id) {
-    const { data } = await api.put(`/management/${id}`, payload);
+    const { id } = payload;
+
+    // Si tiene ID, es una actualización (usar endpoint estándar)
+    if (id) {
+        const { data } = await api.put(`/management/${id}`, payload);
+        return data;
+    }
+
+    // Para nuevas gestiones, determinar endpoint según campaña
+    const campaignLower = campaign.toLowerCase();
+    let endpoint = "/management-aliados"; // Por defecto Aliados
+
+    if (campaignLower == "afiliados") {
+        endpoint = "/management-afiliados";
+    }
+
+    //console.log(`🎯 Creando gestión en: ${endpoint} (Campaña: "${campaign}")`);
+    //console.log('📊 Tipo de campaign:', typeof campaign, 'Valor:', campaign);
+
+    const { data } = await api.post(endpoint, payload);
     return data;
-  }
-  
-  // Para nuevas gestiones, determinar endpoint según campaña
-  const campaignLower = campaign.toLowerCase();
-  let endpoint = "/management-aliados"; // Por defecto Aliados
-  
-  if (campaignLower == "afiliados") {
-    endpoint = "/management-afiliados";
-  }
-  
-  //console.log(`🎯 Creando gestión en: ${endpoint} (Campaña: "${campaign}")`);
-  //console.log('📊 Tipo de campaign:', typeof campaign, 'Valor:', campaign);
-  
-  const { data } = await api.post(endpoint, payload);
-  return data;
 };
 
 /**
  * Tipos de gestión activos.
  */
 export const getActiveTypeManagements = async () => {
-  const { data } = await api.get("/config/typemanagements/active");
-  return data.typeManagement || [];
+    const { data } = await api.get("/config/typemanagements/active");
+    console.log("🚀 typeManagement:", data);
+    return data.typeManagement || [];
 };
 
 /**
@@ -90,16 +100,20 @@ export const getActiveTypeManagements = async () => {
  * @param {Object} payload
  * @param {string} campaign - "Aliados" o "Afiliados"
  */
-export const updateManagementMonitoring = async (id, payload, campaign = "Aliados") => {
-  const campaignLower = campaign.toLowerCase();
-  let endpoint = `/managementmonitoring-aliados/${id}`; // Default
+export const updateManagementMonitoring = async (
+    id,
+    payload,
+    campaign = "Aliados"
+) => {
+    const campaignLower = campaign.toLowerCase();
+    let endpoint = `/managementmonitoring-aliados/${id}`; // Default
 
-  if (campaignLower === "afiliados") {
-    endpoint = `/managementmonitoring-afiliados/${id}`;
-  }
+    if (campaignLower === "afiliados") {
+        endpoint = `/managementmonitoring-afiliados/${id}`;
+    }
 
-  const { data } = await api.put(endpoint, payload);
-  return data;
+    const { data } = await api.put(endpoint, payload);
+    return data;
 };
 
 /* ===========================================================
@@ -109,45 +123,65 @@ export const updateManagementMonitoring = async (id, payload, campaign = "Aliado
 /**
  * Consultas activas según la campaña.
  * @param {string} campaign - "aliados" o "afiliados"
+ * @param {number} payrollId - ID de la pagaduría (opcional)
  */
-export const getActiveConsultationsByCampaign = async (campaign = "") => {
-  if (!campaign) {
-    return [];
-  }
-  
-  const campaignLower = campaign.toLowerCase();
-  const endpoint = `/config/consultations-${campaignLower}/active`;
-  
-  try {
-    const { data } = await api.get(endpoint);
-    return data.consultations || [];
-  } catch (error) {
-    console.error(`Error al obtener consultas de ${campaign}:`, error);
-    return [];
-  }
+export const getActiveConsultationsByCampaign = async (
+    campaign = "",
+    payrollId = null
+) => {
+    if (!campaign) {
+        return [];
+    }
+
+    const campaignLower = campaign.toLowerCase();
+    let endpoint = `/config/consultations-${campaignLower}/active`;
+
+    // Agregar filtro de pagaduría si está presente
+    if (payrollId) {
+        endpoint += `?payroll_id=${payrollId}`;
+    }
+
+    try {
+        const { data } = await api.get(endpoint);
+        return data.consultations || [];
+    } catch (error) {
+        console.error(`Error al obtener consultas de ${campaign}:`, error);
+        return [];
+    }
 };
 
 /**
  * Consultas específicas activas según la campaña.
  * @param {string} campaign - "aliados" o "afiliados"
+ * @param {number} consultationId - ID de la consulta (opcional)
  */
-export const getActiveSpecificConsultationsByCampaign = async (campaign = "") => {
-  if (!campaign) {
-    return [];
-  }
-  
-  const campaignLower = campaign.toLowerCase();
-  const endpoint = `/config/consultationspecifics-${campaignLower}/active`;
-  
-  try {
-    const { data } = await api.get(endpoint);
-    return data.consultationspecific || [];
-  } catch (error) {
-    console.error(`Error al obtener consultas específicas de ${campaign}:`, error);
-    return [];
-  }
-};
+export const getActiveSpecificConsultationsByCampaign = async (
+    campaign = "",
+    consultationId = null
+) => {
+    if (!campaign) {
+        return [];
+    }
 
+    const campaignLower = campaign.toLowerCase();
+    let endpoint = `/config/consultationspecifics-${campaignLower}/active`;
+
+    // Agregar filtro de consulta si está presente
+    if (consultationId) {
+        endpoint += `?consultation_id=${consultationId}`;
+    }
+
+    try {
+        const { data } = await api.get(endpoint);
+        return data.consultationspecific || [];
+    } catch (error) {
+        console.error(
+            `Error al obtener consultas específicas de ${campaign}:`,
+            error
+        );
+        return [];
+    }
+};
 
 /* ===========================================================
  *  SEGUIMIENTOS
@@ -157,8 +191,8 @@ export const getActiveSpecificConsultationsByCampaign = async (campaign = "") =>
  * Obtiene todos los seguimientos activos.
  */
 export const getActiveMonitorings = async () => {
-  const { data } = await api.get("/monitorings/active");
-  return data.monitorings || [];
+    const { data } = await api.get("/monitorings/active");
+    return data.monitorings || [];
 };
 
 /* ===========================================================
@@ -169,18 +203,17 @@ export const getActiveMonitorings = async () => {
  * Obtiene todos los conteos de gestiones activos.
  */
 export const getCountManagementsAliados = async () => {
-  const { data } = await api.get("/management-aliados/count");
-  return data.count || [];
+    const { data } = await api.get("/management-aliados/count");
+    return data.count || [];
 };
 
 /**
  * Obtiene todos los conteos de gestiones activos.
  */
 export const getCountManagementsAfiliados = async () => {
-  const { data } = await api.get("/management-afiliados/count");
-  return data.count || [];
+    const { data } = await api.get("/management-afiliados/count");
+    return data.count || [];
 };
-
 
 /* ===========================================================
  *  LISTAS PARA FORMULARIO
@@ -190,8 +223,8 @@ export const getCountManagementsAfiliados = async () => {
  * Pagadurías activas.
  */
 export const getActivePayrolls = async () => {
-  const { data } = await api.get("/payrolls/active");
-  return data.data || [];
+    const { data } = await api.get("/payrolls/active");
+    return data.data || [];
 };
 
 /**
@@ -201,35 +234,37 @@ export const getActivePayrolls = async () => {
  * @param {string} filterColumn - Columna específica para filtrar (opcional)
  */
 export const getContacts = async (page = 1, search = "", filterColumn = "") => {
-  let url = `/contacts/active?page=${page}`;
-  
-  // Si hay un filtro por columna específica
-  if (filterColumn && search) {
-    url += `&searchValue=${encodeURIComponent(search)}&filterColumn=${filterColumn}`;
-  } 
-  // Si no hay filtro específico, usar búsqueda general
-  else if (search) {
-    url += `&search=${encodeURIComponent(search)}`;
-  }
-  
-  const { data } = await api.get(url);
-  return data || [];
+    let url = `/contacts/active?page=${page}`;
+
+    // Si hay un filtro por columna específica
+    if (filterColumn && search) {
+        url += `&searchValue=${encodeURIComponent(
+            search
+        )}&filterColumn=${filterColumn}`;
+    }
+    // Si no hay filtro específico, usar búsqueda general
+    else if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
+    }
+
+    const { data } = await api.get(url);
+    return data || [];
 };
 
 /**
  * Enviar sms.
  */
 export const sendSms = async (payload) => {
-  const { data } = await api.post("/send-sms", payload);
-  return data;
+    const { data } = await api.post("/send-sms", payload);
+    return data;
 };
 
 /**
  * Enviar WhatsApp.
  */
 export const sendWhatsApp = async (payload) => {
-  const { data } = await api.post("/send-wsp", payload);
-  return data;
+    const { data } = await api.post("/send-wsp", payload);
+    return data;
 };
 
 /**
@@ -238,7 +273,9 @@ export const sendWhatsApp = async (payload) => {
  * @param {number} page - Número de página
  */
 export const getHistoryChangesAliados = async (managementId, page = 1) => {
-    const { data } = await api.get(`/change-histories/entity/aliados-management/${managementId}?page=${page}`);
+    const { data } = await api.get(
+        `/change-histories/entity/aliados-management/${managementId}?page=${page}`
+    );
     return data;
 };
 
@@ -248,6 +285,8 @@ export const getHistoryChangesAliados = async (managementId, page = 1) => {
  * @param {number} page - Número de página
  */
 export const getHistoryChangesAfiliados = async (managementId, page = 1) => {
-    const { data } = await api.get(`/change-histories/entity/afiliados-management/${managementId}?page=${page}`);
+    const { data } = await api.get(
+        `/change-histories/entity/afiliados-management/${managementId}?page=${page}`
+    );
     return data;
 };

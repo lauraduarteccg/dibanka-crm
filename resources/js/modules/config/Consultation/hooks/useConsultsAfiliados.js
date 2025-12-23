@@ -11,7 +11,7 @@ import {
 export const useConsultsAfiliados = () => {
     const [consultations, setConsultations] = useState([]);
     const [payroll, setPayroll] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);   
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
@@ -20,6 +20,8 @@ export const useConsultsAfiliados = () => {
     const [perPage, setPerPage] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
     const [isOpenADD, setIsOpenADD] = useState(false);
+    const [active, setActive] = useState(0);
+    const [inactive, setInactive] = useState(0);
 
     const [formData, setFormData] = useState({
         id: null,
@@ -40,6 +42,8 @@ export const useConsultsAfiliados = () => {
             setCurrentPage(data.pagination.current_page);
             setPerPage(data.pagination.per_page);
             setTotalItems(data.pagination.total_consultations);
+            setActive(data.pagination.count_actives);
+            setInactive(data.pagination.count_inactives);
         } catch (err) {
             console.error(err);
             setError("Error al obtener las consultas de afiliados.");
@@ -195,6 +199,8 @@ export const useConsultsAfiliados = () => {
     };
 
     return {
+        active,
+        inactive,
         consultations,
         payroll,
         loading,

@@ -124,16 +124,14 @@ const Consultation = () => {
         handleSearch,
         fetchPage,
         handleCloseModal,
+        active,
+        inactive
     } = activeHook;
 
-    const activeConsults = consultations.filter(
-        (u) => u.is_active === 1
-    ).length;
-    const inactiveConsults = totalItems - activeConsults;
     const statsCards = [
         { title: "Consultas Totales", value: totalItems },
-        { title: "Consultas Activas", value: activeConsults },
-        { title: "Consultas Inactivas", value: inactiveConsults },
+        { title: "Consultas Activas", value: active },
+        { title: "Consultas Inactivas", value: inactive },
     ];
     return (
         <>

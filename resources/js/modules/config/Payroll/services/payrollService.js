@@ -11,15 +11,7 @@ export const getPayrolls = async (page = 1, search = "") => {
   const { data } = await api.get(
     `/config/payrolls?page=${page}&search=${encodeURIComponent(search)}`
   );
-  return {
-    payrolls: data.data || [],
-    pagination: {
-      total_pages: data.pagination?.total_pages ?? 1,
-      current_page: data.pagination?.current_page ?? 1,
-      per_page: data.pagination?.per_page ?? 10,
-      total_payrolls: data.pagination?.total_payrolls ?? 0,
-    },
-  };
+  return data;
 };
 
 /**

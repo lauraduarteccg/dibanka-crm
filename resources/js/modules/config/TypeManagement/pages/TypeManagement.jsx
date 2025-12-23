@@ -50,10 +50,9 @@ const TypeManagement = () => {
     handleDelete,
     handleEdit,
     handleCloseModal,
+    active,
+    inactive,
   } = useTypeManagement();
-
-  const activeCount = typeManagement.filter((u) => u.is_active === 1).length;
-  const inactiveCount = totalItems - activeCount;
 
   const columns = [
     { header: "ID", key: "id" },
@@ -74,8 +73,8 @@ const TypeManagement = () => {
   ];
   const statsCards = [
     { title: "Tipos de Gestión Totales", value: totalItems },
-    { title: "Tipos de Gestión Activos", value: activeCount },
-    { title: "Tipos de Gestión Inactivos", value: inactiveCount },
+    { title: "Tipos de Gestión Activos", value: active },
+    { title: "Tipos de Gestión Inactivos", value: inactive },
   ]
   return (
     <>

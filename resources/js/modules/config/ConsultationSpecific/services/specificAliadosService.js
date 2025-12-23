@@ -21,12 +21,7 @@ export const getSpecificAliados = async (page = 1, search = "") => {
 
   return {
     specifics,
-    pagination: {
-      total_pages: data.pagination?.total_pages ?? 1,
-      current_page: data.pagination?.current_page ?? 1,
-      per_page: data.pagination?.per_page ?? 10,
-      total_specifics: data.pagination?.total_consultations ?? 0,
-    },
+    pagination: data.pagination
   };
 };
 

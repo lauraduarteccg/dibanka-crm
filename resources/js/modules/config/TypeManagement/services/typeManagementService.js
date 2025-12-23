@@ -12,15 +12,7 @@ export const getTypeManagements = async (page = 1, search = "") => {
     `/config/typemanagements?page=${page}&search=${encodeURIComponent(search)}`
   );
 
-  return {
-    typeManagement: data.typeManagement || [],
-    pagination: {
-      total_pages: data.pagination?.total_pages ?? 1,
-      current_page: data.pagination?.current_page ?? 1,
-      per_page: data.pagination?.per_page ?? 10,
-      total_managements: data.pagination?.total_managements ?? 0,
-    },
-  };
+  return data;
 };
 
 /**

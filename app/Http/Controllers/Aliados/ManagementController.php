@@ -31,7 +31,102 @@ class ManagementController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | 1. Filtro específico por columna
+        | 1. Filtros Dinámicos (compatibles con MultiFilter)
+        |--------------------------------------------------------------------------
+        */
+        $possibleFilters = [
+            'id' => 'id',
+            'wolkvox_id' => 'wolkvox_id',
+            'solution_date' => 'solution_date',
+            'created_at' => 'created_at',
+        ];
+
+        foreach ($possibleFilters as $param => $column) {
+            if ($request->filled($param)) {
+                $query->where($column, 'LIKE', "%{$request->$param}%");
+            }
+        }
+
+        // Filtros por nombre de usuario (agente)
+        if ($request->filled('user')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->user}%");
+            });
+        }
+
+        // Filtros de contacto
+        if ($request->filled('identification_number')) {
+            $query->whereHas('contact', function ($q) use ($request) {
+                $q->where('identification_number', 'LIKE', "%{$request->identification_number}%");
+            });
+        }
+
+        if ($request->filled('name')) {
+            $query->whereHas('contact', function ($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->name}%");
+            });
+        }
+
+        if ($request->filled('email')) {
+            $query->whereHas('contact', function ($q) use ($request) {
+                $q->where('email', 'LIKE', "%{$request->email}%");
+            });
+        }
+
+        if ($request->filled('phone')) {
+            $query->whereHas('contact', function ($q) use ($request) {
+                $q->where(function($sub) use ($request) {
+                    $sub->where('phone', 'LIKE', "%{$request->phone}%")
+                        ->orWhere('update_phone', 'LIKE', "%{$request->phone}%");
+                });
+            });
+        }
+
+        // Filtro por pagaduría
+        if ($request->filled('payroll')) {
+            $query->whereHas('contact.payroll', function ($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->payroll}%");
+            });
+        }
+
+        // Filtro por campaña
+        if ($request->filled('campaign_filter')) { // Usamos campaign_filter para no confundir con el param campaign de la tabla
+            $query->whereHas('contact.campaign', function ($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->campaign_filter}%");
+            });
+        }
+
+        // Filtro por consulta
+        if ($request->filled('consultation')) {
+            $query->whereHas('consultation', function ($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->consultation}%");
+            });
+        }
+
+        // Filtro por consulta específica
+        if ($request->filled('specific')) {
+            $query->whereHas('specific', function ($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->specific}%");
+            });
+        }
+
+        // Filtro por tipo de gestión
+        if ($request->filled('type_management')) {
+            $query->whereHas('type_management', function ($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->type_management}%");
+            });
+        }
+
+        // Filtro por seguimiento
+        if ($request->filled('monitoring')) {
+            $query->whereHas('monitoring', function ($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->monitoring}%");
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Compatibilidad con formato antiguo (Legacy Search)
         |--------------------------------------------------------------------------
         */
         if ($request->filled('searchValue') && $request->filled('filterColumn')) {
@@ -39,94 +134,20 @@ class ManagementController extends Controller
             $column = $request->filterColumn;
 
             switch ($column) {
-
-                // Campos directos de la tabla management
-                case 'id':
-                    $query->where('id', 'LIKE', "%{$value}%");
-                    break;
-
-                case 'wolkvox_id':
-                    $query->where('wolkvox_id', 'LIKE', "%{$value}%");
-                    break;
-
-                case 'user':
-                    $query->whereHas('user', function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                case 'solution_date':
-                    $query->where('solution_date', 'LIKE', "%{$value}%");
-                    break;
-                    
-                case 'created_at':
-                    $query->where('created_at', 'LIKE', "%{$value}%");
-                    break;
-
-                // Campos de contact.*
-                case 'identification_number':
-                    $query->whereHas('contact', function ($q) use ($value) {
-                        $q->where('identification_number', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                case 'name':
-                    $query->whereHas('contact', function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                case 'email':
-                    $query->whereHas('contact', function ($q) use ($value) {
-                        $q->where('email', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                case 'phone':
-                    $query->whereHas('contact', function ($q) use ($value) {
-                        $q->where('phone', 'LIKE', "%{$value}%")
-                        ->orWhere('update_phone', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                // Filtro por contact.payroll.name
-                case 'payroll':
-                    $query->whereHas('contact.payroll', function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                // Filtro por contact.campaign.name
-                case 'campaign':
-                    $query->whereHas('contact.campaign', function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                // Filtro por relaciones principales
-                case 'specific':
-                    $query->whereHas('specific', function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                case 'consultation':
-                    $query->whereHas('consultation', function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                case 'type_management':
-                    $query->whereHas('type_management', function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%");
-                    });
-                    break;
-
-                case 'monitoring':
-                    $query->whereHas('monitoring', function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%");
-                    });
-                    break;
+                case 'id': $query->where('id', 'LIKE', "%{$value}%"); break;
+                case 'wolkvox_id': $query->where('wolkvox_id', 'LIKE', "%{$value}%"); break;
+                case 'user': $query->whereHas('user', function ($q) use ($value) { $q->where('name', 'LIKE', "%{$value}%"); }); break;
+                case 'solution_date': $query->where('solution_date', 'LIKE', "%{$value}%"); break;
+                case 'created_at': $query->where('created_at', 'LIKE', "%{$value}%"); break;
+                case 'identification_number': $query->whereHas('contact', function ($q) use ($value) { $q->where('identification_number', 'LIKE', "%{$value}%"); }); break;
+                case 'name': $query->whereHas('contact', function ($q) use ($value) { $q->where('name', 'LIKE', "%{$value}%"); }); break;
+                case 'email': $query->whereHas('contact', function ($q) use ($value) { $q->where('email', 'LIKE', "%{$value}%"); }); break;
+                case 'phone': $query->whereHas('contact', function ($q) use ($value) { $q->where('phone', 'LIKE', "%{$value}%")->orWhere('update_phone', 'LIKE', "%{$value}%"); }); break;
+                case 'payroll': $query->whereHas('contact.payroll', function ($q) use ($value) { $q->where('name', 'LIKE', "%{$value}%"); }); break;
+                case 'specific': $query->whereHas('specific', function ($q) use ($value) { $q->where('name', 'LIKE', "%{$value}%"); }); break;
+                case 'consultation': $query->whereHas('consultation', function ($q) use ($value) { $q->where('name', 'LIKE', "%{$value}%"); }); break;
+                case 'type_management': $query->whereHas('type_management', function ($q) use ($value) { $q->where('name', 'LIKE', "%{$value}%"); }); break;
+                case 'monitoring': $query->whereHas('monitoring', function ($q) use ($value) { $q->where('name', 'LIKE', "%{$value}%"); }); break;
             }
         }
 
@@ -203,7 +224,7 @@ class ManagementController extends Controller
         | 4. Paginación
         |--------------------------------------------------------------------------
         */
-        $management = $query->paginate(10);
+        $management = $query->orderBy('id', 'desc')->paginate(10);
 
         return response()->json([
             'message'     => 'Gestiones obtenidas con éxito',

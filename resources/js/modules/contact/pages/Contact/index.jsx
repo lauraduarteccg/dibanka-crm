@@ -4,7 +4,7 @@ import { useCan } from "@hooks/useCan";
 import Table from "@components/tables/Table";
 import ButtonAdd from "@components/ui/ButtonAdd";
 import FormAdd from "@components/forms/FormAdd";
-import FilterSearch from "@components/ui/FilterSearch";
+import MultiFilter from "@components/ui/MultiFilter";
 import HistoryChanges from "@components/ui/HistoryChanges";
 import { useContact } from "@modules/contact/hooks/useContact";
 import { fields, userSchema, columns, filterOptions } from "./constants";
@@ -21,7 +21,6 @@ const Contact = ({
     const navigate = useNavigate();
     const location = useLocation();
     const {
-        handleSearch,
         fetchPage,
         payroll,
         contact,
@@ -51,19 +50,25 @@ const Contact = ({
         handleOpenHistory,
         handleCloseHistory,
         fetchHistoryPage,
-        selectedContact, // IMPORTANTE: Agregar esto
+        selectedContact,
+        // Nuevo Filtro
+        filters,
+        addFilter,
+        removeFilter,
+        clearFilters,
     } = useContact();
 
     // Efecto para leer parámetros de la URL y filtrar automáticamente
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const searchParam = params.get("search");
-        const columnParam = params.get("column");
 
-        if (searchParam) {
-            handleSearch(searchParam, columnParam || "");
-        }
-    }, [location.search, handleSearch]);
+        // Cargar filtros iniciales desde URL si no hay filtros activos
+        params.forEach((value, key) => {
+            if (value && !filters[key]) {
+                addFilter(key, value);
+            }
+        });
+    }, [location.search]);
 
     // Efecto para cambiar automáticamente el tipo de identificación
     useEffect(() => {
@@ -111,21 +116,6 @@ const Contact = ({
         [navigate]
     );
 
-    const handleFilterSearch = (searchValue, filterColumn) => {
-        let column = filterColumn;
-
-        // Normalizar filtros para backend
-        if (filterColumn === "payroll.name") column = "payroll";
-        if (filterColumn === "campaign.name") column = "campaign";
-
-        handleSearch(searchValue, column);
-    };
-
-    const handleClearSearch = () => {
-        handleSearch("", "");
-        navigate("/contactos");
-    };
-
     return (
         <>
             {can("contact.create") && (
@@ -136,23 +126,15 @@ const Contact = ({
                 />
             )}
 
-            <div className="flex justify-end px-12 -mt-10 gap-2">
-                <FilterSearch
-                    id={searchContact}
-                    onFilter={handleFilterSearch}
-                    placeholder="Buscar contacto..."
-                    filterOptions={filterOptions}
-                    initialSearchValue={new URLSearchParams(location.search).get("search") || ""}
-                    initialSelectedFilter={new URLSearchParams(location.search).get("column") || ""}
+            <div className="flex justify-end px-12 -mt-10 gap-2 pb-10">
+                <MultiFilter
+                    onAddFilter={addFilter}
+                    onRemoveFilter={removeFilter}
+                    onClearFilters={clearFilters}
+                    filters={filters}
+                    options={filterOptions}
+                    className="w-full max-w-2xl"
                 />
-                {(new URLSearchParams(location.search).get("search") || "") && (
-                    <button
-                        onClick={handleClearSearch}
-                        className="bg-red-500 text-white h-[50%] px-4 py-2 rounded hover:bg-red-600 transition-colors"
-                    >
-                        Limpiar filtro
-                    </button>
-                )}
             </div>
 
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-mid">
@@ -171,7 +153,7 @@ const Contact = ({
                 fields={formFields}
                 schema={userSchema}
             />
-            
+
             {loading ? (
                 <TableSkeleton row="9" />
             ) : (
@@ -198,11 +180,10 @@ const Contact = ({
                 />
             )}
 
-            {/* Props correctas para HistoryChanges */}
             <HistoryChanges
                 isOpen={openHistory}
                 onClose={handleCloseHistory}
-                contact={selectedContact} 
+                contact={selectedContact}
                 history={history}
                 loading={loadingHistory}
                 currentPage={currentPageH}
